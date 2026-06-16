@@ -2,12 +2,14 @@ import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTour } from '../../context/TourContext';
+import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/button';
 import { Sparkles, ArrowLeft, ArrowRight, X } from 'lucide-react';
 
 export default function TourGuide() {
   const { isTourActive, currentStep, steps, nextStep, prevStep, endTour } = useTour();
   const location = useLocation();
+  const { isAuthenticated } = useAuth();
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
   const checkCountRef = useRef(0);
@@ -79,53 +81,78 @@ export default function TourGuide() {
     height: targetRect.height + padding * 2,
   } : null;
 
+  const isMobile = windowSize.width < 768;
+  const showBottomNav = isAuthenticated && !location.pathname.startsWith('/admin');
+
   // Determine dialog position relative to target
   let dialogStyle: React.CSSProperties = {};
-  if (highlightStyle) {
-    const dialogWidth = 320;
-    const dialogHeight = 220;
-    const gap = 16;
-
-    const targetCenterX = highlightStyle.left + highlightStyle.width / 2;
-    const targetCenterY = highlightStyle.top + highlightStyle.height / 2;
-
-    // Default: Center below
-    let x = targetCenterX - dialogWidth / 2;
-    let y = highlightStyle.top + highlightStyle.height + gap;
-
-    if (step.position === 'top') {
-      y = highlightStyle.top - dialogHeight - gap;
-    } else if (step.position === 'bottom') {
-      y = highlightStyle.top + highlightStyle.height + gap;
-    } else if (step.position === 'left') {
-      x = highlightStyle.left - dialogWidth - gap;
-      y = targetCenterY - dialogHeight / 2;
-    } else if (step.position === 'right') {
-      x = highlightStyle.left + highlightStyle.width + gap;
-      y = targetCenterY - dialogHeight / 2;
+  if (isMobile) {
+    if (highlightStyle) {
+      const bottomSpacing = showBottomNav ? 96 : 16;
+      dialogStyle = {
+        position: 'fixed',
+        left: 16,
+        right: 16,
+        bottom: bottomSpacing,
+        zIndex: 1000,
+      };
+    } else {
+      dialogStyle = {
+        position: 'fixed',
+        left: 16,
+        right: 16,
+        top: '50%',
+        transform: 'translateY(-50%)',
+        zIndex: 1000,
+      };
     }
-
-    // Keep dialog on screen bounds
-    x = Math.max(16, Math.min(x, window.innerWidth - dialogWidth - 16));
-    y = Math.max(80, Math.min(y, window.innerHeight - dialogHeight - 16));
-
-    dialogStyle = {
-      position: 'fixed',
-      left: x,
-      top: y,
-      width: dialogWidth,
-      zIndex: 1000,
-    };
   } else {
-    // Center of screen
-    dialogStyle = {
-      position: 'fixed',
-      left: '50%',
-      top: '50%',
-      transform: 'translate(-50%, -50%)',
-      width: 320,
-      zIndex: 1000,
-    };
+    if (highlightStyle) {
+      const dialogWidth = 320;
+      const dialogHeight = 220;
+      const gap = 16;
+
+      const targetCenterX = highlightStyle.left + highlightStyle.width / 2;
+      const targetCenterY = highlightStyle.top + highlightStyle.height / 2;
+
+      // Default: Center below
+      let x = targetCenterX - dialogWidth / 2;
+      let y = highlightStyle.top + highlightStyle.height + gap;
+
+      if (step.position === 'top') {
+        y = highlightStyle.top - dialogHeight - gap;
+      } else if (step.position === 'bottom') {
+        y = highlightStyle.top + highlightStyle.height + gap;
+      } else if (step.position === 'left') {
+        x = highlightStyle.left - dialogWidth - gap;
+        y = targetCenterY - dialogHeight / 2;
+      } else if (step.position === 'right') {
+        x = highlightStyle.left + highlightStyle.width + gap;
+        y = targetCenterY - dialogHeight / 2;
+      }
+
+      // Keep dialog on screen bounds
+      x = Math.max(16, Math.min(x, window.innerWidth - dialogWidth - 16));
+      y = Math.max(80, Math.min(y, window.innerHeight - dialogHeight - 16));
+
+      dialogStyle = {
+        position: 'fixed',
+        left: x,
+        top: y,
+        width: dialogWidth,
+        zIndex: 1000,
+      };
+    } else {
+      // Center of screen
+      dialogStyle = {
+        position: 'fixed',
+        left: '50%',
+        top: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 320,
+        zIndex: 1000,
+      };
+    }
   }
 
   return (

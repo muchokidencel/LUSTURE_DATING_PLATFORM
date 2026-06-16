@@ -734,3 +734,8 @@ Then('my account tier should be upgraded to premium basic', async ({ page }) => 
   const activeBtn = page.locator('button:has-text("Elite Active")');
   await expect(activeBtn).toBeVisible({ timeout: 10000 });
 });
+
+Then('the tour dialog should be visible', async ({ page }) => {
+  const dialog = page.locator('text=Welcome to Lustre').first();
+  await expect(dialog).toBeVisible({ timeout: 15000 });
+});
