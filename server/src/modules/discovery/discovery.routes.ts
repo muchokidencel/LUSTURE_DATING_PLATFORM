@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db } from '../../db/index.js';
-import { users, profiles, likes, matches, notifications, blocks, photos, userPreferences } from '../../db/schema.js';
+import { users, profiles, likes, matches, notifications, blocks, photos, userPreferences, passes } from '../../db/schema.js';
 import { eq, and, or, notInArray, ne, sql, inArray } from 'drizzle-orm';
 import { authenticate, AuthRequest } from '../../middleware/auth.js';
 import { syncUserPremiumStatus } from '../../middleware/sync-premium.js';

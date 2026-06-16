@@ -45,7 +45,7 @@ router.put('/read-all', authenticate, async (req: AuthRequest, res) => {
 // Mark a single notification as read
 router.put('/:id/read', authenticate, async (req: AuthRequest, res) => {
   const userId = req.user!.id;
-  const notificationId = parseInt(req.params.id);
+  const notificationId = parseInt(req.params['id'] as string);
   
   if (isNaN(notificationId)) {
     return res.status(400).json({ message: 'Invalid notification ID' });

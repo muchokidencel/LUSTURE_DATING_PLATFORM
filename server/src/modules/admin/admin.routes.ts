@@ -117,23 +117,28 @@ router.get('/export/users', authenticate, requireAdmin, async (req: AuthRequest,
         fullName: profiles.fullName,
         gender: profiles.gender,
         city: profiles.location,
-        age: profiles.age,
+        birthDate: profiles.birthDate,
       })
       .from(users)
       .leftJoin(profiles, eq(profiles.userId, users.id))
       .orderBy(users.createdAt);
 
-    const flatData = allUsers.map((u) => ({
-      id: u.id,
-      email: u.email,
-      fullName: u.fullName ?? '',
-      gender: u.gender ?? '',
-      city: u.city ?? '',
-      age: u.age ?? '',
-      premiumTier: u.premiumTier ?? 'free',
-      role: u.role ?? 'user',
-      createdAt: u.createdAt ? new Date(u.createdAt).toISOString() : '',
-    }));
+    const flatData = allUsers.map((u) => {
+      const age = u.birthDate
+        ? Math.floor((Date.now() - new Date(u.birthDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+        : '';
+      return {
+        id: u.id,
+        email: u.email,
+        fullName: u.fullName ?? '',
+        gender: u.gender ?? '',
+        city: u.city ?? '',
+        age,
+        premiumTier: u.premiumTier ?? 'free',
+        role: u.role ?? 'user',
+        createdAt: u.createdAt ? new Date(u.createdAt).toISOString() : '',
+      };
+    });
 
     const csv = jsonToCsv(flatData as Record<string, unknown>[]);
     console.log(`[ADMIN:EXPORT:USERS] Exporting ${flatData.length} users`);
