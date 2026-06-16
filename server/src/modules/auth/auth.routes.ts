@@ -2,6 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { db } from '../../db/index.js';
+import axios from 'axios';
 import { users, profiles, referrals, referralCodes, userPreferences, emailVerificationCodes } from '../../db/schema.js';
 import { eq, and, gt } from 'drizzle-orm';
 import { validate } from '../../middleware/validate.js';
@@ -290,6 +291,132 @@ router.post('/refresh', async (req, res) => {
     });
   } catch (error) {
     return res.status(403).json({ message: 'Invalid refresh token' });
+  }
+});
+
+router.post('/google', async (req, res) => {
+  const { accessToken } = req.body;
+  if (!accessToken) {
+    return res.status(400).json({ message: 'Google access token is required' });
+  }
+
+  try {
+    // Call Google's userinfo API
+    const response = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const googleUser = response.data;
+    if (!googleUser || !googleUser.email) {
+      return res.status(400).json({ message: 'Failed to retrieve Google user profile' });
+    }
+
+    const { email, name } = googleUser;
+
+    // Check if user already exists
+    let user = await db.query.users.findFirst({
+      where: eq(users.email, email),
+    });
+
+    if (!user) {
+      // Create a new user with Google verified email
+      const randomPassword = crypto.randomBytes(16).toString('hex');
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+      // Unique referral code generation logic
+      let newReferralCode = '';
+      let isUnique = false;
+      while (!isUnique) {
+        newReferralCode = crypto.randomBytes(4).toString('hex').toUpperCase();
+        const existingCode = await db.query.referralCodes.findFirst({
+          where: eq(referralCodes.code, newReferralCode),
+        });
+        const existingUserCode = await db.query.users.findFirst({
+          where: eq(users.referralCode, newReferralCode),
+        });
+        if (!existingCode && !existingUserCode) isUnique = true;
+      }
+
+      // Check cookie for referral
+      const cookieReferralCode = req.cookies?.referral_code;
+      const refCode = typeof cookieReferralCode === 'string' ? cookieReferralCode.trim().toUpperCase() : null;
+      let referrerId: number | null = null;
+      if (refCode) {
+        const codeRecord = await db.query.referralCodes.findFirst({
+          where: eq(referralCodes.code, refCode),
+        });
+        if (codeRecord) {
+          referrerId = codeRecord.userId;
+        } else {
+          const legacyUser = await db.query.users.findFirst({
+            where: eq(users.referralCode, refCode),
+          });
+          if (legacyUser) referrerId = legacyUser.id;
+        }
+      }
+
+      const result = await db.insert(users).values({
+        email,
+        password: hashedPassword,
+        isEmailVerified: true,
+        referralCode: newReferralCode,
+        referredBy: referrerId,
+      }).returning();
+
+      user = result[0];
+
+      // Store in referral_codes table
+      await db.insert(referralCodes).values({
+        userId: user.id,
+        code: newReferralCode,
+      });
+
+      // Initialize profile and preferences
+      await db.insert(profiles).values({
+        userId: user.id,
+        fullName: name || null,
+      });
+
+      await db.insert(userPreferences).values({
+        userId: user.id,
+        interestedInGenders: [],
+      });
+
+      // Record referral if valid
+      if (referrerId && referrerId !== user.id) {
+        const existingReferral = await db.query.referrals.findFirst({
+          where: eq(referrals.referredId, user.id),
+        });
+
+        if (!existingReferral) {
+          await db.insert(referrals).values({
+            referrerId,
+            referredId: user.id,
+            status: 'pending',
+            referredAt: new Date(),
+          });
+        }
+      }
+
+      // Clear referral cookie
+      res.clearCookie('referral_code');
+    }
+
+    const { accessToken: jwtAccessToken, refreshToken: jwtRefreshToken } = generateTokens(user);
+
+    res.json({
+      status: 'success',
+      data: {
+        user: { id: user.id, email: user.email, referralCode: user.referralCode, role: user.role },
+        accessToken: jwtAccessToken,
+        refreshToken: jwtRefreshToken,
+      },
+    });
+  } catch (error: any) {
+    console.error('Google Auth Error:', error.response?.data || error.message);
+    res.status(500).json({ message: 'Internal server error during Google Authentication' });
   }
 });
 

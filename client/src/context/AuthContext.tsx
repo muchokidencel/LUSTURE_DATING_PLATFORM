@@ -21,6 +21,7 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, referralCode?: string, code?: string) => Promise<void>;
+  loginWithGoogle: (accessToken: string) => Promise<void>;
   logout: () => void;
   loading: boolean;
   isAuthenticated: boolean;
@@ -67,6 +68,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const loginWithGoogle = async (accessToken: string) => {
+    setLoading(true);
+    try {
+      const { data } = await api.post('/auth/google', { accessToken });
+      const { accessToken: jwtAccessToken, refreshToken, user: userData } = data.data;
+      
+      localStorage.setItem('accessToken', jwtAccessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      setUser(userData);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     localStorage.clear();
     setUser(null);
@@ -77,6 +94,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       user, 
       login, 
       register, 
+      loginWithGoogle,
       logout, 
       loading,
       isAuthenticated: !!user 

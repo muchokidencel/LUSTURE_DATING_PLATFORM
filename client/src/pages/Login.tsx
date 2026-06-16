@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
@@ -11,8 +11,53 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const tokenClientRef = useRef<any>(null);
+
+  useEffect(() => {
+    const initClient = () => {
+      if ((window as any).google) {
+        tokenClientRef.current = (window as any).google.accounts.oauth2.initTokenClient({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '1013735072049-mockid.apps.googleusercontent.com',
+          scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+          callback: async (response: any) => {
+            if (response.access_token) {
+              setLoading(true);
+              setError('');
+              try {
+                await loginWithGoogle(response.access_token);
+                navigate('/discovery');
+              } catch (err: any) {
+                setError(err.response?.data?.message || 'Google Sign-In failed');
+              } finally {
+                setLoading(false);
+              }
+            }
+          },
+        });
+      }
+    };
+
+    if ((window as any).google) {
+      initClient();
+    } else {
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = initClient;
+      document.body.appendChild(script);
+    }
+  }, [loginWithGoogle, navigate]);
+
+  const handleGoogleClick = () => {
+    if (tokenClientRef.current) {
+      tokenClientRef.current.requestAccessToken();
+    } else {
+      setError('Google Sign-In is initializing. Please try again in a moment.');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,7 +150,12 @@ export default function Login() {
             </div>
             
              <div className="flex justify-center">
-              <Button variant="outline" className="w-full h-12 border-border-strong bg-elevated text-white rounded-xl text-[9px] font-bold uppercase tracking-widest gap-3 hover:bg-elevated/85 transition-colors flex items-center justify-center">
+              <Button 
+                type="button"
+                onClick={handleGoogleClick}
+                variant="outline" 
+                className="w-full h-12 border-border-strong bg-elevated text-white rounded-xl text-[9px] font-bold uppercase tracking-widest gap-3 hover:bg-elevated/85 transition-colors flex items-center justify-center"
+              >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                   <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
