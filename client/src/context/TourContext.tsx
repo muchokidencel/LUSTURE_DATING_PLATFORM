@@ -25,7 +25,7 @@ const TourContext = createContext<TourContextType | undefined>(undefined);
 
 export const TourProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
-  const { data: profile } = useProfile();
+  const { data: profile } = useProfile(!!user);
   const navigate = useNavigate();
   const location = useLocation();
   const [isTourActive, setIsTourActive] = useState(false);
@@ -76,7 +76,7 @@ export const TourProvider = ({ children }: { children: ReactNode }) => {
     {
       targetIds: ["nav-referrals", "bottom-nav-rewards"],
       title: "Rewards & Referrals",
-      content: "Lustre operates on trust and invitations. Invite friends with your exclusive VIP referral code. You earn a substantial 50% commission (KES 50) when they upgrade to Elite.",
+      content: "Lustre operates on trust and invitations. Invite friends with your exclusive VIP referral code. You earn a substantial 10% commission (KES 50) when they upgrade to Elite.",
       path: "/referrals",
       position: "bottom",
     },
@@ -93,6 +93,10 @@ export const TourProvider = ({ children }: { children: ReactNode }) => {
 
   // Auto-start tour for new users who haven't completed it
   useEffect(() => {
+    // Disable auto-start in automated testing environments
+    if (window.navigator.webdriver || (window as any).__E2E_TESTING__) {
+      return;
+    }
     if (user && !localStorage.getItem(`lustre_tour_completed_${user.id}`)) {
       // Delay slightly to wait for layout mount
       const timer = setTimeout(() => {

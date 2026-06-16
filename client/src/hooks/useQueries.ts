@@ -1,13 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../lib/api';
 
-export const useProfile = () => {
+export const useProfile = (enabled = true) => {
   return useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
       const { data } = await api.get('/profile/me');
       return data.data;
     },
+    enabled,
   });
 };
 

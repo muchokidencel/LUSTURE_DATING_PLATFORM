@@ -44,6 +44,9 @@ const mockDiscoveryUsers = [
 ];
 
 Given('I navigate to {string}', async ({ page }, path) => {
+  await page.addInitScript(() => {
+    (window as any).__E2E_TESTING__ = true;
+  });
   await page.goto(path, { waitUntil: 'domcontentloaded', timeout: 60000 });
 });
 
@@ -153,6 +156,7 @@ Then('I should see the discovery page header', async ({ page }) => {
 Given('I am logged in as a premium user', async ({ page }) => {
   // Mock localStorage for authenticated session, including user object to satisfy PrivateRoute auth checks
   await page.addInitScript((userData) => {
+    (window as any).__E2E_TESTING__ = true;
     window.localStorage.setItem('accessToken', 'fake-gold-token');
     window.localStorage.setItem('refreshToken', 'fake-refresh-token');
     window.localStorage.setItem('user', JSON.stringify(userData));
@@ -274,6 +278,7 @@ Then('I should only see profiles with gender {string}', async ({ page }, gender)
 Given('I am logged in as a free user', async ({ page }) => {
   // Mock localStorage for authenticated session, including user object to satisfy PrivateRoute auth checks
   await page.addInitScript((userData) => {
+    (window as any).__E2E_TESTING__ = true;
     window.localStorage.setItem('accessToken', 'fake-free-token');
     window.localStorage.setItem('refreshToken', 'fake-refresh-token');
     window.localStorage.setItem('user', JSON.stringify(userData));
@@ -385,6 +390,7 @@ Then('I should see a message that the STK push was sent', async ({ page }) => {
 Given('I have received notifications', async ({ page }) => {
   // Mock premium user profile
   await page.addInitScript((userData) => {
+    (window as any).__E2E_TESTING__ = true;
     window.localStorage.setItem('accessToken', 'fake-gold-token');
     window.localStorage.setItem('refreshToken', 'fake-refresh-token');
     window.localStorage.setItem('user', JSON.stringify(userData));
@@ -575,6 +581,7 @@ const mockAdminUser = {
 Given('I am logged in as an admin user', async ({ page }) => {
   // Inject admin user into localStorage with role: admin
   await page.addInitScript((userData) => {
+    (window as any).__E2E_TESTING__ = true;
     window.localStorage.setItem('accessToken', 'fake-admin-token');
     window.localStorage.setItem('refreshToken', 'fake-refresh-token');
     window.localStorage.setItem('user', JSON.stringify(userData));
@@ -636,4 +643,94 @@ Then('a CSV file download should be initiated', async ({ page }) => {
   // The CSV download happens via anchor.click() which is browser-controlled.
   // We confirm the page remains on /admin without any error state.
   await expect(page).toHaveURL(/\/admin/);
+});
+
+// ── Paystack Payment Steps ───────────────────────────────────────────────────
+
+When('I click the Paystack payment option', async ({ page }) => {
+  // If the payment modal is not open, open it
+  const modal = page.locator('text=Secure Settlement');
+  if (!(await modal.isVisible())) {
+    const upgradeBtn = page.locator('button:has-text("Get Started"), button:has-text("Upgrade Now")').first();
+    await upgradeBtn.click();
+  }
+});
+
+When('I click the pay button for Paystack', async ({ page }) => {
+  // Mock the initialize response before clicking
+  await page.route(`${API_BASE}/payments/pay/paystack/initialize`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'success',
+        data: {
+          authorization_url: 'https://checkout.paystack.com/mock-authorization-url',
+          reference: 'PAY-TEST-100',
+        },
+      }),
+    });
+  });
+
+  const globalCardBtn = page.locator('button:has-text("Global Card")');
+  await globalCardBtn.click();
+});
+
+Then('I should be redirected to the Paystack checkout page', async ({ page }) => {
+  // Wait for redirect to checkout.paystack.com
+  await expect(page).toHaveURL(/checkout\.paystack\.com/);
+});
+
+Then('after completing transaction {string} I should be redirected to {string}', async ({ page }, reference, path) => {
+  // Mock the verify response
+  await page.route(`${API_BASE}/payments/pay/paystack/verify/${reference}`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'success',
+        message: 'Payment verified and subscription activated',
+      }),
+    });
+  });
+
+  // Mock the stats/subscription response to return active subscription
+  await page.route(`${API_BASE}/stats/subscription`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'success',
+        data: {
+          id: 101,
+          userId: 1,
+          status: 'active',
+          endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        },
+      }),
+    });
+  });
+
+  // Also mock the profile/me request to return upgraded tier so isPremium changes
+  await page.route(`${API_BASE}/profile/me`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'success',
+        data: {
+          ...mockFreeUser,
+          premiumTier: 'premium',
+        },
+      }),
+    });
+  });
+
+  // Navigate back to the premium page with the reference query param, mimicking the Paystack redirect
+  await page.goto(`${path}?reference=${reference}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+});
+
+Then('my account tier should be upgraded to premium basic', async ({ page }) => {
+  const activeBtn = page.locator('button:has-text("Elite Active")');
+  await expect(activeBtn).toBeVisible({ timeout: 10000 });
 });
