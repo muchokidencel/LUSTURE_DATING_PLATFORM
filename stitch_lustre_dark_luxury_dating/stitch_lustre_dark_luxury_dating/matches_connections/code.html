@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Lustre | Your Matches</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&amp;family=Be+Vietnam+Pro:wght@400;500&amp;family=EB+Garamond:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "surface-container-highest": "#34343c",
+                  "surface-container-lowest": "#0e0d15",
+                  "on-tertiary-container": "#4f3d00",
+                  "secondary-fixed-dim": "#ffb0ce",
+                  "tertiary": "#ecc246",
+                  "primary": "#d2bcff",
+                  "on-secondary-fixed": "#3e0022",
+                  "on-primary-fixed": "#25005a",
+                  "surface-tint": "#d2bcff",
+                  "error-container": "#93000a",
+                  "on-error": "#690005",
+                  "tertiary-fixed-dim": "#ecc246",
+                  "primary-fixed": "#eaddff",
+                  "inverse-primary": "#6b4bad",
+                  "primary-container": "#7c5cbf",
+                  "surface-bright": "#393841",
+                  "surface-container-high": "#2a2931",
+                  "outline-variant": "#494551",
+                  "background": "#13131a",
+                  "surface-dim": "#13131a",
+                  "on-secondary": "#5f0d39",
+                  "on-tertiary-fixed": "#241a00",
+                  "on-tertiary-fixed-variant": "#584400",
+                  "surface-container-low": "#1b1b23",
+                  "tertiary-container": "#cea62b",
+                  "surface-variant": "#34343c",
+                  "on-background": "#e4e1ec",
+                  "secondary-fixed": "#ffd9e5",
+                  "surface": "#13131a",
+                  "on-error-container": "#ffdad6",
+                  "on-tertiary": "#3d2e00",
+                  "on-primary-container": "#f8efff",
+                  "outline": "#958e9d",
+                  "tertiary-fixed": "#ffe08e",
+                  "primary-fixed-dim": "#d2bcff",
+                  "inverse-surface": "#e4e1ec",
+                  "secondary": "#ffb0ce",
+                  "error": "#ffb4ab",
+                  "surface-container": "#1f1f27",
+                  "on-primary-fixed-variant": "#533294",
+                  "secondary-container": "#7b2650",
+                  "on-surface": "#e4e1ec",
+                  "inverse-on-surface": "#303038",
+                  "on-secondary-container": "#ff94c0",
+                  "on-primary": "#3c167c",
+                  "on-surface-variant": "#cbc3d3",
+                  "on-secondary-fixed-variant": "#7b2650"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.25rem",
+                  "lg": "0.5rem",
+                  "xl": "0.75rem",
+                  "full": "9999px"
+          },
+          "spacing": {
+                  "stack-lg": "48px",
+                  "gutter": "24px",
+                  "stack-sm": "12px",
+                  "container-max": "1200px",
+                  "margin-desktop": "40px",
+                  "unit": "8px",
+                  "margin-mobile": "20px",
+                  "stack-md": "24px"
+          },
+          "fontFamily": {
+                  "headline-lg": ["manrope"],
+                  "body-md": ["beVietnamPro"],
+                  "label-md": ["manrope"],
+                  "display-lg": ["ebGaramond"],
+                  "body-lg": ["beVietnamPro"],
+                  "headline-lg-mobile": ["manrope"],
+                  "headline-sm": ["manrope"],
+                  "headline-md": ["manrope"]
+          },
+          "fontSize": {
+                  "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                  "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                  "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                  "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "500"}],
+                  "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                  "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                  "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                  "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "0.01em", "fontWeight": "600"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      background-color: #08080f;
+      color: #e4e1ec;
+      -webkit-font-smoothing: antialiased;
+    }
+    .glass-modal {
+      background: rgba(26, 26, 42, 0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .match-card {
+      background-color: #111119;
+      border: 1px solid #1e1e2e;
+      transition: all 0.3s ease;
+    }
+    .match-card:hover {
+      border-color: #d2bcff;
+      background-color: #161622;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+    }
+    .fill-icon {
+      font-variation-settings: 'FILL' 1;
+    }
+    .gradient-line {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #1e1e2e, transparent);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-body-md text-body-md">
+<!-- Desktop TopNavBar -->
+<nav class="hidden md:flex sticky top-0 z-50 w-full justify-between items-center px-margin-desktop py-4 max-w-container-max mx-auto bg-surface-dim/80 backdrop-blur-xl border-b border-outline-variant/20 shadow-sm">
+<div class="font-display-lg text-display-lg text-primary tracking-tighter">Lustre</div>
+<div class="flex items-center gap-8">
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300" href="#">Discovery</a>
+<a class="text-primary font-bold border-b-2 border-primary pb-1 transition-colors duration-300" href="#">Matches</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300" href="#">Chats</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300" href="#">Premium</a>
+</div>
+<div class="flex items-center gap-6">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-all">notifications</span>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-full font-label-md text-label-md active:opacity-80 active:scale-95 transition-all">Upgrade</button>
+<img alt="User profile" class="w-10 h-10 rounded-full object-cover border border-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZ2rZl08lf2L7ePfDbpwfnKjouhhLs3id3agqIJ12G-HSWr-pCwiWxkhpDyrnxQwCjvXs_o60fWczo6tFoG_eOV014Vo558WPvb7zfGC2YkdGzHsX7QpxHuN-wt_UWzgjTI6wBdmk85FvrYk_txqhWGT4mTw5vxvBoeMDikgIXr3FqmnikmKqkzSdwGmjIPyYhwSNDA-4z7CniQqlnTfFA7AKLp0CZGtFqt98meb3pkG_7lw8IFPMd-D3_9yK_L7eqEz4L4kTW9m1a"/>
+</div>
+</nav>
+<main class="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-stack-md md:py-stack-lg">
+<!-- Header Section -->
+<header class="flex items-center gap-3 mb-stack-lg">
+<span class="material-symbols-outlined text-primary text-3xl fill-icon">favorite</span>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Your Matches</h1>
+</header>
+<!-- Matches List Container -->
+<div class="space-y-stack-sm md:space-y-gutter max-w-3xl" id="matches-container">
+<!-- Match Card 1 -->
+<div class="match-card p-4 md:p-6 rounded-xl flex items-center justify-between group">
+<div class="flex items-center gap-4 md:gap-6">
+<div class="relative">
+<img class="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-2 border-primary/20 group-hover:border-primary/50 transition-all" data-alt="A cinematic, high-fashion portrait of a woman with elegant features and soft ambient lighting. She is captured in a luxury minimalist studio setting with deep indigo and purple backlighting that emphasizes a premium, intimate atmosphere. Her expression is confident and serene, matching a high-end romantic aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB51ucRfBAw4pUNvgwpZ8EoV-7ffwTwCm3bsV9WLBQyV6GeCoCoFV-O5ssUtFGX6Xv0-2USzy9LWb4cHrh73ervcUoRcEWNYyWeyznP4B4MhqmyIpEWH-wd-d6PJIjE4RloDta-ZmXI3NNsV_zubFjQpglCyToc8UDHf2giLAD3aIqPEvj2IiUTP2rNBsvHMga9Hd9GiWUWtzRFZIz0m9ew-BVQ53RZf00pdV7k5KTeuDfmC0o1GgvVboHaHnHDfr4RP-AOsHRgzyvE"/>
+<div class="absolute -top-1 -right-1 bg-tertiary text-on-tertiary p-1 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px] fill-icon">workspace_premium</span>
+</div>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Elena Rose</h3>
+<span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container text-[10px] uppercase font-bold tracking-widest rounded">Premium</span>
+</div>
+<p class="text-on-surface-variant font-body-md opacity-70">Paris, France</p>
+</div>
+</div>
+<button class="border border-primary-container text-primary px-5 py-2 md:px-8 md:py-2.5 rounded-full font-label-md text-label-md hover:bg-primary/10 transition-all active:scale-95" onclick="openModal('Elena Rose')">Connect</button>
+</div>
+<!-- Match Card 2 -->
+<div class="match-card p-4 md:p-6 rounded-xl flex items-center justify-between group">
+<div class="flex items-center gap-4 md:gap-6">
+<div class="relative">
+<img class="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-2 border-primary/20 group-hover:border-primary/50 transition-all" data-alt="A sophisticated portrait of a stylish man in a dark tailored coat, standing against a blurred midnight cityscape. The lighting is dramatic and cinematic, with soft blue and violet highlights reflecting off glass surfaces. The overall mood is one of exclusivity and modern luxury, typical of a high-end dating experience." src="https://lh3.googleusercontent.com/aida-public/AB6AXuABs5CUw60CHyLehhe4SPSwIbdslOmbWeVuYOhPblaJx4bLlkeUOlU3R8VS_EgmDsuIaXlGBM57g_sqbLVQd2bxK2-TFpSeKq7Lznt3KsT9mqmBcVIhcCqAgotsNQ8RkCt9WW2IpD2ELpmhTeXWgRIq-B1L1-gLQzv_FL6L9hMy_SYqa4XgQceabf47BbcKzeatUT3bQ-4TugZXbCAw0nFr3kuFpQOQmdNMocrrAy9mH-FkedkF84B5ufLHR_CzgYVa2WtYzelBIo1c"/>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Julian Vane</h3>
+<p class="text-on-surface-variant font-body-md opacity-70">London, UK</p>
+</div>
+</div>
+<button class="border border-primary-container text-primary px-5 py-2 md:px-8 md:py-2.5 rounded-full font-label-md text-label-md hover:bg-primary/10 transition-all active:scale-95" onclick="openModal('Julian Vane')">Connect</button>
+</div>
+<!-- Match Card 3 -->
+<div class="match-card p-4 md:p-6 rounded-xl flex items-center justify-between group">
+<div class="flex items-center gap-4 md:gap-6">
+<div class="relative">
+<img class="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-2 border-primary/20 group-hover:border-primary/50 transition-all" data-alt="A stunning editorial style photograph of a woman in an elegant evening dress. The scene is set in a dimly lit, high-end lounge with warm amber glow and deep velvet textures. The focus is sharp on her eyes, conveying a sense of mystery and luxury. Rich color palette with deep blacks and vibrant purple accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBu-hzKNfKULj7YTFiWF5DuRozN6M31ArhbNnqtpjiGqpeOhJiOmxtu5NentJpmn70VR9Tb0wgIDSvV7JjDxc4PKq5lKg1MT8bxWj6Hx_-EEM5ev-0AjvS9OC8S6RU7JwTtQAbbekk6XUHbucVObWfpe9WrqnneAQn4glEAIIzxByUDnXgfakLZtNELF2J46zHKCvna9GojzRn-sVrY6XypPRxncizzQ0GFhSAqkzXzs-t_at5twfvrwf4Bs9NqThkNILTFm4wTGjPd"/>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Sofia Chen</h3>
+<p class="text-on-surface-variant font-body-md opacity-70">New York, USA</p>
+</div>
+</div>
+<button class="border border-primary-container text-primary px-5 py-2 md:px-8 md:py-2.5 rounded-full font-label-md text-label-md hover:bg-primary/10 transition-all active:scale-95" onclick="openModal('Sofia Chen')">Connect</button>
+</div>
+</div>
+<!-- Empty State (Hidden by default) -->
+<div class="hidden flex-col items-center justify-center py-20 text-center space-y-6" id="empty-state">
+<div class="w-24 h-24 bg-surface-container-high rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-outline text-5xl">person_search</span>
+</div>
+<div class="space-y-2">
+<h2 class="font-headline-md text-headline-md text-on-surface">No matches yet</h2>
+<p class="text-on-surface-variant max-w-xs mx-auto">Keep exploring beautiful profiles in Discovery to find your perfect connection.</p>
+</div>
+<button class="bg-primary text-on-primary px-10 py-3 rounded-full font-label-md text-label-md shadow-lg active:scale-95 transition-all">Go to Discovery</button>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-surface-container-low/90 backdrop-blur-xl border-t border-outline-variant/10 shadow-[0px_-4px_24px_rgba(0,0,0,0.4)] rounded-t-xl">
+<div class="flex flex-col items-center justify-center text-on-surface-variant hover:text-secondary">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-label-md text-label-md mt-1">Discovery</span>
+</div>
+<div class="flex flex-col items-center justify-center text-primary scale-110 transition-transform duration-200">
+<span class="material-symbols-outlined fill-icon">favorite</span>
+<span class="font-label-md text-label-md mt-1">Matches</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant hover:text-secondary">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="font-label-md text-label-md mt-1">Chats</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant hover:text-secondary">
+<span class="material-symbols-outlined">workspace_premium</span>
+<span class="font-label-md text-label-md mt-1">Premium</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant hover:text-secondary">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md mt-1">Profile</span>
+</div>
+</nav>
+<!-- Match Modal Overlay -->
+<div class="fixed inset-0 z-[100] flex items-center justify-center p-margin-mobile opacity-0 pointer-events-none transition-opacity duration-300" id="match-modal">
+<!-- Backdrop Blur -->
+<div class="absolute inset-0 bg-background/60 backdrop-blur-md" onclick="closeModal()"></div>
+<!-- Modal Content -->
+<div class="glass-modal w-full max-w-md p-8 rounded-3xl relative z-10 scale-95 transition-transform duration-300 flex flex-col items-center">
+<button class="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface" onclick="closeModal()">
+<span class="material-symbols-outlined">close</span>
+</button>
+<div class="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary text-4xl fill-icon">link</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-center text-white mb-8 tracking-wider uppercase" id="modal-title">CONNECT WITH USER</h2>
+<div class="w-full space-y-4">
+<!-- WhatsApp Row -->
+<div class="flex items-center justify-between p-4 bg-surface-container rounded-2xl hover:bg-surface-container-high transition-colors cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-[#25D366]/20 rounded-full flex items-center justify-center">
+<svg class="w-6 h-6 fill-[#25D366]" viewbox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.72.937 3.659 1.432 5.631 1.433h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"></path></svg>
+</div>
+<span class="font-body-md text-on-surface">WhatsApp Message</span>
+</div>
+<span class="material-symbols-outlined text-primary opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+</div>
+<!-- Instagram Row -->
+<div class="flex items-center justify-between p-4 bg-surface-container rounded-2xl hover:bg-surface-container-high transition-colors cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-[#E1306C]/20 rounded-full flex items-center justify-center">
+<svg class="w-6 h-6 fill-[#E1306C]" viewbox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.332 3.608 1.308.975.975 1.245 2.242 1.308 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.332 2.633-1.308 3.608-.975.975-2.242 1.245-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.332-3.608-1.308-.975-.975-1.245-2.242-1.308-3.608-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.062-1.366.332-2.633 1.308-3.608.975-.975 2.242-1.245 3.608-1.308 1.266-.058 1.646-.07 4.85-.07M12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12s.014 3.667.072 4.947c.2 4.353 2.612 6.766 6.965 6.966 1.28.058 1.688.072 4.947.072s3.667-.014 4.947-.072c4.351-.2 6.765-2.612 6.966-6.966.058-1.28.072-1.688.072-4.947s-.014-3.667-.072-4.947c-.2-4.353-2.612-6.766-6.966-6.966C15.667.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"></path></svg>
+</div>
+<span class="font-body-md text-on-surface">Instagram Profile</span>
+</div>
+<span class="material-symbols-outlined text-primary opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+</div>
+</div>
+<div class="mt-8 text-center">
+<p class="text-on-surface-variant text-label-md max-w-[240px] mx-auto">Only verified connections can see each other's direct social links.</p>
+</div>
+</div>
+</div>
+<script>
+    function openModal(name) {
+      const modal = document.getElementById('match-modal');
+      const modalTitle = document.getElementById('modal-title');
+      const content = modal.querySelector('.glass-modal');
+      
+      modalTitle.innerText = `CONNECT WITH ${name.toUpperCase()}`;
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      content.classList.remove('scale-95');
+      content.classList.add('scale-100');
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('match-modal');
+      const content = modal.querySelector('.glass-modal');
+      
+      modal.classList.add('opacity-0', 'pointer-events-none');
+      content.classList.remove('scale-100');
+      content.classList.add('scale-95');
+    }
+
+    // Example of empty state toggle logic
+    function toggleEmptyState(isEmpty) {
+      const list = document.getElementById('matches-container');
+      const empty = document.getElementById('empty-state');
+      if (isEmpty) {
+        list.classList.add('hidden');
+        empty.classList.remove('hidden');
+        empty.classList.add('flex');
+      } else {
+        list.classList.remove('hidden');
+        empty.classList.add('hidden');
+        empty.classList.remove('flex');
+      }
+    }
+    
+    // Close modal on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
+</body></html>

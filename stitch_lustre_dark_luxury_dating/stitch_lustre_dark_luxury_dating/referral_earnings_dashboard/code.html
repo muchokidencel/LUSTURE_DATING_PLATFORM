@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Lustre | Referrals</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Be+Vietnam+Pro:wght@400;500&family=EB+Garamond:wght@500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@100..900&family=EB+Garamond:wght@100..900&family=Manrope:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-highest": "#34343c",
+                        "surface-container-lowest": "#0e0d15",
+                        "on-tertiary-container": "#4f3d00",
+                        "secondary-fixed-dim": "#ffb0ce",
+                        "tertiary": "#ecc246",
+                        "primary": "#d2bcff",
+                        "on-secondary-fixed": "#3e0022",
+                        "on-primary-fixed": "#25005a",
+                        "surface-tint": "#d2bcff",
+                        "error-container": "#93000a",
+                        "on-error": "#690005",
+                        "tertiary-fixed-dim": "#ecc246",
+                        "primary-fixed": "#eaddff",
+                        "inverse-primary": "#6b4bad",
+                        "primary-container": "#7c5cbf",
+                        "surface-bright": "#393841",
+                        "surface-container-high": "#2a2931",
+                        "outline-variant": "#494551",
+                        "background": "#13131a",
+                        "surface-dim": "#13131a",
+                        "on-secondary": "#5f0d39",
+                        "on-tertiary-fixed": "#241a00",
+                        "on-tertiary-fixed-variant": "#584400",
+                        "surface-container-low": "#1b1b23",
+                        "tertiary-container": "#cea62b",
+                        "surface-variant": "#34343c",
+                        "on-background": "#e4e1ec",
+                        "secondary-fixed": "#ffd9e5",
+                        "surface": "#13131a",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary": "#3d2e00",
+                        "on-primary-container": "#f8efff",
+                        "outline": "#958e9d",
+                        "tertiary-fixed": "#ffe08e",
+                        "primary-fixed-dim": "#d2bcff",
+                        "inverse-surface": "#e4e1ec",
+                        "secondary": "#ffb0ce",
+                        "error": "#ffb4ab",
+                        "surface-container": "#1f1f27",
+                        "on-primary-fixed-variant": "#533294",
+                        "secondary-container": "#7b2650",
+                        "on-surface": "#e4e1ec",
+                        "inverse-on-surface": "#303038",
+                        "on-secondary-container": "#ff94c0",
+                        "on-primary": "#3c167c",
+                        "on-surface-variant": "#cbc3d3",
+                        "on-secondary-fixed-variant": "#7b2650"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-lg": "48px",
+                        "gutter": "24px",
+                        "stack-sm": "12px",
+                        "container-max": "1200px",
+                        "margin-desktop": "40px",
+                        "unit": "8px",
+                        "margin-mobile": "20px",
+                        "stack-md": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Manrope"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "label-md": ["Manrope"],
+                        "display-lg": ["EB Garamond"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "headline-lg-mobile": ["Manrope"],
+                        "headline-sm": ["Manrope"],
+                        "headline-md": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "0.01em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(27, 27, 35, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(73, 69, 81, 0.2);
+        }
+        .referral-glow {
+            box-shadow: 0 0 30px rgba(210, 188, 255, 0.1);
+        }
+        .gradient-border {
+            position: relative;
+            background: #1b1b23;
+        }
+        .gradient-border::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(210, 188, 255, 0.3), rgba(255, 176, 206, 0.1), transparent);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-md overflow-x-hidden">
+<!-- TopNavBar -->
+<header class="bg-surface-dim/80 backdrop-blur-xl border-b border-outline-variant/20 shadow-sm hidden md:flex sticky top-0 z-50 w-full justify-between items-center px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="font-display-lg text-display-lg text-primary tracking-tighter">Lustre</div>
+<nav class="flex gap-8">
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300" href="#">Discovery</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300" href="#">Matches</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300" href="#">Chats</a>
+<a class="text-primary font-bold border-b-2 border-primary pb-1" href="#">Premium</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">notifications</button>
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container-highest">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="A portrait of a sophisticated woman with elegant features, softly lit by purple and pink ambient lighting in a luxury midnight setting. The aesthetic is high-fashion and cinematic, featuring shallow depth of field and premium textures of silk and velvet in the background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOPk5tkMaecRoKQLh6pM4RBgwmPF9Iuo-DbVyeFy4dOgG-L0b0_FxaStkvqm7MiEF8wWxeMBXlgl5pKNWMqnskmk87P5Wgsqk8c9M574wn3hLp8p2wgBnpnuPdpW9dKQsEEAhYAaVz4u9gWjHAoybCxM-vQjFemA_NdzruMvGvbTk7cxwEbf7eDMeA6NiauHlz6O64d5m0qR1scH8BvVUbJCW2syHFkPKMNCMc1VNI-4QF4Ks5l1fLBRJe4Oq32MFiKwi26w3vrEUi"/>
+</div>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-full font-label-md hover:opacity-90 transition-all active:scale-95">Upgrade</button>
+</div>
+</header>
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-stack-md md:py-stack-lg mb-24 md:mb-0">
+<!-- Header Section -->
+<section class="flex flex-col md:flex-row md:items-end justify-between gap-gutter mb-stack-lg">
+<div>
+<div class="flex items-center gap-2 text-primary mb-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-label-md tracking-widest">LUSTRE REWARDS</span>
+</div>
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-background">Referrals</h1>
+<p class="text-on-surface-variant max-w-lg mt-2 font-body-md">Invite your inner circle to experience Lustre. Earn premium benefits and cashback for every successful match made through your link.</p>
+</div>
+</section>
+<!-- Summary Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-stack-lg">
+<div class="glass-card gradient-border rounded-xl p-6 flex flex-col gap-1">
+<span class="text-on-surface-variant font-label-md">Total Earned</span>
+<div class="flex items-baseline gap-1">
+<span class="text-on-surface-variant font-body-md">KES</span>
+<span class="text-headline-md font-headline-md text-primary">14,250</span>
+</div>
+</div>
+<div class="glass-card gradient-border rounded-xl p-6 flex flex-col gap-1">
+<span class="text-on-surface-variant font-label-md">Paid Out</span>
+<div class="flex items-baseline gap-1">
+<span class="text-on-surface-variant font-body-md">KES</span>
+<span class="text-headline-md font-headline-md text-secondary">8,400</span>
+</div>
+</div>
+<div class="glass-card gradient-border rounded-xl p-6 flex flex-col gap-1">
+<span class="text-on-surface-variant font-label-md">Pending</span>
+<div class="flex items-baseline gap-1">
+<span class="text-on-surface-variant font-body-md">KES</span>
+<span class="text-headline-md font-headline-md text-tertiary">5,850</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
+<!-- Code Box Section -->
+<div class="lg:col-span-5 flex flex-col gap-stack-md">
+<div class="glass-card rounded-2xl p-8 referral-glow border border-primary/20">
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-6">Your Personal Invitation</h2>
+<div class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-6 text-center mb-6">
+<span class="font-mono text-3xl md:text-4xl tracking-[0.2em] text-primary font-bold">LUSTRE-VIP-992</span>
+</div>
+<div class="flex gap-3">
+<button class="flex-1 bg-surface-container-highest hover:bg-primary-container text-on-primary-container py-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95" onclick="copyToClipboard()">
+<span class="material-symbols-outlined text-[20px]">content_copy</span>
+<span class="font-label-md">Copy Code</span>
+</button>
+<button class="bg-secondary text-on-secondary px-6 py-4 rounded-xl flex items-center justify-center transition-all hover:opacity-90 active:scale-95">
+<span class="material-symbols-outlined">share</span>
+</button>
+</div>
+<p class="text-center text-secondary font-label-md mt-4 opacity-0 transition-opacity" id="copy-feedback">Code copied to clipboard!</p>
+</div>
+<!-- Info Card -->
+<div class="bg-surface-container-low rounded-2xl p-6 border border-outline-variant/10">
+<h3 class="text-on-surface font-headline-sm text-[18px] mb-4">How it works</h3>
+<ul class="space-y-4">
+<li class="flex gap-4">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary">1</div>
+<p class="text-on-surface-variant font-body-md">Share your unique code with someone who appreciates exclusivity.</p>
+</li>
+<li class="flex gap-4">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary">2</div>
+<p class="text-on-surface-variant font-body-md">They receive a 10% discount on their first year of Lustre Premium.</p>
+</li>
+<li class="flex gap-4">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary">3</div>
+<p class="text-on-surface-variant font-body-md">You earn KES 1,500 once their first subscription payment clears.</p>
+</li>
+</ul>
+</div>
+</div>
+<!-- Commission List -->
+<div class="lg:col-span-7">
+<div class="glass-card rounded-2xl overflow-hidden border border-outline-variant/10">
+<div class="px-6 py-5 border-b border-outline-variant/10 flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Earnings History</h2>
+<button class="text-primary font-label-md hover:underline">View All</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low">
+<tr>
+<th class="px-6 py-4 font-label-md text-on-surface-variant">Referral</th>
+<th class="px-6 py-4 font-label-md text-on-surface-variant text-right">Amount</th>
+<th class="px-6 py-4 font-label-md text-on-surface-variant text-center">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<tr class="hover:bg-surface-container-high transition-colors">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="Close up portrait of a stylish man in his late 20s with a clean haircut and modern fashion. Background is a sophisticated urban setting at dusk with golden hour lighting that matches the warm dark UI tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTSOcQ8JGM4UAs6ROa9882Vd6p21ZeQ80g-m4rGvbMgIET2USSCQbA8QU9ogH7eyXkVVCai64h286uNySWvdW-Jz0FHeB__FhuKFeAIOKu0G9KMmSpr2GIcBWzouRxFuu0cq26d3ZK51wDIze-8iQSPqwxWOROk8tXMyLlLTRjwk1SKOlXZdz6FpfCYL-80dWLYzLBSkR4XfY5vRjBZ3Z8l921TBDv0jYhh5kelSzTp1ES94NVbAaaUdxc7ZqR_KFK13_pOqWXCi_a"/>
+</div>
+<div>
+<div class="text-on-surface font-medium">Michael K.</div>
+<div class="text-[12px] text-on-surface-variant">May 12, 2024</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-right font-medium text-on-surface">KES 1,500</td>
+<td class="px-6 py-5">
+<div class="flex justify-center">
+<span class="px-3 py-1 rounded-full text-[12px] font-bold bg-green-500/10 text-green-400 border border-green-500/20">Paid</span>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="A portrait of a confident young woman with a warm smile, wearing luxury accessories. The lighting is soft and flattering with deep shadows and vibrant highlights of purple, maintaining the brand's exclusive midnight atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB92bB1h8GW9LikzeD8OteiGfM-T7j_5GYGCQ16ig1STW0vGCoaqe7-2uJC2sJX5cByoF7gQwQT2RwfhfwkXvkwR9_d5HM9hew7Z6ulyilyF_X93iKoalxp8v-VfWxIB3xkW9oJhX5S48d_XrIjQddmJM_rArg9gJwSnKmvMTZkBAQYTXfo3zTRFoYJlOtjE5aHf5egNrzEBZ2wuT4ywTr7NoTy5napFEf2pCtiFxBqENwL4HvuFBwqDXEj2i8lu551-AkvPTaWBr4X"/>
+</div>
+<div>
+<div class="text-on-surface font-medium">Sarah W.</div>
+<div class="text-[12px] text-on-surface-variant">May 18, 2024</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-right font-medium text-on-surface">KES 1,500</td>
+<td class="px-6 py-5">
+<div class="flex justify-center">
+<span class="px-3 py-1 rounded-full text-[12px] font-bold bg-tertiary/10 text-tertiary border border-tertiary/20">Processing</span>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div>
+<div class="text-on-surface font-medium">David R.</div>
+<div class="text-[12px] text-on-surface-variant">June 02, 2024</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-right font-medium text-on-surface">KES 1,500</td>
+<td class="px-6 py-5">
+<div class="flex justify-center">
+<span class="px-3 py-1 rounded-full text-[12px] font-bold bg-primary/10 text-primary border border-primary/20">Pending</span>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="A portrait of a male professional with an approachable look, lit by moody, high-contrast light. The background is softly blurred with hints of a high-end lounge, using a deep blue and violet color palette to evoke a premium lifestyle." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCN4p8awcDUrte50DwZz8-djWWCtT75tm-TteqhjYJl0yXjieOnJxExd7RrGW1fOOfDm4Qbp4pB-YxAEFz-cyEDYLkSfUxMghwSZwuk9cM8pFy3N6KK-CL8_NxVhlli7LHv4eKrUJQ5H-meJ7lk46eMmK-PmWmKHq4S3CZeXdhLQiJEGEqquAicEp-G0SD85lyupxV7DFhHTlKxmnoDOhRbK8J8R92Bn2ePWJrkm0IhKstAV11y0KQRC9H1v_DNHt22r8vy8AutuM4N"/>
+</div>
+<div>
+<div class="text-on-surface font-medium">Anita J.</div>
+<div class="text-[12px] text-on-surface-variant">June 05, 2024</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-right font-medium text-on-surface">KES 1,500</td>
+<td class="px-6 py-5">
+<div class="flex justify-center">
+<span class="px-3 py-1 rounded-full text-[12px] font-bold bg-primary/10 text-primary border border-primary/20">Pending</span>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-surface-container-low/90 backdrop-blur-xl border-t border-outline-variant/10 shadow-[0px_-4px_24px_rgba(0,0,0,0.4)] rounded-t-xl">
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:text-secondary">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-label-md text-label-md">Discovery</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:text-secondary">
+<span class="material-symbols-outlined">favorite</span>
+<span class="font-label-md text-label-md">Matches</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:text-secondary">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="font-label-md text-label-md">Chats</span>
+</button>
+<button class="flex flex-col items-center justify-center text-primary scale-110 transition-transform duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+<span class="font-label-md text-label-md">Premium</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:text-secondary">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</button>
+</nav>
+<script>
+        function copyToClipboard() {
+            const code = "LUSTRE-VIP-992";
+            navigator.clipboard.writeText(code).then(() => {
+                const feedback = document.getElementById('copy-feedback');
+                feedback.classList.remove('opacity-0');
+                feedback.classList.add('opacity-100');
+                
+                setTimeout(() => {
+                    feedback.classList.remove('opacity-100');
+                    feedback.classList.add('opacity-0');
+                }, 2000);
+            });
+        }
+    </script>
+</body></html>

@@ -1,0 +1,24 @@
+{
+  "name": "dating-platform",
+  "version": "1.0.0",
+  "description": "A production-ready dating platform built with React, Node.js, and PostgreSQL.",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run test:server && npm run test:client",
+    "test:server": "npm run test:run --prefix server",
+    "test:client": "npm run test:run --prefix client",
+    "test:coverage": "npm run test:coverage --prefix server && npm run test:coverage --prefix client",
+    "test:bdd": "npx bddgen && npx playwright test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@cucumber/cucumber": "^13.0.0",
+    "@playwright/test": "^1.60.0",
+    "playwright-bdd": "^9.0.0"
+  }
+}

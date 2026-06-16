@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Lustre | Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Be+Vietnam+Pro:wght@400;500&family=EB+Garamond:wght@500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@100..900&family=EB+Garamond:wght@100..900&family=Manrope:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-highest": "#34343c",
+                        "surface-container-lowest": "#0e0d15",
+                        "on-tertiary-container": "#4f3d00",
+                        "secondary-fixed-dim": "#ffb0ce",
+                        "tertiary": "#ecc246",
+                        "primary": "#d2bcff",
+                        "on-secondary-fixed": "#3e0022",
+                        "on-primary-fixed": "#25005a",
+                        "surface-tint": "#d2bcff",
+                        "error-container": "#93000a",
+                        "on-error": "#690005",
+                        "tertiary-fixed-dim": "#ecc246",
+                        "primary-fixed": "#eaddff",
+                        "inverse-primary": "#6b4bad",
+                        "primary-container": "#7c5cbf",
+                        "surface-bright": "#393841",
+                        "surface-container-high": "#2a2931",
+                        "outline-variant": "#494551",
+                        "background": "#13131a",
+                        "surface-dim": "#13131a",
+                        "on-secondary": "#5f0d39",
+                        "on-tertiary-fixed": "#241a00",
+                        "on-tertiary-fixed-variant": "#584400",
+                        "surface-container-low": "#1b1b23",
+                        "tertiary-container": "#cea62b",
+                        "surface-variant": "#34343c",
+                        "on-background": "#e4e1ec",
+                        "secondary-fixed": "#ffd9e5",
+                        "surface": "#13131a",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary": "#3d2e00",
+                        "on-primary-container": "#f8efff",
+                        "outline": "#958e9d",
+                        "tertiary-fixed": "#ffe08e",
+                        "primary-fixed-dim": "#d2bcff",
+                        "inverse-surface": "#e4e1ec",
+                        "secondary": "#ffb0ce",
+                        "error": "#ffb4ab",
+                        "surface-container": "#1f1f27",
+                        "on-primary-fixed-variant": "#533294",
+                        "secondary-container": "#7b2650",
+                        "on-surface": "#e4e1ec",
+                        "inverse-on-surface": "#303038",
+                        "on-secondary-container": "#ff94c0",
+                        "on-primary": "#3c167c",
+                        "on-surface-variant": "#cbc3d3",
+                        "on-secondary-fixed-variant": "#7b2650"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-lg": "48px",
+                        "gutter": "24px",
+                        "stack-sm": "12px",
+                        "container-max": "1200px",
+                        "margin-desktop": "40px",
+                        "unit": "8px",
+                        "margin-mobile": "20px",
+                        "stack-md": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Manrope"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "label-md": ["Manrope"],
+                        "display-lg": ["EB Garamond"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "headline-lg-mobile": ["Manrope"],
+                        "headline-sm": ["Manrope"],
+                        "headline-md": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "0.01em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #08080f;
+            color: #e4e1ec;
+            -webkit-font-smoothing: antialiased;
+        }
+        .glass-card {
+            background: #111119;
+            border: 1px solid #1e1e2e;
+            box-shadow: 0px 20px 40px rgba(0,0,0,0.4);
+        }
+        .brand-gradient {
+            background: linear-gradient(135deg, #d2bcff 0%, #7c5cbf 100%);
+        }
+        .table-row-hover:hover {
+            background: #1a1a2a;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+<!-- TopNavBar (Shell) -->
+<header class="bg-surface-dim/80 backdrop-blur-xl border-b border-outline-variant/20 shadow-sm sticky top-0 z-50 w-full">
+<div class="max-w-container-max mx-auto px-margin-desktop py-4 flex justify-between items-center">
+<div class="flex items-center gap-4">
+<span class="font-display-lg text-display-lg text-primary tracking-tighter">Lustre</span>
+<span class="bg-error text-[10px] font-bold px-2 py-0.5 rounded-full text-on-error uppercase tracking-widest">Admin Panel</span>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-body-md text-body-md" href="#">Discovery</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300 font-body-md text-body-md" href="#">Matches</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300 font-body-md text-body-md" href="#">Chats</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300 font-body-md text-body-md" href="#">Premium</a>
+</nav>
+<div class="flex items-center gap-6">
+<button class="text-on-surface-variant hover:text-primary transition-all active:scale-95">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant/30">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="A professional headshot of a mature executive man with a clean-shaven face and short dark hair, wearing a dark navy suit and white shirt. The background is a soft-focus office environment with warm, low-key lighting. The overall mood is authoritative yet approachable, fitting for a high-end luxury admin dashboard interface with deep purples and black tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCT9OUD1AF9paHgtLupQIKAQqYt55FDpth6BFvxgb94tmn75ehYXb5NQWvbeDV9RuAivWQhX3qiNBO7WJ4NBZGOGPBwumhPszLjEuO8HQ-uQeIEE0deKqmsUhOIjdgLmESUBRFcWRDHDrYQOUwQPEGHh-gZUJ0B09FZT2tpOaGJVZ6IdfEuHSSLpl6kNaBONH611zt8vIuT8C2XCQpzeAd1QzKBDd0ygrA9Mp7IKgwt_t8WqspJwZhRBTHA2xNh5V950-r3EmHvh9rQ"/>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-stack-md pb-32">
+<!-- Stats Section -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-stack-lg">
+<div class="glass-card p-6 rounded-xl flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<span class="text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">Total Users</span>
+<span class="material-symbols-outlined text-primary" data-icon="groups">groups</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-on-surface">12,482</div>
+<div class="text-secondary text-[12px] flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span>
+<span>+12% from last month</span>
+</div>
+</div>
+<div class="glass-card p-6 rounded-xl flex flex-col gap-2 relative overflow-hidden">
+<div class="flex justify-between items-start">
+<span class="text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">Premium Members</span>
+<span class="material-symbols-outlined text-tertiary" data-icon="workspace_premium" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-on-surface">3,841</div>
+<div class="text-tertiary text-[12px] flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="stars">stars</span>
+<span>31% conversion rate</span>
+</div>
+</div>
+<div class="glass-card p-6 rounded-xl flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<span class="text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">Free Members</span>
+<span class="material-symbols-outlined text-outline" data-icon="person_outline">person_outline</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-on-surface">8,641</div>
+<div class="text-on-surface-variant text-[12px] flex items-center gap-1">
+<span>Active within 30 days</span>
+</div>
+</div>
+</div>
+<!-- Finance/Commission Section -->
+<h2 class="font-headline-md text-headline-md mb-stack-md flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="payments">payments</span>
+            Financial Overview
+        </h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter mb-stack-lg">
+<div class="glass-card p-8 rounded-xl flex items-center gap-6 border-l-4 border-l-primary">
+<div class="w-14 h-14 rounded-full bg-primary-container/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="account_balance_wallet">account_balance_wallet</span>
+</div>
+<div>
+<span class="text-on-surface-variant font-label-md text-label-md">Pending Payouts (KES)</span>
+<div class="font-headline-lg text-headline-lg text-on-surface">KES 1,240,500</div>
+</div>
+</div>
+<div class="glass-card p-8 rounded-xl flex items-center gap-6 border-l-4 border-l-secondary">
+<div class="w-14 h-14 rounded-full bg-secondary-container/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-3xl" data-icon="handshake">handshake</span>
+</div>
+<div>
+<span class="text-on-surface-variant font-label-md text-label-md">Affiliates Owed</span>
+<div class="font-headline-lg text-headline-lg text-on-surface">42 Partners</div>
+</div>
+</div>
+</div>
+<!-- Affiliate Management Table -->
+<div class="glass-card rounded-xl overflow-hidden mb-stack-lg">
+<div class="p-6 border-b border-outline-variant/20 flex justify-between items-center">
+<h3 class="font-headline-sm text-headline-sm">Affiliate Payouts</h3>
+<div class="flex gap-2">
+<button class="bg-surface-container-highest px-4 py-2 rounded-lg text-on-surface-variant text-label-md hover:text-on-surface transition-colors">
+                        Export CSV
+                    </button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
+<th class="px-6 py-4 font-semibold">Affiliate</th>
+<th class="px-6 py-4 font-semibold">Email</th>
+<th class="px-6 py-4 font-semibold">Amount</th>
+<th class="px-6 py-4 font-semibold text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<!-- Row 1 -->
+<tr class="table-row-hover transition-colors">
+<td class="px-6 py-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container">
+<img alt="Affiliate" class="w-full h-full object-cover" data-alt="Close-up portrait of a young professional woman with a bright, welcoming smile. She has warm brown eyes and long wavy dark hair. The image uses high-fashion lighting with a soft bokeh background that hints at a luxury studio. The aesthetic is clean, sophisticated, and perfectly aligned with a premium dark-themed administrative interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDoLR2H6fHVvL0bQnIvGedFbOKwtC-egQyk-vx7_AaXiydURZb0fTB_MrbKWjw-JdfMPBCM7bYxdm7hhVK-pcuRwHSHHuonwmgVBa3sSmKr8FDsRVINpa8M7VT2vG3aAT6JnkkIoMnB2ZCP68LT-SLU7QfgyYmUPEwLnJsk7B2nuv7huRu8ixmmSGygplW7Dy11p1UfdX6bk_IiqUzs87v5xbX5wEpzgOkfpDS2Bsv5ZxWrxlMBsDV0rp8gebIdMdoIjg5IhERxdxfl"/>
+</div>
+<span class="font-body-md text-body-md font-medium">Sarah Jenkins</span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant font-body-md text-body-md">sarah.j@lifestyle.com</td>
+<td class="px-6 py-4 font-body-md text-body-md text-primary font-semibold">KES 45,000</td>
+<td class="px-6 py-4 text-right">
+<button class="brand-gradient text-on-primary-container font-label-md text-label-md px-4 py-2 rounded-lg shadow-sm hover:opacity-90 active:scale-95 transition-all">
+                                    Pay KES
+                                </button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="table-row-hover transition-colors">
+<td class="px-6 py-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container">
+<img alt="Affiliate" class="w-full h-full object-cover" data-alt="A portrait of a confident young man with a slight beard and stylishly messy hair. He is wearing a dark, textured sweater. The lighting is moody and cinematic, focusing on his face with deep shadows in the background. The style is modern, intimate, and professional, maintaining the high-end luxury feel of a midnight-themed application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmUUd5ylm639conjBXCUO7UQ8fkyxpuFtLeGMhdWEaYfCbrovVAhfn0KilYTLxu9cninlhWmr9beQOxabav2_HEyhWhXNfpkTcNYOlVYD-ZooyvXuixXBWZ1NmOXPz6Ni9bwowKYEoOVazv2Gz6ZeSX9tgWIeeKJdC5CBFQzVpTFw81KC4rm6Nq4z0SjvxEFVVLWiBdefPBD5ZBaLIwj0oBvOZ-c3XehyJOtsfMflVwXLR-9ABtdfqMtoAQ5JQqbhpiEb_E5CKuIpk"/>
+</div>
+<span class="font-body-md text-body-md font-medium">Marcus Chen</span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant font-body-md text-body-md">m.chen@network.io</td>
+<td class="px-6 py-4 font-body-md text-body-md text-primary font-semibold">KES 122,800</td>
+<td class="px-6 py-4 text-right">
+<button class="brand-gradient text-on-primary-container font-label-md text-label-md px-4 py-2 rounded-lg shadow-sm hover:opacity-90 active:scale-95 transition-all">
+                                    Pay KES
+                                </button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="table-row-hover transition-colors">
+<td class="px-6 py-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container">
+<img alt="Affiliate" class="w-full h-full object-cover" data-alt="A sophisticated portrait of a woman with elegant features and professional attire. She has a serene and confident expression. The lighting is soft and even, highlighting a clean-cut aesthetic. The background is a dark, minimalist interior that feels exclusive and high-status, consistent with a luxury brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZWeCI63Z6vcC8Hv2mw8Cw0iuG_rl-9zA2kaPGpf2qPbOkq0RUoj21mD9XdvEaKMyTAV_fN94KKMyP4p73OTTpyFbuM7EAJt0WF3irfn4quVY6JiqW4t6fQAvse0cidE2Dv_7aWZMCtCF9jxl2W8elfSIbdvtw0lBf_7QBbj8YDblgH_4S3dxlShxkdc5DYj3Ffq8iYgZakE9QIaRSLwN7J9SWwpj1_FyYLSBEgkqJ3Ct7wxNjiZ1SKHA-1n2x4IGuoMh2gSn7PvQo"/>
+</div>
+<span class="font-body-md text-body-md font-medium">Elena Rodriguez</span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant font-body-md text-body-md">elena.r@agency.com</td>
+<td class="px-6 py-4 font-body-md text-body-md text-primary font-semibold">KES 89,300</td>
+<td class="px-6 py-4 text-right">
+<button class="brand-gradient text-on-primary-container font-label-md text-label-md px-4 py-2 rounded-lg shadow-sm hover:opacity-90 active:scale-95 transition-all">
+                                    Pay KES
+                                </button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="table-row-hover transition-colors">
+<td class="px-6 py-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container">
+<img alt="Affiliate" class="w-full h-full object-cover" data-alt="A portrait of a sharp-looking man in his 30s with a modern haircut, wearing a charcoal grey tailored blazer. The image has a professional, high-end feel with a cool-toned, dark background. The lighting catches the contours of his face, creating a three-dimensional, high-quality look that complements a sophisticated dashboard environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_zY-51wTtRpDaozRm_lUY-3k826s1gwHDgzAT6fThQSSkQ-uwRNPpuPNPqJbdC-SDUSMz0Rc01826zSDt0k0vJAShRk5AlPLiHxRXE7rTwqT7vT-KgX2mcbRkvqf_8pWGH6SvWkzbJGI-sBp6aqpn4zBoalSTd5BU15tg5FHcX3k4wbg8aqrGHyrrKqnzqT8__wDvx4V37K1ZXI8WalCrSWC6GJA2LDprlohiIc1YqJVunQ-lCDCX1KtWL9m9JTof2pykmYhw1QPV"/>
+</div>
+<span class="font-body-md text-body-md font-medium">David Okoro</span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant font-body-md text-body-md">d.okoro@media.co.ke</td>
+<td class="px-6 py-4 font-body-md text-body-md text-primary font-semibold">KES 210,000</td>
+<td class="px-6 py-4 text-right">
+<button class="brand-gradient text-on-primary-container font-label-md text-label-md px-4 py-2 rounded-lg shadow-sm hover:opacity-90 active:scale-95 transition-all">
+                                    Pay KES
+                                </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 bg-surface-container-low/50 text-center">
+<button class="text-primary font-label-md text-label-md hover:underline">View All Affiliates</button>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Shell for Mobile) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-surface-container-low/90 backdrop-blur-xl border-t border-outline-variant/10 shadow-[0px_-4px_24px_rgba(0,0,0,0.4)] rounded-t-xl">
+<div class="flex flex-col items-center justify-center text-primary transition-transform duration-200 scale-110">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="font-label-md text-label-md">Discovery</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+<span class="font-label-md text-label-md">Matches</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
+<span class="font-label-md text-label-md">Chats</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="workspace_premium">workspace_premium</span>
+<span class="font-label-md text-label-md">Premium</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</div>
+</nav>
+<script>
+        // Micro-interaction for buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.classList.add('scale-95');
+                setTimeout(() => {
+                    this.classList.remove('scale-95');
+                }, 100);
+            });
+        });
+
+        // Atmospheric background shimmer effect (Canvas or JS)
+        // Adding a subtle mouse-following light effect
+        const body = document.body;
+        body.addEventListener('mousemove', (e) => {
+            const x = e.clientX;
+            const y = e.clientY;
+            body.style.background = `radial-gradient(circle at ${x}px ${y}px, #13131a 0%, #08080f 60%)`;
+        });
+    </script>
+</body></html>

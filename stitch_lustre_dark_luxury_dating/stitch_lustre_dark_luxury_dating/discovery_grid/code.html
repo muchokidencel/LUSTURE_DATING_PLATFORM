@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Lustre | Discover Your Match</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Be+Vietnam+Pro:wght@400;500&family=EB+Garamond:wght@500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@100..900&family=EB+Garamond:wght@100..900&family=Manrope:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-highest": "#34343c",
+                    "surface-container-lowest": "#0e0d15",
+                    "on-tertiary-container": "#4f3d00",
+                    "secondary-fixed-dim": "#ffb0ce",
+                    "tertiary": "#ecc246",
+                    "primary": "#d2bcff",
+                    "on-secondary-fixed": "#3e0022",
+                    "on-primary-fixed": "#25005a",
+                    "surface-tint": "#d2bcff",
+                    "error-container": "#93000a",
+                    "on-error": "#690005",
+                    "tertiary-fixed-dim": "#ecc246",
+                    "primary-fixed": "#eaddff",
+                    "inverse-primary": "#6b4bad",
+                    "primary-container": "#7c5cbf",
+                    "surface-bright": "#393841",
+                    "surface-container-high": "#2a2931",
+                    "outline-variant": "#494551",
+                    "background": "#08080f",
+                    "surface-dim": "#13131a",
+                    "on-secondary": "#5f0d39",
+                    "on-tertiary-fixed": "#241a00",
+                    "on-tertiary-fixed-variant": "#584400",
+                    "surface-container-low": "#1b1b23",
+                    "tertiary-container": "#cea62b",
+                    "surface-variant": "#34343c",
+                    "on-background": "#e4e1ec",
+                    "secondary-fixed": "#ffd9e5",
+                    "surface": "#13131a",
+                    "on-error-container": "#ffdad6",
+                    "on-tertiary": "#3d2e00",
+                    "on-primary-container": "#f8efff",
+                    "outline": "#958e9d",
+                    "tertiary-fixed": "#ffe08e",
+                    "primary-fixed-dim": "#d2bcff",
+                    "inverse-surface": "#e4e1ec",
+                    "secondary": "#ffb0ce",
+                    "error": "#ffb4ab",
+                    "surface-container": "#1f1f27",
+                    "on-primary-fixed-variant": "#533294",
+                    "secondary-container": "#7b2650",
+                    "on-surface": "#e4e1ec",
+                    "inverse-on-surface": "#303038",
+                    "on-secondary-container": "#ff94c0",
+                    "on-primary": "#3c167c",
+                    "on-surface-variant": "#cbc3d3",
+                    "on-secondary-fixed-variant": "#7b2650"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-lg": "48px",
+                    "gutter": "24px",
+                    "stack-sm": "12px",
+                    "container-max": "1200px",
+                    "margin-desktop": "40px",
+                    "unit": "8px",
+                    "margin-mobile": "20px",
+                    "stack-md": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Manrope"],
+                    "body-md": ["Be Vietnam Pro"],
+                    "label-md": ["Manrope"],
+                    "display-lg": ["EB Garamond"],
+                    "body-lg": ["Be Vietnam Pro"],
+                    "headline-lg-mobile": ["Manrope"],
+                    "headline-sm": ["Manrope"],
+                    "headline-md": ["Manrope"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "0.01em", "fontWeight": "600"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        body {
+            background-color: #08080f;
+            color: #e4e1ec;
+            -webkit-font-smoothing: antialiased;
+        }
+        .profile-card {
+            background-color: #111119;
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            border: 1px solid #1e1e2e;
+        }
+        .profile-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px -10px rgba(210, 188, 255, 0.3);
+            border-color: #d2bcff;
+        }
+        .glass-nav {
+            background: rgba(19, 19, 26, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md overflow-x-hidden">
+<!-- TopNavBar (Shared Component JSON Mapping) -->
+<header class="hidden md:flex sticky top-0 z-50 w-full justify-between items-center px-margin-desktop py-4 max-w-container-max mx-auto glass-nav border-b border-outline-variant/20 shadow-sm">
+<div class="flex items-center gap-12">
+<h1 class="font-display-lg text-display-lg text-primary tracking-tighter">Lustre</h1>
+<nav class="flex gap-8 items-center">
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-label-md text-label-md" href="#">Discovery</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300 font-label-md text-label-md" href="#">Matches</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300 font-label-md text-label-md" href="#">Chats</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300 font-label-md text-label-md" href="#">Premium</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<button class="text-primary font-label-md text-label-md hover:opacity-80 transition-all">Upgrade</button>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary">notifications</span>
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant/30">
+<img alt="User profile" data-alt="A professional close-up portrait of a sophisticated man with a well-groomed appearance. He is wearing a dark, tailored charcoal suit that blends into a soft-focus, luxurious interior background. The lighting is low-key and dramatic, casting gentle shadows that emphasize his features, maintaining a high-end, premium midnight aesthetic consistent with a luxury lifestyle application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtpmYxoNVtHr4gaga6KS39ID7Cj2f5ErjiU_6vraj0jOEReAWUakbRK_FUSCrTuCZhaonhVvhbrjeJNOFz6-zeOi1dGgXFWMlsJDJeojUxrThQRD7AXD3JKRRmgqYLEoiMYJwWRD6UIQLgVO3W4kYCRdRIZ-DhWWin-VNtQ-sVhNdAHzr2QP565LsUD4_-84sJk3Pnxhe2Kr98Xbsm7LG1NS1PSHLyj4eItIKxsK0Pk_czqLtdXcZ4phIG_lWS2MmXoHsK1WruRLBD"/>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-stack-lg pb-32">
+<!-- Header Section -->
+<div class="mb-stack-lg">
+<h2 class="font-headline-lg text-headline-lg md:text-headline-lg text-on-surface mb-2">Discover</h2>
+<p class="text-on-surface-variant font-body-lg text-body-lg">Find your match</p>
+</div>
+<!-- Discovery Grid (4 columns) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Profile Card 1 -->
+<div class="profile-card relative aspect-[2/3] rounded-xl overflow-hidden group cursor-pointer">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover" data-alt="A stunning woman with elegant features posing in a dimly lit, high-end rooftop lounge at twilight. She wears a minimalist silk dress in deep plum. The background shows blurred city lights under a deep indigo sky, creating a romantic and exclusive atmosphere. The lighting is cinematic, with soft rim lights highlighting her silhouette, perfectly aligning with a luxury dating app aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJH0WeuwhkJVpJFJ8khzNiHoAKSpeygAKm1kEKK4-q3-fOUu1grKg6Yz6BXDSkQzjY5aSxijjF0fBlLThsk240nTXVygZ5lScO3cluJwn4aXZc37KMNy_Laz-1SbJ0yvFNPA1xBSI419IM5QWASIwy4tytQNPpG_CpH1skph0lQnj0-mKIalehGybD8RriLUu61YwJQwwcPBvzgqoE7Ko_LHZUg5S8rmw5UiSM2afgGFxSBXrbxdpyF6vJfuJ79Je183VRomNSNPt5"/>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-10"></div>
+<div class="absolute bottom-0 left-0 w-full p-6 z-20 flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<span class="text-on-surface font-headline-sm text-headline-sm">Seraphina</span>
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant/80">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-label-md font-label-md">Paris, France</span>
+</div>
+<p class="text-on-surface-variant text-body-md line-clamp-2 mt-1">Lover of abstract art, nocturnal wanderings, and vintage jazz records.</p>
+<button class="mt-4 w-full py-2 border border-primary/40 text-primary rounded-lg font-label-md text-label-md hover:bg-primary/10 transition-colors">View Profile</button>
+</div>
+</div>
+<!-- Profile Card 2 -->
+<div class="profile-card relative aspect-[2/3] rounded-xl overflow-hidden group cursor-pointer">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover" data-alt="A handsome man with a thoughtful expression standing against a dark, textured architectural wall. He is dressed in a high-quality cashmere turtleneck and a long wool coat. The scene is illuminated by a single warm street lamp casting a soft glow. The mood is sophisticated and mysterious, emphasizing premium materials and a refined urban lifestyle." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5Q_njYAlFs3_wzhHgaZSGdkTGSGx3XgNZ4Zf10j9FQLunxwXnboVR6jW5Y-x_wrbDrIh-FMAc-hbjuxel6YXRYMCu3eiTyozFKm31MrxRPX5ohPUo7FPMW-grvLyhFxoDYPAkcLuxlsLAherL0dYz0XUvw3ogg_IZ60de97EVLb1FqQVP9tMQjnWHjhtkYu1wQmb98jRje9KeAtBALeq9YV4D_ATMYgCmaKUbCU_BD8_FmnMw2qLUVzdWZr4woJiDhgxYiC3vAcTk"/>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-10"></div>
+<div class="absolute bottom-0 left-0 w-full p-6 z-20 flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<span class="text-on-surface font-headline-sm text-headline-sm">Julian</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant/80">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-label-md font-label-md">London, UK</span>
+</div>
+<p class="text-on-surface-variant text-body-md line-clamp-2 mt-1">Architectural designer. I find beauty in minimalism and complex espresso blends.</p>
+<button class="mt-4 w-full py-2 border border-primary/40 text-primary rounded-lg font-label-md text-label-md hover:bg-primary/10 transition-colors">View Profile</button>
+</div>
+</div>
+<!-- Profile Card 3 -->
+<div class="profile-card relative aspect-[2/3] rounded-xl overflow-hidden group cursor-pointer">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover" data-alt="A charismatic woman with a radiant smile captured in the soft light of a luxury hotel lobby. She wears elegant jewelry and a tailored black blazer. The environment features warm wood tones and gold accents in soft focus. The overall style is opulent yet approachable, focusing on high-end social experiences and genuine connection." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGHlt5MdMM-YfMF2_OvkdZebeplqPLrXtAuFH_ahhcKxFUyiwkUcZqHgbj-6ZJ7o6FN2j5WqNwJUMh4qw2_XmPKtcaLGMNsBfu8bZdiq-V-rDqBw9zOu_ZWa07oqZRg9bEiNORCdtTdPqJg8DucHXwfjJySXQrQI2qyoFJhQ-qZ5126papLOHSqz5qiq6wlBMRuM5i9Aunw7LWYAwseTeHioxufz5ORcXvc_uOOVw_tYN8zR0bH_v6MMedVGj2P6q2aND2GG6Fzk6p"/>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-10"></div>
+<div class="absolute bottom-0 left-0 w-full p-6 z-20 flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<span class="text-on-surface font-headline-sm text-headline-sm">Elena</span>
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant/80">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-label-md font-label-md">Milan, Italy</span>
+</div>
+<p class="text-on-surface-variant text-body-md line-clamp-2 mt-1">Sommelier and world traveler. Searching for someone to share a sunset in Tuscany.</p>
+<button class="mt-4 w-full py-2 border border-primary/40 text-primary rounded-lg font-label-md text-label-md hover:bg-primary/10 transition-colors">View Profile</button>
+</div>
+</div>
+<!-- Profile Card 4 -->
+<div class="profile-card relative aspect-[2/3] rounded-xl overflow-hidden group cursor-pointer">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover" data-alt="A ruggedly handsome man in a dark denim shirt, sitting in a dimly lit study surrounded by leather-bound books. The lighting is dramatic and warm, highlighting the textures of the room. He has a calm, confident gaze. The aesthetic is one of intellectual depth and masculine elegance, fitting for a premium dating platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpwEzAukRzm87r6gNsVoQ36W32AjwWfQYIr8FniCCKwaIuVIpjLM8tc9pjhxsImQxMq3ZPoUhzvFFHCoEv6Dq0e2zUW03fevPvsWVFu8Uj4LnH1Iq8s9yZl-q46BtbwCQox_099LvzejwHKYibawoeCFutcIG3YKpF0oVXkGAX7YuZeqnmmH89-i438hkOpKp9ZLqlDI8IisOMy4_B2xUaGtal6a1nVCjoWebkv1_IauPeR4tF8T8iSUkm3fwV3GOi5WaSmYou5Tmi"/>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-10"></div>
+<div class="absolute bottom-0 left-0 w-full p-6 z-20 flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<span class="text-on-surface font-headline-sm text-headline-sm">Adrian</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant/80">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-label-md font-label-md">New York, USA</span>
+</div>
+<p class="text-on-surface-variant text-body-md line-clamp-2 mt-1">Tech founder with a passion for sailing and classical literature. Let's talk ideas.</p>
+<button class="mt-4 w-full py-2 border border-primary/40 text-primary rounded-lg font-label-md text-label-md hover:bg-primary/10 transition-colors">View Profile</button>
+</div>
+</div>
+<!-- Profile Card 5 (Repeated pattern for grid fill) -->
+<div class="profile-card relative aspect-[2/3] rounded-xl overflow-hidden group cursor-pointer">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover" data-alt="A woman with modern, sharp style wearing an architectural white dress in a dark gallery space. High-contrast lighting creates a dramatic shadow play on her face and the minimalist background. The look is high-fashion and sophisticated, evoking an aura of creative brilliance and exclusivity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_q-q_Y8eR0eqHMWIStOVx8-8pUkK6GAwj4Wa815uuIZXmSUwVFrR15iBGvYTLleyH7itvuHWodGrUDhe8p0ffobjp3FC_npa-W9Tt5wXw-rKaipuKLJrIIx08UtKQ1KZL9v_0d3Oxsuj8WH4UW9EwZo9Pj_fSx8bhr-xfZw9rCHOJSV0fsqkRpg3gjTuN_Kyq7eagAidzw9HUs3oXFDdXcEOV70xOzPYqtlx4EojFsf19CqrLbo0U2vs2t9Q5HgTjsSI39ulDyQjg"/>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-10"></div>
+<div class="absolute bottom-0 left-0 w-full p-6 z-20 flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<span class="text-on-surface font-headline-sm text-headline-sm">Maya</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant/80">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-label-md font-label-md">Berlin, Germany</span>
+</div>
+<p class="text-on-surface-variant text-body-md line-clamp-2 mt-1">Creative director. Passionate about brutalist architecture and techno beats.</p>
+<button class="mt-4 w-full py-2 border border-primary/40 text-primary rounded-lg font-label-md text-label-md hover:bg-primary/10 transition-colors">View Profile</button>
+</div>
+</div>
+<!-- Profile Card 6 -->
+<div class="profile-card relative aspect-[2/3] rounded-xl overflow-hidden group cursor-pointer">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover" data-alt="A man with a refined, athletic build wearing a navy blue linen shirt, standing on a beach at night under a full moon. The waves are softly blurred in the background. The moon provides a cool, silvery light over the scene. The mood is tranquil, romantic, and deeply cinematic, aligning with the premium Lustre aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNC7FreNZurdVYcFpZeJvKWQtJ7GRJnwAwKOfeIa9HBUs7dpHZfOJaN6ema_P3pDIF3fbpihxJzuYFFA586bH7FLJ3FOlwTG4s0lIuvHoS_wgrKXaAsXE6m-1LuPzGYiqiRqL8Z6FQy6q4-pj0qyC26DZvSH8HJnQLl4StM28eHWx2FEoml3_JSjJAfxCeoNQZ4LLtk1Jw-71uFy_xXBJl03ayLEbEw3y3lphyEckwg6tb-pBTIOjRzLgCLQNpRjt6p2xdeDk0hqqY"/>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-10"></div>
+<div class="absolute bottom-0 left-0 w-full p-6 z-20 flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<span class="text-on-surface font-headline-sm text-headline-sm">Xavier</span>
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant/80">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-label-md font-label-md">Barcelona, Spain</span>
+</div>
+<p class="text-on-surface-variant text-body-md line-clamp-2 mt-1">Adventure seeker and photographer. I live for the moments between the frames.</p>
+<button class="mt-4 w-full py-2 border border-primary/40 text-primary rounded-lg font-label-md text-label-md hover:bg-primary/10 transition-colors">View Profile</button>
+</div>
+</div>
+<!-- Profile Card 7 -->
+<div class="profile-card relative aspect-[2/3] rounded-xl overflow-hidden group cursor-pointer">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover" data-alt="A woman with striking features and long flowing hair, wearing an elegant emerald green evening gown. She is leaning against a marble pillar in a grand hall with warm ambient lighting. The atmosphere is one of timeless luxury and classic beauty. High-key highlights and soft shadows create a three-dimensional, premium photographic look." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAstAaEzobmm_MmJjllXy0LNgvtz7ERALXGe4-HHW7ZnqHtnwWs4bKU3saT1M-IYZ_1btmVA3ojPOLVL_vCOhqcJR5O2mbF2KXCqPsp4C4-UjwO1cXNxzUZ1Zr2hvgWEiciy0BuhEChm6WjWPrCVFvJLQ4OKOAGtOfCfZIQrNa6Vh_aSGBHhnKvQXRu83BoJoHJPNFcxd4lgD4XDER34dOHZFN2Sg0mMxzzH7xfB9zZ2hnpE5kPllwChvMXrNpcRTIHu5ZDtKs-7Q4X"/>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-10"></div>
+<div class="absolute bottom-0 left-0 w-full p-6 z-20 flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<span class="text-on-surface font-headline-sm text-headline-sm">Clara</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant/80">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-label-md font-label-md">Vienna, Austria</span>
+</div>
+<p class="text-on-surface-variant text-body-md line-clamp-2 mt-1">Pianist and collector of rare books. Searching for a duet partner in life.</p>
+<button class="mt-4 w-full py-2 border border-primary/40 text-primary rounded-lg font-label-md text-label-md hover:bg-primary/10 transition-colors">View Profile</button>
+</div>
+</div>
+<!-- Profile Card 8 -->
+<div class="profile-card relative aspect-[2/3] rounded-xl overflow-hidden group cursor-pointer">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover" data-alt="A man with an effortless, rugged style wearing a vintage leather jacket and a simple grey tee. He is standing in a neon-lit urban alleyway at night, with rain-slicked pavement reflecting vibrant colors. The lighting is moody and atmospheric, blending cool blues and warm ambers, capturing a modern, edgy yet sophisticated persona." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZqLwmgBQymUCcUAjWZuNSrERuM7HZpOxrfa-xY01228w9tO3nlvh2wYpyECBC5iTafPnIYUHHWt299c1KVM6ldqHpJkeYoI0rwSUCoptn6kfiy2kZ__-H9jrdopc6kHpf6pPxQkHE1JfcOBXOxcwxkfxXCDYzgoyMExghRqY1D8t0WDA8VIWfTQdJaGBdUNZQhSkdDJipR953EEPMfkfFIq7sBNz4fXRsbkGCRqkwm-pIGPoY6oFfMO8YJVazrr2N0qXyTbSys_om"/>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-10"></div>
+<div class="absolute bottom-0 left-0 w-full p-6 z-20 flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<span class="text-on-surface font-headline-sm text-headline-sm">Sebastian</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant/80">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-label-md font-label-md">Tokyo, Japan</span>
+</div>
+<p class="text-on-surface-variant text-body-md line-clamp-2 mt-1">Journalist and street photographer. Finding the extraordinary in the ordinary.</p>
+<button class="mt-4 w-full py-2 border border-primary/40 text-primary rounded-lg font-label-md text-label-md hover:bg-primary/10 transition-colors">View Profile</button>
+</div>
+</div>
+</div>
+<!-- Load More Section -->
+<div class="mt-stack-lg flex justify-center">
+<button class="group relative px-12 py-4 bg-transparent border border-outline-variant/30 rounded-full hover:border-primary transition-all duration-300 overflow-hidden">
+<span class="relative z-10 text-on-surface font-label-md text-label-md">Load More</span>
+<div class="absolute inset-0 bg-primary/5 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+</button>
+</div>
+</main>
+<!-- BottomNavBar (Shared Component JSON Mapping) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-surface-container-low/90 backdrop-blur-xl border-t border-outline-variant/10 shadow-[0px_-4px_24px_rgba(0,0,0,0.4)] rounded-t-xl">
+<div class="flex flex-col items-center justify-center text-primary scale-110 transition-transform duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">explore</span>
+<span class="font-label-md text-label-md mt-1">Discovery</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant hover:text-secondary">
+<span class="material-symbols-outlined">favorite</span>
+<span class="font-label-md text-label-md mt-1">Matches</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant hover:text-secondary">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="font-label-md text-label-md mt-1">Chats</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant hover:text-secondary">
+<span class="material-symbols-outlined">workspace_premium</span>
+<span class="font-label-md text-label-md mt-1">Premium</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant hover:text-secondary">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md mt-1">Profile</span>
+</div>
+</nav>
+<script>
+        // Micro-interactions and atmospheric hover effects
+        document.querySelectorAll('.profile-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                const btn = card.querySelector('button');
+                btn.style.backgroundColor = 'rgba(210, 188, 255, 0.1)';
+            });
+            card.addEventListener('mouseleave', () => {
+                const btn = card.querySelector('button');
+                btn.style.backgroundColor = 'transparent';
+            });
+        });
+
+        // Sticky Header Backdrop Blur adjustment on scroll
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('.glass-nav');
+            if (header) {
+                if (window.scrollY > 20) {
+                    header.classList.add('shadow-md');
+                    header.style.backgroundColor = 'rgba(19, 19, 26, 0.95)';
+                } else {
+                    header.classList.remove('shadow-md');
+                    header.style.backgroundColor = 'rgba(19, 19, 26, 0.8)';
+                }
+            }
+        });
+    </script>
+</body></html>

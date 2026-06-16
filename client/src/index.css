@@ -1,0 +1,207 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap');
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+@layer base {
+  :root {
+    /* Base surfaces */
+    --bg-void:        #08080f;
+    --bg-base:        #0e0d15;
+    --bg-card:        #13131a;
+    --bg-card-alt:    #1b1b23;
+    --bg-elevated:    #1f1f27;
+    --bg-hover:       #2a2931;
+
+    /* Borders */
+    --border:         #2a2931;
+    --border-subtle:  #1b1b23;
+    --border-strong:  #494551;
+
+    /* Text */
+    --text-primary:   #e4e1ec;
+    --text-secondary: #cbc3d3;
+    --text-muted:     #958e9d;
+
+    /* Brand */
+    --purple:         #d2bcff;
+    --purple-dim:     #7c5cbf;
+    --rose:           #ffb0ce;
+    --rose-dim:       #7b2650;
+    --gradient-brand: linear-gradient(135deg, #d2bcff 0%, #ffb0ce 100%);
+
+    /* Gold (premium only) */
+    --gold:           #ecc246;
+    --gold-dim:       #cea62b;
+    --gold-bg:        rgba(236,194,70,0.1);
+
+    /* Status */
+    --success:        #4ade80;
+    --success-bg:     rgba(74,222,128,0.1);
+    --warning:        #ecc246;
+    --warning-bg:     rgba(236,194,70,0.1);
+    --error:          #ffb4ab;
+    --error-bg:       rgba(255,180,171,0.1);
+
+    /* Pending/processing/paid badges */
+    --badge-pending-bg:    #1f1f27;
+    --badge-pending-text:  #958e9d;
+    --badge-processing-bg: rgba(236,194,70,0.15);
+    --badge-processing-text: #ecc246;
+    --badge-paid-bg:       rgba(74,222,128,0.12);
+    --badge-paid-text:     #4ade80;
+
+    /* Shadcn required variables (mapped) */
+    --background: #08080f;
+    --foreground: #e4e1ec;
+    --primary: #d2bcff;
+    --primary-foreground: #3c167c;
+    --secondary: #ffb0ce;
+    --secondary-foreground: #5f0d39;
+    --muted: #1f1f27;
+    --muted-foreground: #cbc3d3;
+    --accent: #1f1f27;
+    --accent-foreground: #e4e1ec;
+    --destructive: #ffb4ab;
+    --destructive-foreground: #690005;
+    --input: #1f1f27;
+    --ring: #d2bcff;
+    --radius: 0.75rem;
+
+    /* Shadows disabled by default for dark mode */
+    --shadow-card: none;
+    --shadow-card-hover: none;
+  }
+
+  .light {
+    /* Base surfaces — MORE SATURATED & VIBRANT warm cream tones */
+    --bg-void:        #fffcfa;           /* warm white background */
+    --bg-base:        #faf7f6;
+    --bg-card:        #f4f1ee;
+    --bg-card-alt:    #ede9e6;
+    --bg-elevated:    #e6e2df;
+    --bg-hover:       #ddd8d3;
+
+    /* Borders — softer, warmer, and more subtle */
+    --border:         #d7d2cd;
+    --border-subtle:  #f2efec;
+    --border-strong:  #bcb4aa;
+
+    /* Text — darker, warm mauve/purple tinted */
+    --text-primary:   #190f14;
+    --text-secondary: #5a4b5f;
+    --text-muted:     #827387;
+    --text-faint:     #a09aa0;
+
+    /* Brand Colors — MORE SATURATED */
+    --purple:         #5b32bd;
+    --purple-dim:     #6e4ba0;
+    --rose:           #a53255;
+    --rose-dim:       #913c5a;
+    --gradient-brand: linear-gradient(135deg, #5b32bd 0%, #a53255 100%);
+
+    /* Gold (premium only) */
+    --gold:           #b98c1e;
+    --gold-dim:       #a06e14;
+    --gold-bg:        rgba(185, 140, 30, 0.08);
+
+    /* Status */
+    --success:        #15803d;
+    --success-bg:     rgba(21, 128, 61, 0.08);
+    --warning:        #b98c1e;
+    --warning-bg:     rgba(185, 140, 30, 0.08);
+    --error:          #b91c1c;
+    --error-bg:       rgba(185, 28, 28, 0.08);
+
+    /* Pending/processing/paid badges */
+    --badge-pending-bg:    #e6e2df;
+    --badge-pending-text:  #827387;
+    --badge-processing-bg: rgba(185, 140, 30, 0.12);
+    --badge-processing-text: #b98c1e;
+    --badge-paid-bg:       rgba(21, 128, 61, 0.12);
+    --badge-paid-text:     #15803d;
+
+    /* Shadcn required variables (mapped to warm theme) */
+    --background: #fffcfa;
+    --foreground: #190f14;
+    --primary: #5b32bd;
+    --primary-foreground: #ffffff;
+    --secondary: #a53255;
+    --secondary-foreground: #ffffff;
+    --muted: #f4f1ee;
+    --muted-foreground: #5a4b5f;
+    --accent: #e6e2df;
+    --accent-foreground: #190f14;
+    --destructive: #b91c1c;
+    --destructive-foreground: #ffffff;
+    --input: #e6e2df;
+    --ring: #5b32bd;
+
+    /* Shadows for depth instead of borders */
+    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+
+  body {
+    @apply bg-void text-lustre-text antialiased;
+    font-family: 'Be Vietnam Pro', sans-serif;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg-void); }
+  ::-webkit-scrollbar-thumb { 
+    background: var(--border); 
+    border-radius: 2px; 
+  }
+  ::-webkit-scrollbar-thumb:hover { 
+    background: rgba(210,188,255,0.4); 
+  }
+}
+
+/* Custom premium classes */
+.glass-panel {
+  background: rgba(26, 26, 42, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.profile-card {
+  background-color: var(--bg-card);
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+}
+
+.profile-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+  border-color: var(--purple);
+}
+
+/* Gradient utility classes */
+.text-gradient-brand {
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-gradient-brand {
+  background: var(--gradient-brand);
+}
+
+.bg-gradient-gold {
+  background: linear-gradient(135deg, #ecc246 0%, #cea62b 100%);
+}
+
+.lustre-orbs {
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(210, 188, 255, 0.03) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(255, 176, 206, 0.03) 0%, transparent 40%);
+  background-attachment: fixed;
+}
