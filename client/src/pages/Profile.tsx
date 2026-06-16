@@ -85,8 +85,13 @@ export default function Profile() {
           
           <div className="space-y-3">
             <h1 className="font-garamond text-4xl md:text-5xl font-medium tracking-tight text-gradient-brand">
-              {profile?.fullName || 'Anonymous User'}
+              {profile?.fullName || 'Anonymous User'}{profile?.age ? `, ${profile.age}` : ''}
             </h1>
+            {profile?.location && (
+              <p className="font-sans text-xs text-lustre-muted tracking-widest uppercase">
+                {profile.location}
+              </p>
+            )}
             <div className="flex flex-wrap items-center justify-center gap-2">
               {isPremium && (
                 <Badge variant="premium" className="px-4 py-1.5 rounded-full">

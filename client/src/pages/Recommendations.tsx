@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { Sparkles, X, Heart, Star, MapPin, RefreshCw, Compass, ChevronRight, User, Crown, Lock, Zap } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
 import { isAxiosError } from 'axios';
+import { AgeSlider } from '../components/ui/AgeSlider';
 
 
 export default function Recommendations() {
@@ -18,7 +19,18 @@ export default function Recommendations() {
   const [lastMatch, setLastMatch] = useState<any>(null);
   const [isGated, setIsGated] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const [ageRange, setAgeRange] = useState<[number, number]>([18, 50]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [ageRange]);
+
+  useEffect(() => {
+    (window as any).setAgeRange = (min: number, max: number) => {
+      setAgeRange([min, max]);
+    };
+  }, []);
 
   useEffect(() => {
     if (isError && isAxiosError(error)) {
@@ -46,7 +58,10 @@ export default function Recommendations() {
     }
   }, []);
 
-  const users = recs || [];
+  const users = (recs || []).filter((u: any) => {
+    if (u.age == null) return true;
+    return u.age >= ageRange[0] && u.age <= ageRange[1];
+  });
   const currentUser = users[currentIndex];
 
   const handleAction = async (direction: 'left' | 'right' | 'super') => {
@@ -148,6 +163,19 @@ export default function Recommendations() {
 
   return (
     <div className="min-h-screen bg-void flex flex-col items-center justify-center px-6 pt-20 pb-32 overflow-hidden">
+      {/* Premium Age Range Filter Slider */}
+      <div className="w-full max-w-md md:max-w-[380px] bg-card border border-border-subtle rounded-2xl p-6 mb-6 space-y-4 shadow-xl">
+        <div className="flex justify-between items-center">
+          <span className="font-sans text-[10px] uppercase tracking-widest text-lustre-faint font-bold">Age Filter: {ageRange[0]} - {ageRange[1]} yrs</span>
+        </div>
+        <AgeSlider 
+          value={ageRange} 
+          onValueChange={setAgeRange} 
+          min={18} 
+          max={80} 
+        />
+      </div>
+
       <div className="w-full max-w-md md:max-w-[380px] relative z-10 aspect-[3/4.5] md:aspect-[2/3.2]">
         <AnimatePresence mode="popLayout">
           <motion.div

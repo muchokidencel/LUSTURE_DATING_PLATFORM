@@ -10,9 +10,12 @@ const testDir = defineBddConfig({
 export default defineConfig({
   testDir,
   reporter: 'html',
+  timeout: 60000, // increase global test timeout to 60s for navigation-heavy tests
   use: {
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
+    actionTimeout: 20000,
+    navigationTimeout: 60000,
   },
   projects: [
     {

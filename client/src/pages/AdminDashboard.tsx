@@ -7,6 +7,7 @@ import { ScrollArea } from '../components/ui/scroll-area';
 import { Badge } from '../components/ui/badge';
 import { Users, Crown, Wallet, RefreshCw, LogOut, Loader2, TableProperties, Download, Award, User, TrendingUp, CheckCircle2 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import api from '../lib/api';
 
 export default function AdminDashboard() {
   const { data: stats, isLoading: statsLoading, isFetching: statsFetching, refetch: refetchStats } = useAdminStats();
@@ -39,6 +40,27 @@ export default function AdminDashboard() {
       });
     } catch (error) {
       console.error('[INTEGRATION:ADMIN_PAY] Failed to process payout:', error);
+    }
+  };
+
+  /**
+   * Downloads a CSV export from the admin API by creating a temporary anchor tag.
+   */
+  const handleExport = async (type: 'users' | 'commissions') => {
+    try {
+      console.log(`[ADMIN:EXPORT] Requesting ${type} CSV export`);
+      const response = await api.get(`/admin/export/${type}`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'text/csv' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${type}_export.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      console.log(`[ADMIN:EXPORT] ${type} CSV downloaded successfully`);
+    } catch (error) {
+      console.error(`[ADMIN:EXPORT] Failed to download ${type} CSV:`, error);
     }
   };
 
@@ -151,6 +173,30 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
+        {/* Export Actions */}
+        <div className="flex flex-wrap items-center gap-4 mb-8">
+          <Button
+            id="export-users-csv"
+            variant="outline"
+            size="sm"
+            onClick={() => handleExport('users')}
+            className="h-10 px-5 rounded-xl bg-card border-border-subtle text-xs font-sans font-bold uppercase tracking-widest text-lustre-muted hover:text-lustre-text gap-2"
+          >
+            <Download size={14} strokeWidth={1.5} />
+            Export Users CSV
+          </Button>
+          <Button
+            id="export-commissions-csv"
+            variant="outline"
+            size="sm"
+            onClick={() => handleExport('commissions')}
+            className="h-10 px-5 rounded-xl bg-card border-border-subtle text-xs font-sans font-bold uppercase tracking-widest text-lustre-muted hover:text-lustre-text gap-2"
+          >
+            <Download size={14} strokeWidth={1.5} />
+            Export Commissions CSV
+          </Button>
+        </div>
+
         {/* Affiliate Payouts Table */}
         <Card className="overflow-hidden shadow-[var(--shadow-card)] border-transparent">
           <div className="p-8 border-b border-border-subtle flex flex-row items-center justify-between bg-card-alt/35">
@@ -158,10 +204,6 @@ export default function AdminDashboard() {
                <TableProperties size={18} strokeWidth={1.5} className="text-lustre-purple" />
                <h3 className="font-sans text-xs font-bold uppercase tracking-[0.2em] text-lustre-text">Actionable Withdrawals</h3>
              </div>
-             <Button variant="outline" size="sm" className="h-9 px-4 rounded-lg bg-card border-border-subtle text-xs font-sans font-bold uppercase tracking-widest text-lustre-muted hover:text-lustre-text">
-                <Download size={14} strokeWidth={1.5} className="mr-2" />
-                Export CSV
-             </Button>
           </div>
           
           <div className="overflow-x-auto">

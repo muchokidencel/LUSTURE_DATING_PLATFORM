@@ -88,6 +88,13 @@ router.get('/users', authenticate, async (req: AuthRequest, res) => {
         if (distanceKm > maxDistance) {
           return null; // Exclude user beyond maximum preferred distance
         }
+      } else {
+        // Fallback to city string matching when coordinates are not available
+        const myCity = (myProfile?.location || '').trim().toLowerCase();
+        const candidateCity = (p?.location || '').trim().toLowerCase();
+        if (myCity && candidateCity && myCity !== candidateCity) {
+          return null; // Exclude user if city doesn't match
+        }
       }
 
       return {

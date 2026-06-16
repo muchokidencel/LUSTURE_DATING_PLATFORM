@@ -4,6 +4,7 @@ import { users, profiles, affiliateEarnings } from '../../db/schema.js';
 import { eq, sql } from 'drizzle-orm';
 import { authenticate, AuthRequest } from '../../middleware/auth.js';
 import { requireAdmin } from '../../middleware/requireAdmin.js';
+import { jsonToCsv } from '../../shared/csv.utils.js';
 
 const router = Router();
 
@@ -94,6 +95,103 @@ router.get('/users', authenticate, requireAdmin, async (req: AuthRequest, res) =
   } catch (error) {
     console.error(`[ADMIN:READ] Error fetching users:`, error);
     res.status(500).json({ message: 'Error fetching users' });
+  }
+});
+
+/**
+ * GET /api/admin/export/users
+ * Export all users as a CSV file. Admin-only.
+ */
+router.get('/export/users', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+  const adminId = req.user!.id;
+  console.log(`[ADMIN:EXPORT:USERS] Requested by adminId: ${adminId}`);
+
+  try {
+    const allUsers = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        premiumTier: users.premiumTier,
+        role: users.role,
+        createdAt: users.createdAt,
+        fullName: profiles.fullName,
+        gender: profiles.gender,
+        city: profiles.location,
+        age: profiles.age,
+      })
+      .from(users)
+      .leftJoin(profiles, eq(profiles.userId, users.id))
+      .orderBy(users.createdAt);
+
+    const flatData = allUsers.map((u) => ({
+      id: u.id,
+      email: u.email,
+      fullName: u.fullName ?? '',
+      gender: u.gender ?? '',
+      city: u.city ?? '',
+      age: u.age ?? '',
+      premiumTier: u.premiumTier ?? 'free',
+      role: u.role ?? 'user',
+      createdAt: u.createdAt ? new Date(u.createdAt).toISOString() : '',
+    }));
+
+    const csv = jsonToCsv(flatData as Record<string, unknown>[]);
+    console.log(`[ADMIN:EXPORT:USERS] Exporting ${flatData.length} users`);
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="users_export.csv"');
+    return res.send(csv);
+  } catch (error) {
+    console.error(`[ADMIN:EXPORT:USERS:ERROR]`, error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * GET /api/admin/export/commissions
+ * Export pending affiliate commission breakdown as a CSV file. Admin-only.
+ */
+router.get('/export/commissions', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+  const adminId = req.user!.id;
+  console.log(`[ADMIN:EXPORT:COMMISSIONS] Requested by adminId: ${adminId}`);
+
+  try {
+    const rows = await db
+      .select({
+        earningId: affiliateEarnings.id,
+        userId: affiliateEarnings.userId,
+        email: users.email,
+        displayName: profiles.fullName,
+        amount: affiliateEarnings.amount,
+        currency: affiliateEarnings.currency,
+        status: affiliateEarnings.status,
+        createdAt: affiliateEarnings.createdAt,
+      })
+      .from(affiliateEarnings)
+      .innerJoin(users, eq(users.id, affiliateEarnings.userId))
+      .leftJoin(profiles, eq(profiles.userId, users.id))
+      .orderBy(affiliateEarnings.createdAt);
+
+    const flatData = rows.map((r) => ({
+      earningId: r.earningId,
+      userId: r.userId,
+      email: r.email,
+      displayName: r.displayName ?? 'Anonymous',
+      amount: r.amount,
+      currency: r.currency,
+      status: r.status,
+      createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : '',
+    }));
+
+    const csv = jsonToCsv(flatData as Record<string, unknown>[]);
+    console.log(`[ADMIN:EXPORT:COMMISSIONS] Exporting ${flatData.length} commission records`);
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="commissions_export.csv"');
+    return res.send(csv);
+  } catch (error) {
+    console.error(`[ADMIN:EXPORT:COMMISSIONS:ERROR]`, error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 

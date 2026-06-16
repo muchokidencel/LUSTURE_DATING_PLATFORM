@@ -15,6 +15,7 @@ export default function EditProfile() {
   const updateProfileMutation = useUpdateProfile();
   
   const [locating, setLocating] = useState(false);
+  const [locationError, setLocationError] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     bio: '',
@@ -72,6 +73,7 @@ export default function EditProfile() {
       return;
     }
     setLocating(true);
+    setLocationError(false);
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
@@ -84,7 +86,13 @@ export default function EditProfile() {
       },
       (error) => {
         console.error("Error fetching geolocation:", error);
-        alert("Failed to access your location. Please check browser permissions.");
+        setLocationError(true);
+        setFormData(prev => ({
+          ...prev,
+          latitude: null,
+          longitude: null,
+        }));
+        alert("Failed to access your location. Please check browser permissions and enter your City manually.");
         setLocating(false);
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -248,10 +256,15 @@ export default function EditProfile() {
                         </button>
                       </div>
                       <Input name="city" value={formData.city} onChange={handleChange} placeholder="Nairobi" />
-                      {formData.latitude != null && (
+                       {formData.latitude != null ? (
                         <p className="text-[9px] text-emerald-500 font-sans italic ml-1 flex items-center gap-1">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                           Live location active
+                        </p>
+                      ) : (
+                        <p className="text-[9px] text-amber-500/80 font-sans italic ml-1 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                          {locationError ? "Live location failed. Manual City fallback active." : "Manual City fallback active."}
                         </p>
                       )}
                     </div>
