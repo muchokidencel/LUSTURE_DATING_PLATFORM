@@ -20,7 +20,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, referralCode?: string) => Promise<void>;
+  register: (email: string, password: string, referralCode?: string, code?: string) => Promise<void>;
   logout: () => void;
   loading: boolean;
   isAuthenticated: boolean;
@@ -51,10 +51,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = async (email: string, password: string, referralCode?: string) => {
+  const register = async (email: string, password: string, referralCode?: string, code?: string) => {
     setLoading(true);
     try {
-      const { data } = await api.post('/auth/register', { email, password, referralCode });
+      const { data } = await api.post('/auth/register', { email, password, referralCode, code });
       const { accessToken, refreshToken, user: userData } = data.data;
       
       localStorage.setItem('accessToken', accessToken);

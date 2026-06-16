@@ -2,10 +2,10 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { db } from '../../db/index.js';
-import { users, profiles, referrals, referralCodes, userPreferences } from '../../db/schema.js';
-import { eq, and } from 'drizzle-orm';
+import { users, profiles, referrals, referralCodes, userPreferences, emailVerificationCodes } from '../../db/schema.js';
+import { eq, and, gt } from 'drizzle-orm';
 import { validate } from '../../middleware/validate.js';
-import { registerSchema, loginSchema } from '../../shared/schemas.js';
+import { registerSchema, loginSchema, sendOtpSchema } from '../../shared/schemas.js';
 import crypto from 'crypto';
 import rateLimit from 'express-rate-limit';
 
@@ -61,8 +61,42 @@ const generateTokens = (user: { id: number; email: string; role: string | null }
   return { accessToken, refreshToken };
 };
 
+router.post('/send-otp', validate(sendOtpSchema), async (req, res) => {
+  const { email } = req.body;
+  try {
+    const existingUser = await db.query.users.findFirst({
+      where: eq(users.email, email),
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // Generate 6-digit OTP
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+
+    // Save in verification requests
+    await db.insert(emailVerificationCodes).values({
+      email,
+      code,
+      expiresAt,
+    });
+
+    console.log(`[EMAIL:VERIFICATION] OTP code for ${email} is: ${code}`);
+
+    res.json({
+      status: 'success',
+      message: 'Verification code sent successfully'
+    });
+  } catch (error) {
+    console.error('Send OTP Error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 router.post('/register', validate(registerSchema), async (req, res) => {
-  const { email, password, referralCode: bodyReferralCode } = req.body;
+  const { email, password, referralCode: bodyReferralCode, code } = req.body;
   const cookieReferralCode = req.cookies?.referral_code;
   const rawRefCode = bodyReferralCode || cookieReferralCode;
   const refCode = typeof rawRefCode === 'string' ? rawRefCode.trim().toUpperCase() : null;
@@ -76,6 +110,19 @@ router.post('/register', validate(registerSchema), async (req, res) => {
 
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // Validate verification code
+    const validCode = await db.query.emailVerificationCodes.findFirst({
+      where: and(
+        eq(emailVerificationCodes.email, email),
+        eq(emailVerificationCodes.code, code),
+        gt(emailVerificationCodes.expiresAt, new Date())
+      )
+    });
+
+    if (!validCode) {
+      return res.status(400).json({ message: 'Invalid or expired verification code' });
     }
 
     // Validate referrer
@@ -170,6 +217,9 @@ router.post('/register', validate(registerSchema), async (req, res) => {
 
     // Clear referral cookie
     res.clearCookie('referral_code');
+
+    // Clean up verification codes
+    await db.delete(emailVerificationCodes).where(eq(emailVerificationCodes.email, email));
 
     const { accessToken, refreshToken } = generateTokens(newUser);
 

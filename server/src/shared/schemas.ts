@@ -4,6 +4,11 @@ export const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8, 'Password must be at least 8 characters long'),
   referralCode: z.string().optional(),
+  code: z.string().length(6, 'Verification code must be 6 characters long'),
+});
+
+export const sendOtpSchema = z.object({
+  email: z.string().email(),
 });
 
 export const loginSchema = z.object({

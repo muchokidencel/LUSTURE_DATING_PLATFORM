@@ -52,7 +52,40 @@ When('I enter email {string} and password {string}', async ({ page }, email, pas
   await page.fill('input[type="password"]', password);
 });
 
-When('I click the register button', async ({ page }) => {
+When('I enter registration email {string}', async ({ page }, email) => {
+  await page.fill('input[type="email"]', email);
+});
+
+When('I click the send verification code button', async ({ page }) => {
+  // Mock the send-otp endpoint
+  await page.route(`${API_BASE}/auth/send-otp`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'success',
+        message: 'Verification code sent successfully'
+      }),
+    });
+  });
+
+  await page.click('button:has-text("Send Verification Code")');
+});
+
+Then('I should see the verification code input field', async ({ page }) => {
+  await expect(page.locator('input[placeholder="123456"]')).toBeVisible();
+});
+
+When('I enter verification code {string} and click verify', async ({ page }, code) => {
+  await page.fill('input[placeholder="123456"]', code);
+  await page.click('button:has-text("Confirm Code")');
+});
+
+Then('I should see the password setup field', async ({ page }) => {
+  await expect(page.locator('input[type="password"]')).toBeVisible();
+});
+
+When('I enter registration password {string} and click register', async ({ page }, password) => {
   // Set up mock for registration and profile load
   await page.route(`${API_BASE}/auth/register`, async (route) => {
     await route.fulfill({
@@ -105,7 +138,8 @@ When('I click the register button', async ({ page }) => {
     });
   });
 
-  await page.click('button[type="submit"]');
+  await page.fill('input[type="password"]', password);
+  await page.click('button:has-text("Create Account")');
 });
 
 Then('I should see the discovery page header', async ({ page }) => {

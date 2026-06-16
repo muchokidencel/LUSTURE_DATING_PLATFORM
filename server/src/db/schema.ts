@@ -273,3 +273,12 @@ export const notificationPreferences = pgTable("notification_preferences", {
 }, (t) => ({
   pk: primaryKey({ columns: [t.userId, t.eventType] }),
 }));
+
+export const emailVerificationCodes = pgTable("email_verification_codes", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 255 }).notNull(),
+  code: varchar("code", { length: 6 }).notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
