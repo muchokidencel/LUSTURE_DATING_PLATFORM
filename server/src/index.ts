@@ -31,8 +31,19 @@ setupMatchingEngines().catch(console.error);
 initReferralCron();
 
 // Middlewares
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  'http://localhost:5173',
+  'http://localhost:5174'
+].filter(Boolean) as string[];
+
 app.use(cors({
-  origin: [process.env.CLIENT_URL || 'http://localhost:5173', 'http://localhost:5174'],
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const isAllowed = allowedOrigins.some(allowed => origin === allowed || allowed.startsWith(origin)) || 
+                      origin.endsWith('.vercel.app');
+    callback(null, isAllowed);
+  },
   credentials: true
 }));
 app.use(express.json());
