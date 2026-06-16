@@ -9,6 +9,7 @@ import { Sparkles, X, Heart, Star, MapPin, RefreshCw, Compass, ChevronRight, Use
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
 import { isAxiosError } from 'axios';
 import { AgeSlider } from '../components/ui/AgeSlider';
+import DiscoveryTabs from '../components/layout/DiscoveryTabs';
 
 
 export default function Recommendations() {
@@ -163,6 +164,11 @@ export default function Recommendations() {
 
   return (
     <div className="min-h-screen bg-void flex flex-col items-center justify-center px-6 pt-20 pb-32 overflow-hidden">
+      {/* Switcher tabs */}
+      <div className="mb-6 w-full max-w-md md:max-w-[380px] flex justify-center">
+        <DiscoveryTabs />
+      </div>
+
       {/* Premium Age Range Filter Slider */}
       <div className="w-full max-w-md md:max-w-[380px] bg-card border border-border-subtle rounded-2xl p-6 mb-6 space-y-4 shadow-xl">
         <div className="flex justify-between items-center">
@@ -176,7 +182,7 @@ export default function Recommendations() {
         />
       </div>
 
-      <div className="w-full max-w-md md:max-w-[380px] relative z-10 aspect-[3/4.5] md:aspect-[2/3.2]">
+      <div id="recommendations-card-area" className="w-full max-w-md md:max-w-[380px] relative z-10 aspect-[3/4.5] md:aspect-[2/3.2]">
         <AnimatePresence mode="popLayout">
           <motion.div
             key={currentUser.id}

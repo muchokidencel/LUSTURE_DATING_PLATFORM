@@ -5,6 +5,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import { Link, useNavigate } from 'react-router-dom';
 import { MapPin, Sparkles, Loader2, Crown, Lock } from 'lucide-react';
 import { isAxiosError } from 'axios';
+import DiscoveryTabs from '../components/layout/DiscoveryTabs';
 
 interface User {
   id: number;
@@ -185,7 +186,8 @@ export default function Discovery() {
             <h1 className="font-headline text-4xl text-lustre-text font-bold">Discover</h1>
             <p className="font-sans text-base text-lustre-muted">Find your match within our curated community.</p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+             <DiscoveryTabs />
              <select
                value={genderFilter}
                onChange={(e) => setGenderFilter(e.target.value)}
@@ -206,13 +208,13 @@ export default function Discovery() {
 
 
         {loading && users.length === 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+          <div id="discovery-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
               <Skeleton key={i} className="aspect-[2/3] rounded-xl bg-card shadow-sm" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+          <div id="discovery-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             {filteredUsers.map(user => (
               <UserCard key={user.id} user={user} />
             ))}

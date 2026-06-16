@@ -6,11 +6,13 @@ import { Skeleton } from '../components/ui/skeleton';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
 import { Card } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
-import { Heart, LogOut, Zap, Eye, Crown, Share2, MessageCircle, Camera } from 'lucide-react';
+import { Heart, LogOut, Zap, Eye, Crown, Share2, MessageCircle, Camera, Compass } from 'lucide-react';
+import { useTour } from '../context/TourContext';
 import { cn } from '../lib/utils';
 
 export default function Profile() {
   const { logout } = useAuth();
+  const { startTour } = useTour();
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { data: statsData, isLoading: statsLoading } = useStats();
 
@@ -124,16 +126,26 @@ export default function Profile() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-3 mb-12">
+        <div className="flex flex-col sm:flex-row gap-3 mb-12">
           <Button className="flex-1 bg-gradient-brand text-white rounded-lg h-12 font-sans font-semibold" asChild>
             <Link to="/profile/edit" className="text-white">Edit Profile</Link>
           </Button>
-          <Button variant="outline" size="icon" className="w-12 h-12 rounded-lg border-border-strong bg-elevated hover:bg-hover">
-            <MessageCircle size={20} strokeWidth={1.5} className="text-lustre-muted" />
+          <Button 
+            onClick={startTour}
+            variant="outline" 
+            className="flex-1 border-border-strong bg-elevated text-white rounded-lg h-12 font-sans font-semibold hover:bg-hover transition-colors flex items-center justify-center gap-2"
+          >
+            <Compass size={16} strokeWidth={1.5} className="text-lustre-purple" />
+            Platform Guide
           </Button>
-          <Button variant="outline" size="icon" className="w-12 h-12 rounded-lg border-border-strong bg-elevated hover:bg-hover">
-            <Share2 size={20} strokeWidth={1.5} className="text-lustre-muted" />
-          </Button>
+          <div className="flex gap-3">
+            <Button variant="outline" size="icon" className="w-12 h-12 rounded-lg border-border-strong bg-elevated hover:bg-hover">
+              <MessageCircle size={20} strokeWidth={1.5} className="text-lustre-muted" />
+            </Button>
+            <Button variant="outline" size="icon" className="w-12 h-12 rounded-lg border-border-strong bg-elevated hover:bg-hover">
+              <Share2 size={20} strokeWidth={1.5} className="text-lustre-muted" />
+            </Button>
+          </div>
         </div>
 
         {/* Profile Completion */}

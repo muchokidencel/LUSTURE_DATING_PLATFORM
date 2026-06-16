@@ -74,6 +74,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-8">
             <NavLink 
               to="/discovery"
+              id="nav-discovery"
               className={({ isActive }) => cn(
                 "font-headline text-[10px] uppercase tracking-[0.2em] transition-all duration-300 pb-1 border-b-2",
                 isActive 
@@ -85,6 +86,7 @@ export default function Navbar() {
             </NavLink>
             <NavLink 
               to="/matches"
+              id="nav-matches"
               className={({ isActive }) => cn(
                 "font-headline text-[10px] uppercase tracking-[0.2em] transition-all duration-300 pb-1 border-b-2",
                 isActive 
@@ -96,6 +98,7 @@ export default function Navbar() {
             </NavLink>
             <NavLink 
               to="/referrals"
+              id="nav-referrals"
               className={({ isActive }) => cn(
                 "font-headline text-[10px] uppercase tracking-[0.2em] transition-all duration-300 pb-1 border-b-2",
                 isActive 
@@ -107,6 +110,7 @@ export default function Navbar() {
             </NavLink>
             <NavLink 
               to="/premium"
+              id="nav-premium"
               className={({ isActive }) => cn(
                 "font-headline text-[10px] uppercase tracking-[0.2em] transition-all duration-300 pb-1 border-b-2 flex items-center gap-1.5",
                 isActive 
@@ -208,7 +212,7 @@ export default function Navbar() {
               <Link to="/premium">Upgrade</Link>
             </Button>
 
-            <Link to="/profile">
+            <Link to="/profile" id="nav-profile">
               <Avatar className={cn(
                 "w-9 h-9 cursor-pointer transition-all border",
                 user?.role === 'admin' ? "ring-2 ring-lustre-purple" : "border-outline-variant hover:border-lustre-purple/50"

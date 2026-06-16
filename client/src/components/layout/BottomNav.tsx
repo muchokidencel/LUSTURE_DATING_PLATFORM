@@ -17,6 +17,7 @@ export default function BottomNav() {
         <NavLink
           key={item.to}
           to={item.to}
+          id={`bottom-nav-${item.label.toLowerCase()}`}
           className={({ isActive }) => cn(
             "flex flex-col items-center gap-1 group transition-all duration-300",
             isActive ? "active scale-110" : ""

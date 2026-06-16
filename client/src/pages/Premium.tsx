@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
@@ -19,6 +19,7 @@ export default function Premium() {
   const [paymentMethod, setPaymentMethod] = useState<'mpesa' | 'paystack' | null>(null);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [polling, setPolling] = useState(false);
+  const verifiedRef = useRef<string | null>(null);
 
   useEffect(() => {
     const verifyPaystack = async (reference: string) => {
@@ -26,16 +27,17 @@ export default function Premium() {
       try {
         await api.get(`/payments/pay/paystack/verify/${reference}`);
         await refetchSub();
-        navigate('/premium', { replace: true });
       } catch (error: any) {
         console.error('Verification error:', error);
       } finally {
         setLoading(false);
+        navigate('/premium', { replace: true });
       }
     };
 
     const reference = searchParams.get('reference');
-    if (reference) {
+    if (reference && verifiedRef.current !== reference) {
+      verifiedRef.current = reference;
       verifyPaystack(reference);
     }
   }, [searchParams, navigate, refetchSub]);
@@ -78,6 +80,7 @@ export default function Premium() {
       const { data } = await api.post('/payments/pay/paystack/initialize', {
         amount,
         email: user?.email,
+        callbackUrl: `${window.location.origin}/premium`,
       });
       window.location.href = data.data.authorization_url;
     } catch (error: any) {

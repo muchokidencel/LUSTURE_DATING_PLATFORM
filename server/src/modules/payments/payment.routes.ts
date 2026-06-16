@@ -232,7 +232,7 @@ router.post('/callback/mpesa', async (req: Request, res: Response) => {
 
 // Paystack Initialize
 router.post('/pay/paystack/initialize', authenticate, async (req: AuthRequest, res) => {
-  const { amount, email } = req.body;
+  const { amount, email, callbackUrl } = req.body;
   const userId = req.user!.id;
 
   try {
@@ -241,7 +241,7 @@ router.post('/pay/paystack/initialize', authenticate, async (req: AuthRequest, r
       {
         email,
         amount: amount * 100, // Paystack expects amount in subunits (kobo/cents)
-        callback_url: `${process.env.CLIENT_URL}/premium`,
+        callback_url: callbackUrl || `${process.env.CLIENT_URL || 'http://localhost:5173'}/premium`,
         metadata: {
           userId,
         },

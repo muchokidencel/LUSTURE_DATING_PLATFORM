@@ -19,6 +19,8 @@ import ReferralDashboard from './pages/ReferralDashboard';
 import Landing from './pages/Landing';
 import Navbar from './components/layout/Navbar';
 import BottomNav from './components/layout/BottomNav';
+import TourGuide from './components/layout/TourGuide';
+import { TourProvider } from './context/TourContext';
 import { Loader2 } from 'lucide-react';
 
 
@@ -73,6 +75,7 @@ function AnimatedRoutes() {
   return (
     <div className="min-h-screen bg-void text-lustre-text transition-colors duration-300 lustre-orbs">
       {!isAdminPath && <Navbar />}
+      {!isAdminPath && isAuthenticated && <TourGuide />}
       <div className={cn(isAdminPath ? "pt-0 pb-0" : "pt-16 pb-24 md:pb-0")}>
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
@@ -140,7 +143,9 @@ function App() {
       <ThemeProvider defaultTheme="dark" storageKey="dating-theme">
         <AuthProvider>
           <Router>
-            <AnimatedRoutes />
+            <TourProvider>
+              <AnimatedRoutes />
+            </TourProvider>
           </Router>
         </AuthProvider>
       </ThemeProvider>
