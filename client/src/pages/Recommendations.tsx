@@ -107,7 +107,7 @@ export default function Recommendations() {
             <Lock size={40} strokeWidth={1.5} className="text-lustre-gold" />
           </div>
           <div className="space-y-4">
-            <h1 className="font-garamond text-4xl text-white italic">Curated Recommendations</h1>
+            <h1 className="font-garamond text-4xl text-lustre-text italic">Curated Recommendations</h1>
             <p className="font-sans text-lustre-muted leading-relaxed">
               Our proprietary scoring engine is reserved for Elite members. Upgrade to see your most compatible connections.
             </p>
@@ -147,11 +147,11 @@ export default function Recommendations() {
          <Compass size={48} strokeWidth={1.5} className="text-lustre-purple/40" />
       </div>
       <div className="space-y-4 mb-12">
-        <h2 className="font-garamond text-5xl text-white leading-none">Seeking New Vistas</h2>
+        <h2 className="font-garamond text-5xl text-lustre-text leading-none">Seeking New Vistas</h2>
         <p className="font-sans text-lustre-muted max-w-sm mx-auto leading-relaxed">We are curating more exceptional connections for you. Check back soon.</p>
       </div>
       <div className="flex gap-4">
-        <Button variant="outline" className="px-10 h-12 rounded-full border-border-strong text-white" onClick={() => navigate('/discovery')}>
+        <Button variant="outline" className="px-10 h-12 rounded-full border-border-strong text-lustre-text" onClick={() => navigate('/discovery')}>
            Discovery
         </Button>
         <Button className="px-10 h-12 rounded-full bg-gradient-brand text-white gap-2" onClick={() => { setCurrentIndex(0); refetch(); }}>
@@ -231,7 +231,7 @@ export default function Recommendations() {
 
                  <Button 
                    variant="ghost"
-                   className="h-auto p-0 font-sans text-[10px] uppercase tracking-[0.2em] font-bold text-lustre-purple hover:text-white transition-colors group mt-2"
+                   className="h-auto p-0 font-sans text-[10px] uppercase tracking-[0.2em] font-bold text-lustre-purple hover:text-lustre-text transition-colors group mt-2"
                    onClick={() => navigate(`/profile/${currentUser.id}`)}
                  >
                    View Profile
@@ -249,7 +249,7 @@ export default function Recommendations() {
           variant="outline"
           size="icon"
           onClick={() => handleAction('left')}
-          className="w-16 h-16 rounded-full border-border-strong bg-card/80 backdrop-blur-md text-lustre-muted hover:text-white hover:bg-hover active:scale-90 transition-all shadow-xl"
+          className="w-16 h-16 rounded-full border-border-strong bg-card/80 backdrop-blur-md text-lustre-muted hover:text-lustre-text hover:bg-hover active:scale-90 transition-all shadow-xl"
         >
           <X size={28} strokeWidth={1.5} />
         </Button>
@@ -317,7 +317,7 @@ export default function Recommendations() {
             </div>
 
             <div className="space-y-3">
-              <DialogTitle className="text-3xl font-garamond text-white">Daily Limit Reached</DialogTitle>
+              <DialogTitle className="text-3xl font-garamond text-lustre-text">Daily Limit Reached</DialogTitle>
               <DialogDescription className="text-sm text-lustre-muted">
                 Free connections are limited to 20 per day. Upgrade to Elite for unlimited curation and extraordinary visibility.
               </DialogDescription>

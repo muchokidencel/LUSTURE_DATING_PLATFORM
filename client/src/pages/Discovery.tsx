@@ -6,6 +6,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { MapPin, Sparkles, Loader2, Crown, Lock } from 'lucide-react';
 import { isAxiosError } from 'axios';
 import DiscoveryTabs from '../components/layout/DiscoveryTabs';
+import { useProfile } from '../hooks/useQueries';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../components/ui/dialog';
 
 interface User {
   id: number;
@@ -19,7 +21,15 @@ interface User {
   gender?: string;
 }
 
-function UserCard({ user }: { user: User }) {
+function UserCard({ 
+  user, 
+  isCurrentUserPremium, 
+  onLockClick 
+}: { 
+  user: User; 
+  isCurrentUserPremium: boolean; 
+  onLockClick: () => void;
+}) {
   const photo = user.photos?.[0]?.url;
   const isPremium = user.isPremium;
 
@@ -67,7 +77,13 @@ function UserCard({ user }: { user: User }) {
           </p>
         )}
         <Link 
-          to={`/profile/${user.id}`} 
+          to={isCurrentUserPremium ? `/profile/${user.id}` : '#'} 
+          onClick={(e) => {
+            if (!isCurrentUserPremium) {
+              e.preventDefault();
+              onLockClick();
+            }
+          }}
           className="mt-2 w-full py-2 border border-lustre-purple/40 text-lustre-purple rounded-lg font-headline text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-lustre-purple/10 transition-all text-center block active:scale-95"
         >
           View Profile
@@ -79,6 +95,8 @@ function UserCard({ user }: { user: User }) {
 
 export default function Discovery() {
   const navigate = useNavigate();
+  const { data: profile } = useProfile();
+  const isCurrentUserPremium = profile?.premiumTier !== 'free';
   const [users, setUsers] = useState<User[]>([]);
   const [genderFilter, setGenderFilter] = useState('');
   const [loading, setLoading] = useState(true);
@@ -86,6 +104,8 @@ export default function Discovery() {
   const [hasMore, setPageHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [isGated, setIsGated] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [targetProfileName, setTargetProfileName] = useState('');
 
   const filteredUsers = genderFilter
     ? users.filter(u => u.gender?.toLowerCase() === genderFilter.toLowerCase())
@@ -216,7 +236,15 @@ export default function Discovery() {
         ) : (
           <div id="discovery-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             {filteredUsers.map(user => (
-              <UserCard key={user.id} user={user} />
+              <UserCard 
+                key={user.id} 
+                user={user} 
+                isCurrentUserPremium={isCurrentUserPremium}
+                onLockClick={() => {
+                  setTargetProfileName(user.displayName);
+                  setIsUpgradeModalOpen(true);
+                }}
+              />
             ))}
           </div>
         )}
@@ -246,6 +274,40 @@ export default function Discovery() {
           </div>
         )}
       </div>
+
+      <Dialog open={isUpgradeModalOpen} onOpenChange={setIsUpgradeModalOpen}>
+        <DialogContent className="max-w-md mx-auto p-10 bg-card-alt border-outline-variant/40 rounded-3xl text-center space-y-6">
+          <div className="w-20 h-20 bg-gradient-gold/10 rounded-full flex items-center justify-center mx-auto border border-lustre-gold/30 shadow-lg">
+            <Crown size={32} className="text-lustre-gold fill-lustre-gold/20" strokeWidth={1.5} />
+          </div>
+          <div className="space-y-3">
+            <DialogTitle className="font-garamond text-3xl text-white italic">
+              A Glimpse of Connection...
+            </DialogTitle>
+            <DialogDescription className="font-sans text-lustre-muted text-sm leading-relaxed px-4">
+              Unlock the full canvas of {targetProfileName ? targetProfileName.split(' ')[0] : 'members'}'s profile. Connect on a deeper level, view direct contact links, and start messaging premium members.
+            </DialogDescription>
+          </div>
+          <div className="w-full space-y-3 pt-4">
+            <Button 
+              className="w-full h-14 rounded-full bg-gradient-brand text-white font-headline text-[10px] uppercase tracking-widest font-bold shadow-lg hover:scale-105 active:scale-95 transition-transform" 
+              onClick={() => {
+                setIsUpgradeModalOpen(false);
+                navigate('/premium');
+              }}
+            >
+              Upgrade to Premium
+            </Button>
+            <Button 
+              variant="ghost" 
+              className="w-full h-12 rounded-full text-lustre-muted font-headline text-[10px] uppercase tracking-widest font-bold hover:text-lustre-text" 
+              onClick={() => setIsUpgradeModalOpen(false)}
+            >
+              Keep Exploring
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

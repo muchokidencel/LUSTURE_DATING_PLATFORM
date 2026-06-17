@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Dialog, DialogContent } from "../components/ui/dialog";
-import { useMatches } from '../hooks/useQueries';
+import { useMatches, useProfile } from '../hooks/useQueries';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
 import { Card } from '../components/ui/card';
 import { Heart, MapPin, MessageCircle, ChevronRight, Search, Crown } from 'lucide-react';
@@ -25,10 +25,55 @@ interface Match {
 
 export default function Matches() {
   const { data: matchesData, isLoading: loading } = useMatches();
+  const { data: profile, isLoading: profileLoading } = useProfile();
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const navigate = useNavigate();
 
+  const isPremium = profile?.premiumTier !== 'free';
   const matches = matchesData || [];
+
+  if (profileLoading || loading) {
+    return (
+      <div className="min-h-screen bg-void px-6 py-24 pb-32">
+        <div className="max-w-4xl mx-auto space-y-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="h-24 animate-pulse rounded-xl bg-card shadow-sm border-transparent" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!isPremium) {
+    return (
+      <div className="min-h-screen bg-void px-6 py-24 flex items-center justify-center">
+        <div className="max-w-md w-full text-center space-y-8 animate-fade-up">
+          <div className="w-24 h-24 bg-gradient-gold/10 rounded-full flex items-center justify-center mx-auto border border-lustre-gold/20 shadow-lg">
+            <Crown size={40} strokeWidth={1.5} className="text-lustre-gold fill-lustre-gold/10" />
+          </div>
+          <div className="space-y-4">
+            <h1 className="font-garamond text-4xl text-white italic">Your Connections Await</h1>
+            <p className="font-sans text-lustre-muted leading-relaxed">
+              Matches and direct social connections are exclusive features for our Elite and Gold members. Upgrade today to unlock your matches and start conversing.
+            </p>
+          </div>
+          <Button 
+            className="w-full h-14 rounded-xl bg-gradient-gold text-black font-sans font-bold uppercase tracking-widest text-[10px]"
+            onClick={() => navigate('/premium')}
+          >
+            Unlock Premium Access
+          </Button>
+          <Button 
+            variant="link" 
+            className="text-lustre-faint font-sans text-[10px] uppercase tracking-widest"
+            onClick={() => navigate('/discovery')}
+          >
+            Explore Discovery Grid
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const openWhatsApp = (number: string) => {
     const cleanNumber = number.replace(/\D/g, '');

@@ -35,8 +35,7 @@ describe('Login Page UI', () => {
     expect(screen.getByText(/Email Address/i)).toBeInTheDocument();
     expect(screen.getByText(/Password/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Sign In/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Google/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Apple/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Continue with Google/i })).toBeInTheDocument();
   });
 
   it('triggers login and navigates to discovery on credentials verification', async () => {

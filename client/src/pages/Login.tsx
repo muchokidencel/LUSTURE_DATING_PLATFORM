@@ -79,7 +79,7 @@ export default function Login() {
         
         {/* Auth Tabs */}
         <div className="flex justify-center gap-16 border-b border-border/30">
-          <Link to="/login" className="pb-4 font-sans text-xs font-bold uppercase tracking-[0.2em] border-b-2 border-lustre-purple text-white transition-all">
+          <Link to="/login" className="pb-4 font-sans text-xs font-bold uppercase tracking-[0.2em] border-b-2 border-lustre-purple text-lustre-text transition-all">
             Sign In
           </Link>
           <Link to="/register" className="pb-4 font-sans text-xs font-bold uppercase tracking-[0.2em] border-b-2 border-transparent text-lustre-faint hover:text-lustre-muted transition-all">
@@ -90,7 +90,7 @@ export default function Login() {
         {/* Login Card */}
         <Card className="p-6 md:p-10 border-border bg-card shadow-2xl">
           <div className="text-center mb-6 md:mb-10 space-y-2">
-            <h1 className="font-garamond text-4xl text-white">Welcome Back</h1>
+            <h1 className="font-garamond text-4xl text-lustre-text">Welcome Back</h1>
             <p className="font-sans text-xs text-lustre-muted">Enter your credentials to access Lustre.</p>
           </div>
 
@@ -154,7 +154,7 @@ export default function Login() {
                 type="button"
                 onClick={handleGoogleClick}
                 variant="outline" 
-                className="w-full h-12 border-border-strong bg-elevated text-white rounded-xl text-[9px] font-bold uppercase tracking-widest gap-3 hover:bg-elevated/85 transition-colors flex items-center justify-center"
+                className="w-full h-12 border-border-strong bg-elevated text-lustre-text rounded-xl text-[9px] font-bold uppercase tracking-widest gap-3 hover:bg-elevated/85 transition-colors flex items-center justify-center"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -169,7 +169,7 @@ export default function Login() {
         </Card>
 
         <p className="text-center font-sans text-[10px] text-lustre-faint uppercase tracking-widest">
-           By signing in, you agree to our <a href="#" className="text-white hover:underline">Terms</a> and <a href="#" className="text-white hover:underline">Privacy Policy</a>
+           By signing in, you agree to our <a href="#" className="text-lustre-text hover:underline">Terms</a> and <a href="#" className="text-lustre-text hover:underline">Privacy Policy</a>
         </p>
       </div>
     </div>

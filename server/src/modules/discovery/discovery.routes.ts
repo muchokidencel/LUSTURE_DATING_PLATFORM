@@ -20,10 +20,6 @@ router.get('/users', authenticate, async (req: AuthRequest, res) => {
     // Sync and get latest tier
     const currentTier = await syncUserPremiumStatus(userId);
 
-    if (!currentTier || currentTier === 'free') {
-      console.warn(`[DISCOVERY:FORBIDDEN] Non-premium user ${userId} attempted to access discovery (Tier: ${currentTier})`);
-      return res.status(403).json({ message: 'Premium subscription required for Discovery' });
-    }
 
     // Get blocked users
     const blockedList = await db.query.blocks.findMany({

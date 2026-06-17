@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useProfile, useStats } from '../hooks/useQueries';
 import { Button } from '../components/ui/button';
@@ -9,12 +10,16 @@ import { Badge } from '../components/ui/badge';
 import { Heart, LogOut, Zap, Eye, Crown, Share2, MessageCircle, Camera, Compass } from 'lucide-react';
 import { useTour } from '../context/TourContext';
 import { cn } from '../lib/utils';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../components/ui/dialog';
 
 export default function Profile() {
+  const navigate = useNavigate();
   const { logout } = useAuth();
   const { startTour } = useTour();
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { data: statsData, isLoading: statsLoading } = useStats();
+  const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
+  const [statsModalType, setStatsModalType] = useState<'Likes' | 'Matches'>('Likes');
 
   const getInitial = (name: string) => {
     return name ? name.charAt(0).toUpperCase() : 'U';
@@ -33,10 +38,12 @@ export default function Profile() {
     </div>
   );
 
+  const isPremium = profile?.premiumTier !== 'free';
+
   const stats = [
-    { label: 'Likes', count: statsData?.likes || 0, icon: Heart, color: 'text-lustre-rose' },
-    { label: 'Matches', count: statsData?.matches || 0, icon: Zap, color: 'text-lustre-purple' },
-    { label: 'Views', count: statsData?.views || 0, icon: Eye, color: 'text-lustre-gold' },
+    { label: 'Likes', count: isPremium ? (statsData?.likes || 0) : '🔒', icon: Heart, color: 'text-lustre-rose', isLocked: !isPremium },
+    { label: 'Matches', count: isPremium ? (statsData?.matches || 0) : '🔒', icon: Zap, color: 'text-lustre-purple', isLocked: !isPremium },
+    { label: 'Views', count: statsData?.views || 0, icon: Eye, color: 'text-lustre-gold', isLocked: false },
   ];
 
   const calculateCompletion = () => {
@@ -57,7 +64,6 @@ export default function Profile() {
   };
 
   const completionPct = calculateCompletion();
-  const isPremium = profile?.premiumTier !== 'free';
   const interests = profile?.preferences?.interestedInGenders?.length > 0 ? profile.preferences.interestedInGenders : ['Art', 'Travel', 'Fine Dining'];
 
   return (
@@ -114,8 +120,20 @@ export default function Profile() {
         {/* Stats Grid */}
         <div className="grid grid-cols-3 gap-4 md:gap-6 mb-12">
           {stats.map((stat, i) => (
-            <Card key={i} className="bg-card border-border p-6 text-center space-y-2 hover:border-lustre-purple/30 transition-all cursor-default">
-              <span className={cn("font-garamond text-3xl font-semibold", stat.color)}>
+            <Card 
+              key={i} 
+              onClick={() => {
+                if (stat.isLocked) {
+                  setStatsModalType(stat.label as 'Likes' | 'Matches');
+                  setIsStatsModalOpen(true);
+                }
+              }}
+              className={cn(
+                "bg-card border-border p-6 text-center space-y-2 transition-all cursor-default select-none",
+                stat.isLocked ? "cursor-pointer hover:border-lustre-gold/30 hover:bg-lustre-gold/5" : "hover:border-lustre-purple/30"
+              )}
+            >
+              <span className={cn("font-garamond text-3xl font-semibold", stat.color, stat.isLocked && "text-lustre-gold/60")}>
                 {stat.count}
               </span>
               <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-lustre-faint font-bold">
@@ -231,6 +249,43 @@ export default function Profile() {
           </Button>
         </div>
       </main>
+
+      <Dialog open={isStatsModalOpen} onOpenChange={setIsStatsModalOpen}>
+        <DialogContent className="max-w-md mx-auto p-10 bg-card-alt border-outline-variant/40 rounded-3xl text-center space-y-6">
+          <div className="w-20 h-20 bg-gradient-gold/10 rounded-full flex items-center justify-center mx-auto border border-lustre-gold/30 shadow-lg">
+            <Crown size={32} className="text-lustre-gold fill-lustre-gold/20" strokeWidth={1.5} />
+          </div>
+          <div className="space-y-3">
+            <DialogTitle className="font-garamond text-3xl text-white italic">
+              {statsModalType === 'Likes' ? 'Reveal Your Admirers' : 'Unveil Mutual Spark'}
+            </DialogTitle>
+            <DialogDescription className="font-sans text-lustre-muted text-sm leading-relaxed px-4">
+              {statsModalType === 'Likes' 
+                ? 'Unlock the likes ledger to discover exactly who has expressed interest in your profile. Match back instantly with one tap!'
+                : 'See all your mutual connections in one unified space. Start engaging in high-intent conversations.'
+              }
+            </DialogDescription>
+          </div>
+          <div className="w-full space-y-3 pt-4">
+            <Button 
+              className="w-full h-14 rounded-full bg-gradient-brand text-white font-headline text-[10px] uppercase tracking-widest font-bold shadow-lg hover:scale-105 active:scale-95 transition-transform" 
+              onClick={() => {
+                setIsStatsModalOpen(false);
+                navigate('/premium');
+              }}
+            >
+              Upgrade to Premium
+            </Button>
+            <Button 
+              variant="ghost" 
+              className="w-full h-12 rounded-full text-lustre-muted font-headline text-[10px] uppercase tracking-widest font-bold hover:text-lustre-text" 
+              onClick={() => setIsStatsModalOpen(false)}
+            >
+              Maybe Later
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

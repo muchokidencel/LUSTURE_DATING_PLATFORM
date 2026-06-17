@@ -331,6 +331,43 @@ Given('I am logged in as a free user', async ({ page }) => {
       }),
     });
   });
+
+  // Mock initial discovery list
+  await page.route(`${API_BASE}/discovery/users*`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'success',
+        data: mockDiscoveryUsers,
+        pagination: { total: mockDiscoveryUsers.length, page: 1, limit: 10, pages: 1 }
+      }),
+    });
+  });
+
+  // Mock recommendations matching feed
+  await page.route(`${API_BASE}/matching/recommendations*`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'success',
+        data: mockDiscoveryUsers,
+      }),
+    });
+  });
+
+  // Mock matches endpoint to prevent 401 redirects
+  await page.route(`${API_BASE}/matches*`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'success',
+        data: [],
+      }),
+    });
+  });
 });
 
 When('I enter M-Pesa phone number {string}', async ({ page }, phone) => {
@@ -739,3 +776,44 @@ Then('the tour dialog should be visible', async ({ page }) => {
   const dialog = page.locator('text=Welcome to Lustre').first();
   await expect(dialog).toBeVisible({ timeout: 15000 });
 });
+
+Then('I should see the profile card for {string}', async ({ page }, name) => {
+  await expect(page.locator(`.profile-card:has-text("${name}")`)).toBeVisible({ timeout: 10000 });
+});
+
+When('I click "View Profile" for {string}', async ({ page }, name) => {
+  const card = page.locator('.profile-card', { hasText: name });
+  await card.locator('text=View Profile').click();
+});
+
+Then('I should see a friendly upgrade prompt modal', async ({ page }) => {
+  await expect(page.locator('text=A Glimpse of Connection...')).toBeVisible({ timeout: 10000 });
+});
+
+Then('I should see a button "Upgrade to Premium"', async ({ page }) => {
+  await expect(page.locator('button:has-text("Upgrade to Premium")')).toBeVisible();
+});
+
+Then('I should not be redirected to the profile detail page', async ({ page }) => {
+  await expect(page).not.toHaveURL(/\/profile\/\d+/);
+  await expect(page).toHaveURL(/\/discovery/);
+});
+
+Then('I should see the profile completion progress', async ({ page }) => {
+  await expect(page.locator('text=Profile Completion')).toBeVisible({ timeout: 10000 });
+});
+
+Then('the likes count and matches count should be locked or blurred', async ({ page }) => {
+  const likesCard = page.locator('.bg-card', { hasText: 'Likes' });
+  await expect(likesCard.locator('text=🔒')).toBeVisible();
+  const matchesCard = page.locator('.bg-card', { hasText: 'Matches' });
+  await expect(matchesCard.locator('text=🔒')).toBeVisible();
+});
+
+Then('I should see a locked screen prompting me to upgrade to premium', async ({ page }) => {
+  await expect(page.locator('text=Your Connections Await')).toBeVisible({ timeout: 10000 });
+  await expect(page.locator('button:has-text("Unlock Premium Access")')).toBeVisible();
+});
+
+
+

@@ -1,16 +1,17 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { usePublicProfile, useLike } from '../hooks/useQueries';
+import { usePublicProfile, useLike, useProfile } from '../hooks/useQueries';
 import { Button } from '../components/ui/button';
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "../components/ui/dialog";
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
-import { Heart, HeartHandshake, ArrowLeft, Loader2, Share2, MoreHorizontal, Sparkles, Crown, CheckCircle2 } from 'lucide-react';
+import { Heart, HeartHandshake, ArrowLeft, Loader2, Share2, MoreHorizontal, Sparkles, Crown, CheckCircle2, Lock } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export default function UserProfile() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: user, isLoading, isError } = usePublicProfile(id!);
+  const { data: loggedInProfile, isLoading: loggedInLoading } = useProfile();
   const likeMutation = useLike();
   const [showMatchModal, setShowMatchModal] = useState(false);
   const [likedSent, setLikedSent] = useState(false);
@@ -21,11 +22,44 @@ export default function UserProfile() {
     }
   }, [user]);
 
-  if (isLoading) return (
+  if (isLoading || loggedInLoading) return (
     <div className="min-h-screen bg-void flex items-center justify-center">
       <Loader2 size={48} strokeWidth={1.5} className="text-lustre-purple animate-spin" />
     </div>
   );
+
+  const isPremium = loggedInProfile?.premiumTier !== 'free';
+
+  if (!isPremium) {
+    return (
+      <div className="min-h-screen bg-void px-6 py-24 flex items-center justify-center">
+        <div className="max-w-md w-full text-center space-y-8 animate-fade-up">
+          <div className="w-24 h-24 bg-gradient-gold/10 rounded-full flex items-center justify-center mx-auto border border-lustre-gold/20 shadow-lg">
+            <Lock size={40} strokeWidth={1.5} className="text-lustre-gold" />
+          </div>
+          <div className="space-y-4">
+            <h1 className="font-garamond text-4xl text-white italic">Profile is Locked</h1>
+            <p className="font-sans text-lustre-muted leading-relaxed">
+              Unlock the community grid and connect with high-intent individuals. Upgrade to Premium to explore profiles.
+            </p>
+          </div>
+          <Button 
+            className="w-full h-14 rounded-xl bg-gradient-gold text-black font-sans font-bold uppercase tracking-widest text-[10px]"
+            onClick={() => navigate('/premium')}
+          >
+            Upgrade to Premium
+          </Button>
+          <Button 
+            variant="link" 
+            className="text-lustre-faint font-sans text-[10px] uppercase tracking-widest"
+            onClick={() => navigate('/discovery')}
+          >
+            Go Back
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (isError || !user) return (
     <div className="min-h-screen bg-void flex flex-col items-center justify-center p-6 text-center">

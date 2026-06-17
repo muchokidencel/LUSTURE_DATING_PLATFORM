@@ -147,7 +147,7 @@ export default function Register() {
           <Link to="/login" className="pb-4 font-sans text-xs font-bold uppercase tracking-[0.2em] border-b-2 border-transparent text-lustre-faint hover:text-lustre-muted transition-all">
             Sign In
           </Link>
-          <Link to="/register" className="pb-4 font-sans text-xs font-bold uppercase tracking-[0.2em] border-b-2 border-lustre-purple text-white transition-all">
+          <Link to="/register" className="pb-4 font-sans text-xs font-bold uppercase tracking-[0.2em] border-b-2 border-lustre-purple text-lustre-text transition-all">
             Join
           </Link>
         </div>
@@ -155,7 +155,7 @@ export default function Register() {
         {/* Register Card */}
         <Card className="p-6 md:p-10 border-border bg-card shadow-2xl">
           <div className="text-center mb-6 md:mb-8 space-y-2">
-            <h1 className="font-garamond text-4xl text-white">Create Account</h1>
+            <h1 className="font-garamond text-4xl text-lustre-text">Create Account</h1>
             <p className="font-sans text-xs text-lustre-muted">Initiate your journey into authentic connection.</p>
           </div>
 
@@ -246,7 +246,7 @@ export default function Register() {
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="font-sans text-[9px] uppercase tracking-widest text-lustre-faint hover:text-white transition-colors font-bold"
+                  className="font-sans text-[9px] uppercase tracking-widest text-lustre-faint hover:text-lustre-text transition-colors font-bold"
                 >
                   ← Back to Email
                 </button>
@@ -291,7 +291,7 @@ export default function Register() {
                 <button
                   type="button"
                   onClick={() => setStep(2)}
-                  className="font-sans text-[9px] uppercase tracking-widest text-lustre-faint hover:text-white transition-colors font-bold"
+                  className="font-sans text-[9px] uppercase tracking-widest text-lustre-faint hover:text-lustre-text transition-colors font-bold"
                 >
                   ← Back to Verify
                 </button>
@@ -318,7 +318,7 @@ export default function Register() {
                 type="button"
                 onClick={handleGoogleClick}
                 variant="outline" 
-                className="w-full h-12 border-border-strong bg-elevated text-white rounded-xl text-[9px] font-bold uppercase tracking-widest gap-3 hover:bg-elevated/85 transition-colors flex items-center justify-center"
+                className="w-full h-12 border-border-strong bg-elevated text-lustre-text rounded-xl text-[9px] font-bold uppercase tracking-widest gap-3 hover:bg-elevated/85 transition-colors flex items-center justify-center"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -333,7 +333,7 @@ export default function Register() {
         </Card>
 
         <p className="text-center font-sans text-[10px] text-lustre-faint uppercase tracking-widest">
-           Already a member? <Link to="/login" className="text-white hover:underline font-bold">Sign In</Link>
+           Already a member? <Link to="/login" className="text-lustre-text hover:underline font-bold">Sign In</Link>
         </p>
       </div>
     </div>
