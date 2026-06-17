@@ -107,12 +107,17 @@ export default function EditProfile() {
     e.preventDefault();
     try {
       console.log(`[INTEGRATION:PROFILE_UPDATE] Sending updates for user`);
-      await updateProfileMutation.mutateAsync({
+      
+      const interestMap: any = {
+        'Men': 'Male',
+        'Women': 'Female',
+        'Everyone': 'Any'
+      };
+
+      const payload: any = {
         displayName: formData.fullName,
         bio: formData.bio,
         idealSunday: formData.idealSunday,
-        age: formData.age ? parseInt(formData.age) : null,
-        gender: formData.gender,
         city: formData.city,
         whatsapp: formData.whatsapp,
         instagram: formData.instagram,
@@ -121,12 +126,28 @@ export default function EditProfile() {
         longitude: formData.longitude,
         intent: formData.intent,
         matchPreferences: {
-          gender: formData.interestedIn,
+          gender: interestMap[formData.interestedIn] || 'Any',
           ageRange: { min: formData.minAge, max: formData.maxAge },
           maxDistanceKm: formData.distance,
           intent: formData.intentPreference
         }
-      });
+      };
+
+      // Only include age if it is a valid non-empty string to avoid null-parsing errors in Zod
+      if (formData.age) {
+        payload.age = parseInt(formData.age);
+      } else {
+        payload.age = undefined;
+      }
+
+      // Only include gender if it is set to avoid sending an invalid empty string to Zod enum validation
+      if (formData.gender) {
+        payload.gender = formData.gender;
+      } else {
+        payload.gender = undefined;
+      }
+
+      await updateProfileMutation.mutateAsync(payload);
       navigate('/profile');
     } catch (error) {
       console.error('[INTEGRATION:PROFILE_UPDATE] Failed to update profile:', error);
