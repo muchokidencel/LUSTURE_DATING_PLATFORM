@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import { createServer } from 'http';
 
+// Import routes
 import authRoutes from './modules/auth/auth.routes.js';
 import profileRoutes from './modules/profile/profile.routes.js';
 import userRoutes from './modules/users/user.routes.js';
@@ -18,53 +19,121 @@ import matchingRoutes from './modules/match/matching.routes.js';
 import likesRoutes from './modules/match/likes.routes.js';
 import notificationRoutes from './modules/notifications/notification.routes.js';
 
+// Import services
 import { setupMatchingEngines } from './db/engines.js';
 import { initReferralCron } from './modules/referral/referral.service.js';
 
+// Load environment variables
 dotenv.config();
 
+// Initialize Express app
 const app = express();
 const httpServer = createServer(app);
 
-// Initialize DB Engines & Cron Jobs
-setupMatchingEngines().catch(console.error);
-initReferralCron();
+// Initialize background services
+if (process.env.NODE_ENV !== 'test') {
+  setupMatchingEngines().catch((error) => {
+    console.error('[INIT:ERROR] Failed to setup matching engines:', error);
+  });
+  initReferralCron();
+}
 
-// Middlewares
+// ============================================
+// CORS Configuration
+// ============================================
 const allowedOrigins = [
   process.env.CLIENT_URL,
+  process.env.FRONTEND_URL,
   'http://localhost:5173',
-  'http://localhost:5174'
-].filter(Boolean) as string[];
+  'http://localhost:5174',
+  'http://localhost:3000'
+].filter(Boolean).map(url => url.replace(/\/$/, '')) as string[];
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    const isAllowed = allowedOrigins.some(allowed => origin === allowed || allowed.startsWith(origin)) || 
-                      origin.endsWith('.vercel.app');
-    callback(null, isAllowed);
-  },
-  credentials: true
-}));
-app.use(express.json());
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+
+      const isAllowed =
+        allowedOrigins.some(allowed => origin === allowed) ||
+        origin.endsWith('.vercel.app') ||
+        origin.endsWith('.onrender.com');
+
+      if (!isAllowed) {
+        console.warn(`[CORS] Blocked origin: ${origin}`);
+      }
+
+      callback(null, isAllowed);
+    },
+    credentials: true,
+  })
+);
+
+// ============================================
+// Middleware Stack
+// ============================================
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser());
 
-// Logger
+// Request logger
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] ${req.method} ${req.path}`);
   next();
 });
 
-// Global Rate Limiter
+// Global rate limiter
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: 100, // Limit each IP to 100 requests per window
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => req.path === '/health', // Don't rate limit health checks
 });
-app.use(limiter);
 
-// Routes
+if (process.env.NODE_ENV !== 'test') {
+  app.use(limiter);
+}
+
+// ============================================
+// Health & Status Routes
+// ============================================
+app.get('/', (req, res) => {
+  res.json({
+    service: 'Lustre Dating Platform API',
+    status: 'running',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/health',
+      auth: '/api/auth',
+      profile: '/api/profile',
+      users: '/api/users',
+      discovery: '/api/discovery',
+      payments: '/api/payments',
+      matches: '/api/matches',
+      admin: '/api/admin',
+      referrals: '/api/referrals',
+      stats: '/api/stats',
+      matching: '/api/matching',
+      likes: '/api/likes',
+      notifications: '/api/notifications',
+    },
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+  });
+});
+
+// ============================================
+// API Routes
+// ============================================
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/users', userRoutes);
@@ -78,12 +147,47 @@ app.use('/api/matching', matchingRoutes);
 app.use('/api/likes', likesRoutes);
 app.use('/api/notifications', notificationRoutes);
 
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+// ============================================
+// 404 Handler
+// ============================================
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Not Found',
+    message: `Route ${req.method} ${req.path} does not exist`,
+    timestamp: new Date().toISOString(),
+  });
 });
 
-const PORT = process.env.PORT || 5000;
+// ============================================
+// Error Handler (must be last)
+// ============================================
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (process.env.NODE_ENV === 'test') {
+    console.error('[TEST:ERROR]', err);
+  } else {
+    console.error('[ERROR]', err);
+  }
 
-httpServer.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal Server Error',
+    timestamp: new Date().toISOString(),
+  });
 });
+
+// ============================================
+// Start Server
+// ============================================
+if (process.env.NODE_ENV !== 'test') {
+  const PORT = process.env.PORT || 5000;
+
+  httpServer.listen(PORT, () => {
+    console.log(`
+╔════════════════════════════════════════╗
+║   Lustre Dating Platform - Backend    ║
+║        Running on Port ${PORT}         ║
+╚════════════════════════════════════════╝
+    `);
+  });
+}
+
+export default app;

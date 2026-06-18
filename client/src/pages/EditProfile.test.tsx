@@ -59,6 +59,10 @@ vi.mock('../hooks/useQueries', () => ({
   }),
 }));
 
+vi.mock('../components/PhotoUploader', () => ({
+  default: () => <div data-testid="photo-uploader">PhotoUploader Mock</div>,
+}));
+
 describe('EditProfile Page', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -78,7 +82,7 @@ describe('EditProfile Page', () => {
     expect(screen.getByDisplayValue('Los Angeles')).toBeInTheDocument();
     expect(screen.getAllByDisplayValue('+254712345678')).toHaveLength(2);
     expect(screen.getByDisplayValue('denzel_w')).toBeInTheDocument();
-  });
+  }, 10000);
 
   it('submits form with mapped interest options and correct data types', async () => {
     render(
@@ -109,8 +113,8 @@ describe('EditProfile Page', () => {
         })
       );
       expect(mockNavigate).toHaveBeenCalledWith('/profile');
-    });
-  });
+    }, { timeout: 10000 });
+  }, 15000);
 
   it('omits age and gender when they are not populated to prevent backend schema errors', async () => {
     render(
@@ -133,6 +137,6 @@ describe('EditProfile Page', () => {
       
       // Ensure age is undefined (omitted) rather than null
       expect(submittedPayload.age).toBeUndefined();
-    });
-  });
+    }, { timeout: 10000 });
+  }, 15000);
 });

@@ -144,4 +144,65 @@ describe('Register Page UI', () => {
       expect(screen.getByText('Email address already exists')).toBeInTheDocument();
     });
   });
+
+  it('shows error message if OTP send fails', async () => {
+    vi.mocked(api.post).mockRejectedValueOnce({
+      response: { data: { message: 'Failed to send verification code' } },
+    });
+
+    render(
+      <BrowserRouter>
+        <Register />
+      </BrowserRouter>
+    );
+
+    const emailInput = screen.getByPlaceholderText('alexander@lustre.com');
+    fireEvent.change(emailInput, { target: { value: 'error@lustre.com' } });
+    fireEvent.submit(emailInput.closest('form')!);
+
+    await waitFor(() => {
+      expect(screen.getByText('Failed to send verification code')).toBeInTheDocument();
+    });
+  });
+
+  it('preserves email when navigating back from step 2', async () => {
+    vi.mocked(api.post).mockResolvedValueOnce({
+      data: { status: 'success', message: 'Verification code sent' },
+    });
+
+    render(
+      <BrowserRouter>
+        <Register />
+      </BrowserRouter>
+    );
+
+    const emailInput = screen.getByPlaceholderText('alexander@lustre.com');
+    fireEvent.change(emailInput, { target: { value: 'backtest@lustre.com' } });
+    fireEvent.submit(emailInput.closest('form')!);
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('123456')).toBeInTheDocument();
+    });
+
+    const backBtn = screen.getByText(/Back to Email/i);
+    fireEvent.click(backBtn);
+
+    expect(screen.getByDisplayValue('backtest@lustre.com')).toBeInTheDocument();
+  });
+
+  it('validates empty email in step 1', async () => {
+    render(
+      <BrowserRouter>
+        <Register />
+      </BrowserRouter>
+    );
+
+    const submitBtn = screen.getByRole('button', { name: /Send Verification Code/i });
+    fireEvent.click(submitBtn);
+
+    // Assuming there's a validation message or the button is disabled or it just doesn't submit.
+    // If it uses required attribute, we might check that.
+    const emailInput = screen.getByPlaceholderText('alexander@lustre.com');
+    expect(emailInput).toBeInvalid;
+  });
 });

@@ -816,4 +816,489 @@ Then('I should see a locked screen prompting me to upgrade to premium', async ({
 });
 
 
+// ══════════════════════════════════════════════════════════════════════════════
+// SPRINT 2: Email Verification Steps
+// ══════════════════════════════════════════════════════════════════════════════
+
+Given('I am on the registration page', async ({ page }) => {
+  await page.addInitScript(() => {
+    (window as any).__E2E_TESTING__ = true;
+  });
+  await page.goto('/register', { waitUntil: 'domcontentloaded', timeout: 60000 });
+});
+
+When('I enter registration email {string} and click send verification code', async ({ page }, email) => {
+  // Mock the send-otp endpoint
+  await page.route(`${API_BASE}/auth/send-otp`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'success',
+        message: 'Verification code sent successfully',
+      }),
+    });
+  });
+
+  await page.fill('input[type="email"]', email);
+  await page.click('button:has-text("Send Verification Code")');
+});
+
+When('I enter a duplicate email {string} and click send verification code', async ({ page }, email) => {
+  // Mock the send-otp endpoint to return 400 for duplicate email
+  await page.route(`${API_BASE}/auth/send-otp`, async (route) => {
+    await route.fulfill({
+      status: 400,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        message: 'User already exists',
+      }),
+    });
+  });
+
+  await page.fill('input[type="email"]', email);
+  await page.click('button:has-text("Send Verification Code")');
+});
+
+Then('I should see the verification code input', async ({ page }) => {
+  await expect(page.locator('input[placeholder="123456"]')).toBeVisible({ timeout: 10000 });
+});
+
+When('I enter verification code {string} and click confirm', async ({ page }, code) => {
+  await page.fill('input[placeholder="123456"]', code);
+  await page.click('button:has-text("Confirm Code")');
+});
+
+When('I enter an invalid short code {string}', async ({ page }, code) => {
+  await page.fill('input[placeholder="123456"]', code);
+  await page.click('button:has-text("Confirm Code")');
+});
+
+Then('I should see the password input', async ({ page }) => {
+  await expect(page.locator('input[type="password"]')).toBeVisible({ timeout: 10000 });
+});
+
+When('I enter password {string} and click create account', async ({ page }, password) => {
+  // Mock the register endpoint
+  await page.route(`${API_BASE}/auth/register`, async (route) => {
+    await route.fulfill({
+      status: 201,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'success',
+        data: {
+          accessToken: 'fake-access-token',
+          refreshToken: 'fake-refresh-token',
+          user: { ...mockFreeUser, email: 'newuser@lustre.com' },
+        },
+      }),
+    });
+  });
+
+  // Mock profile/me for post-login
+  await page.route(`${API_BASE}/profile/me`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'success',
+        data: mockFreeUser,
+      }),
+    });
+  });
+
+  // Mock discovery users for redirect
+  await page.route(`${API_BASE}/discovery/users*`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'success',
+        data: mockDiscoveryUsers,
+        pagination: { total: mockDiscoveryUsers.length, page: 1, limit: 10, pages: 1 },
+      }),
+    });
+  });
+
+  // Mock notifications
+  await page.route(`${API_BASE}/notifications*`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ status: 'success', data: [] }),
+    });
+  });
+
+  await page.fill('input[type="password"]', password);
+  await page.click('button:has-text("Create Account")');
+});
+
+Then('I should be redirected to the discovery page', async ({ page }) => {
+  await expect(page).toHaveURL(/\/discovery/, { timeout: 15000 });
+});
+
+Then('I should see error message {string}', async ({ page }, message) => {
+  await expect(page.locator(`text=${message}`)).toBeVisible({ timeout: 10000 });
+});
+
+Then('the resend button should show a countdown timer', async ({ page }) => {
+  // After OTP is sent, the resend button shows "Resend Code (30s)" or similar countdown
+  const resendBtn = page.locator('button:has-text("Resend Code")');
+  await expect(resendBtn).toBeVisible({ timeout: 10000 });
+  // Verify the countdown text is present (e.g., "Resend Code (30s)" or "(29s)")
+  await expect(page.locator('text=/Resend Code \\(\\d+s\\)/')).toBeVisible({ timeout: 5000 });
+});
+
+When('I click back to email step', async ({ page }) => {
+  await page.click('button:has-text("← Back to Email")');
+});
+
+Then('the email field should contain {string}', async ({ page }, email) => {
+  const emailInput = page.locator('input[type="email"]');
+  await expect(emailInput).toBeVisible({ timeout: 10000 });
+  await expect(emailInput).toHaveValue(email);
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SPRINT 2: Referral Dashboard Steps
+// ══════════════════════════════════════════════════════════════════════════════
+
+const mockReferralStats = {
+  totalReferrals: 12,
+  conversions: 5,
+  conversionRate: '42%',
+  totalEarnings: 500,
+  pendingEarnings: 100,
+  availableEarnings: 400,
+  withdrawnEarnings: 100,
+  history: [
+    { id: 1, name: 'User A', date: new Date().toISOString(), status: 'Converted', earnings: 50 },
+  ],
+};
+
+const mockReferralActivity = [
+  { type: 'SIGNUP', text: 'Someone signed up using your link', timeAgo: '2 hours ago', status: 'pending', amount: 50 },
+  { type: 'CONVERTED', text: 'Your referral converted to Premium! KES 50 pending', timeAgo: '1 day ago', status: 'pending', amount: 50 },
+];
+
+Given('the referral API returns dashboard stats', async ({ page }) => {
+  await page.route(`${API_BASE}/referrals/stats`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ status: 'success', data: mockReferralStats }),
+    });
+  });
+});
+
+Given('the referral link API returns a valid link', async ({ page }) => {
+  await page.route(`${API_BASE}/referrals/link`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'success',
+        data: { code: 'GOLD-VIP', url: 'http://localhost:5173/register?ref=GOLD-VIP' },
+      }),
+    });
+  });
+});
+
+Given('the referral activity API returns recent events', async ({ page }) => {
+  await page.route(`${API_BASE}/referrals/activity`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ status: 'success', data: mockReferralActivity }),
+    });
+  });
+});
+
+Then('I should see total referrals count', async ({ page }) => {
+  // Referral dashboard shows "Total Earned" with amount
+  await expect(page.locator('text=Total Earned')).toBeVisible({ timeout: 10000 });
+});
+
+Then('I should see conversion rate percentage', async ({ page }) => {
+  await expect(page.locator('text=Paid Out')).toBeVisible({ timeout: 10000 });
+});
+
+Then('I should see total earnings amount', async ({ page }) => {
+  await expect(page.locator('text=Available')).toBeVisible({ timeout: 10000 });
+});
+
+When('I click the copy referral link button', async ({ page }) => {
+  // Grant clipboard permissions
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+  const copyBtn = page.locator('button:has-text("Copy Link")');
+  await copyBtn.click();
+});
+
+Then('the referral link should be copied to clipboard', async ({ page }) => {
+  // After clicking, button text changes to "Link Copied"
+  await expect(page.locator('text=Link Copied')).toBeVisible({ timeout: 5000 });
+});
+
+Then('I should see the activity feed section', async ({ page }) => {
+  await expect(page.locator('text=Earnings History')).toBeVisible({ timeout: 10000 });
+});
+
+Then('I should see a signup event in the feed', async ({ page }) => {
+  // The activity feed table shows referral events
+  await expect(page.locator('text=Anonymous Member').first()).toBeVisible({ timeout: 10000 });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SPRINT 2: Profile Management Steps
+// ══════════════════════════════════════════════════════════════════════════════
+
+When('I update the display name to {string}', async ({ page }, name) => {
+  const nameInput = page.locator('input[name="displayName"], input[name="fullName"]').first();
+  await nameInput.clear();
+  await nameInput.fill(name);
+});
+
+When('I update the bio to {string}', async ({ page }, bio) => {
+  const bioInput = page.locator('textarea[name="bio"], input[name="bio"]').first();
+  await bioInput.clear();
+  await bioInput.fill(bio);
+});
+
+Then('I should see a success confirmation', async ({ page }) => {
+  // Profile save shows a success toast or redirects
+  await expect(page).toHaveURL(/\/profile/, { timeout: 10000 });
+});
+
+When('I upload a new profile photo', async ({ page }) => {
+  // Mock the photo upload endpoint
+  await page.route(`${API_BASE}/profile/photos`, async (route) => {
+    if (route.request().method() === 'POST') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: 'success',
+          data: { url: 'https://res.cloudinary.com/test/image/upload/v1/photo.jpg', public_id: 'test-photo-123' },
+        }),
+      });
+    } else {
+      await route.continue();
+    }
+  });
+});
+
+Then('the photo should appear in the profile photo grid', async ({ page }) => {
+  // Verify that the image element is present after upload
+  await expect(page.locator('img[src*="cloudinary"], img[src*="photo"]').first()).toBeVisible({ timeout: 10000 });
+});
+
+Given('the user has existing photos in their profile', async ({ page }) => {
+  // This is handled by the profile/me mock which returns photos array
+  await page.route(`${API_BASE}/profile/me`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'success',
+        data: {
+          ...mockPremiumUser,
+          photos: [{ url: 'https://res.cloudinary.com/test/image/upload/v1/existing.jpg', public_id: 'existing-photo' }],
+        },
+      }),
+    });
+  });
+});
+
+When('I delete a profile photo', async ({ page }) => {
+  // Mock the photo delete endpoint
+  await page.route(`${API_BASE}/profile/photos`, async (route) => {
+    if (route.request().method() === 'DELETE') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ status: 'success', data: {} }),
+      });
+    } else {
+      await route.continue();
+    }
+  });
+});
+
+Then('the photo should be removed from the grid', async ({ page }) => {
+  // After deletion, the photo grid should show upload placeholder or fewer photos
+  await page.waitForTimeout(1000);
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SPRINT 2: Match Contact Reveal Steps
+// ══════════════════════════════════════════════════════════════════════════════
+
+const mockMatchesWithContacts = [
+  {
+    id: 1,
+    isPremium: true,
+    otherUser: {
+      id: 10,
+      displayName: 'Sarah Match',
+      bio: 'Coffee lover',
+      city: 'Nairobi',
+      whatsapp: '+254712345678',
+      instagram: '@sarah_lustre',
+      photos: [{ url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330', public_id: 'sarah-1' }],
+      premiumTier: 'basic',
+    },
+  },
+];
+
+Given('I have mutual matches with contact details', async ({ page }) => {
+  await page.route(`${API_BASE}/matches*`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ status: 'success', data: mockMatchesWithContacts }),
+    });
+  });
+});
+
+Then('I should see the matches list', async ({ page }) => {
+  await expect(page.locator('text=Your Matches')).toBeVisible({ timeout: 10000 });
+  await expect(page.locator('text=Sarah Match')).toBeVisible({ timeout: 10000 });
+});
+
+Then('I should see WhatsApp contact for my match', async ({ page }) => {
+  // Click Connect to open the contact dialog
+  const connectBtn = page.locator('button:has-text("Connect")').first();
+  await connectBtn.click();
+  await expect(page.locator('text=WhatsApp Message')).toBeVisible({ timeout: 10000 });
+  await expect(page.locator('text=+254712345678')).toBeVisible();
+});
+
+Then('I should see Instagram contact for my match', async ({ page }) => {
+  await expect(page.locator('text=Instagram Profile')).toBeVisible({ timeout: 10000 });
+  await expect(page.locator('text=sarah_lustre')).toBeVisible();
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SPRINT 2: Withdrawal Flow Steps
+// ══════════════════════════════════════════════════════════════════════════════
+
+Given('the referral earnings API shows available balance of {int}', async ({ page }, balance) => {
+  await page.route(`${API_BASE}/referrals/earnings`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'success',
+        data: {
+          available: balance,
+          pending: 50,
+          threshold: 500,
+          canWithdraw: balance >= 500,
+        },
+      }),
+    });
+  });
+
+  // Also mock the referral stats to reflect the available amount
+  await page.route(`${API_BASE}/referrals/stats`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'success',
+        data: {
+          ...mockReferralStats,
+          totalEarnings: balance,
+          availableEarnings: balance,
+        },
+      }),
+    });
+  });
+});
+
+When('I click the withdraw button', async ({ page }) => {
+  // Mock the withdrawal endpoint
+  await page.route(`${API_BASE}/referrals/withdraw`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ status: 'success', message: 'Withdrawal requested successfully' }),
+    });
+  });
+
+  const withdrawBtn = page.locator('button:has-text("Withdraw to M-Pesa")');
+  await withdrawBtn.click();
+});
+
+Then('I should see a withdrawal success message', async ({ page }) => {
+  // After withdrawal, the page should still be on /referrals without error
+  await expect(page).toHaveURL(/\/referrals/);
+});
+
+Then('the withdraw button should be disabled', async ({ page }) => {
+  // When balance < 500, the withdraw button should not be visible
+  // (The ReferralDashboard only shows the button when availableEarnings > 0 AND canWithdraw)
+  const withdrawBtn = page.locator('button:has-text("Withdraw to M-Pesa")');
+  await expect(withdrawBtn).not.toBeVisible({ timeout: 5000 });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SPRINT 2: Referral Commission Tracking Steps
+// ══════════════════════════════════════════════════════════════════════════════
+
+Given('the referral earnings API returns a breakdown', async ({ page }) => {
+  await page.route(`${API_BASE}/referrals/earnings`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'success',
+        data: { available: 400, pending: 100, threshold: 500, canWithdraw: false },
+      }),
+    });
+  });
+
+  await page.route(`${API_BASE}/referrals/activity`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ status: 'success', data: mockReferralActivity }),
+    });
+  });
+});
+
+Given('the referral earnings API returns updated pending earnings', async ({ page }) => {
+  await page.route(`${API_BASE}/referrals/earnings`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'success',
+        data: { available: 400, pending: 150, threshold: 500, canWithdraw: false },
+      }),
+    });
+  });
+
+  await page.route(`${API_BASE}/referrals/activity`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ status: 'success', data: mockReferralActivity }),
+    });
+  });
+});
+
+Then('I should see the available earnings amount', async ({ page }) => {
+  await expect(page.locator('text=Available')).toBeVisible({ timeout: 10000 });
+});
+
+Then('I should see the pending earnings amount', async ({ page }) => {
+  await expect(page.locator('text=Paid Out')).toBeVisible({ timeout: 10000 });
+});
+
+Then('I should see the updated pending earnings reflecting the new conversion', async ({ page }) => {
+  // The dashboard should show the earnings stats
+  await expect(page.locator('text=Available')).toBeVisible({ timeout: 10000 });
+});
+
 

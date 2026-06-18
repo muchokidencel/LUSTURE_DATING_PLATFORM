@@ -1,146 +1,62 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import router from './discovery.routes';
-import { db } from '../../db/index';
+import request from 'supertest';
+import app from '../../index.js';
+import { db } from '../../db/index.js';
 
-vi.mock('../../db/index', () => ({
+vi.mock('../../db/index.js', () => ({
   db: {
     query: {
-      blocks: {
-        findMany: vi.fn().mockResolvedValue([]),
-      },
-      profiles: {
-        findFirst: vi.fn(),
-      },
-      userPreferences: {
-        findFirst: vi.fn(),
-      },
-      users: {
-        findMany: vi.fn().mockResolvedValue([]),
-      },
+      users: { findMany: vi.fn(), findFirst: vi.fn() },
+      blocks: { findMany: vi.fn().mockResolvedValue([]) },
+      profiles: { findFirst: vi.fn() },
+      userPreferences: { findFirst: vi.fn() },
+      subscriptions: { findFirst: vi.fn().mockResolvedValue(null) },
+      affiliateEarnings: { findMany: vi.fn().mockResolvedValue([]) },
     },
-    execute: vi.fn().mockResolvedValue({
-      rows: [{ total: '0' }],
-    }),
+    insert: vi.fn().mockReturnThis(),
+    values: vi.fn().mockReturnThis(),
+    execute: vi.fn().mockResolvedValue({ rows: [{ total: '0' }] }),
+    update: vi.fn().mockReturnThis(),
+    set: vi.fn().mockReturnThis(),
+    where: vi.fn().mockReturnThis(),
   },
 }));
 
-vi.mock('../../middleware/auth', () => ({
-  authenticate: (req: any, res: any, next: any) => {
-    req.user = { id: 1, email: 'test@example.com', role: 'user' };
-    next();
+vi.mock('jsonwebtoken', () => ({
+  default: {
+    verify: vi.fn().mockReturnValue({ id: 1, email: 'test@test.com', role: 'user' }),
+    sign: vi.fn().mockReturnValue('mock_token'),
   },
-}));
-
-let mockSyncUserPremiumStatus = vi.fn().mockResolvedValue('free');
-vi.mock('../../middleware/sync-premium', () => ({
-  syncUserPremiumStatus: (userId: number) => mockSyncUserPremiumStatus(userId),
 }));
 
 describe('Discovery Routes', () => {
-  let req: any;
-  let res: any;
-
   beforeEach(() => {
     vi.clearAllMocks();
-    res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn().mockReturnThis(),
-    };
+    // Default mock behavior to prevent 500s from syncPremium
+    vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: 1, premiumTier: 'free' } as any);
   });
 
-  it('GET /users should allow free users and return a success status', async () => {
-    mockSyncUserPremiumStatus.mockResolvedValue('free');
+  describe('GET /api/discovery/users', () => {
+    it('should return a list of users for discovery', async () => {
+      const mockUsers = [{ id: 2, displayName: 'Jane', profile: { fullName: 'Jane Doe' }, photos: [] }];
+      vi.mocked(db.query.users.findMany).mockResolvedValue(mockUsers as any);
 
-    const mockProfile = { userId: 1, fullName: 'Test User', location: 'Nairobi', latitude: 1.2, longitude: 36.8 };
-    const mockPrefs = { userId: 1, maxDistanceKm: 50 };
-    const mockUsersList = [
-      {
-        id: 2,
-        email: 'other@example.com',
-        ghostMode: false,
-        lastActiveAt: new Date(),
-        premiumTier: 'free',
-        profile: {
-          fullName: 'Other User',
-          location: 'Nairobi',
-          latitude: 1.2,
-          longitude: 36.8,
-        },
-      },
-    ];
-
-    vi.mocked(db.query.profiles.findFirst).mockResolvedValue(mockProfile as any);
-    vi.mocked(db.query.userPreferences.findFirst).mockResolvedValue(mockPrefs as any);
-    vi.mocked(db.query.users.findMany).mockResolvedValue(mockUsersList as any);
-    vi.mocked(db.execute).mockResolvedValue({
-      rows: [{ total: '1' }],
-    } as any);
-
-    req = {
-      method: 'GET',
-      url: '/users',
-      user: { id: 1 },
-      query: {},
-    };
-
-    const route = router.stack.find((s) => s.route?.path === '/users' && s.route?.methods?.get);
-    expect(route).toBeDefined();
-
-    const handler = route.route.stack[route.route.stack.length - 1].handle;
-    await handler(req, res);
-
-    expect(res.json).toHaveBeenCalledWith({
-      status: 'success',
-      data: expect.any(Array),
-      pagination: expect.any(Object),
+      const res = await request(app)
+        .get('/api/discovery/users')
+        .set('Authorization', 'Bearer mock_token');
+      
+      expect(res.status).toBe(200);
+      expect(res.body.data).toBeInstanceOf(Array);
     });
-  });
 
-  it('GET /users should allow premium users and return successful status', async () => {
-    mockSyncUserPremiumStatus.mockResolvedValue('gold');
+    it('should handle errors gracefully', async () => {
+      vi.mocked(db.query.users.findFirst).mockRejectedValue(new Error('DB Error'));
 
-    const mockProfile = { userId: 1, fullName: 'Test User', location: 'Nairobi', latitude: 1.2, longitude: 36.8 };
-    const mockPrefs = { userId: 1, maxDistanceKm: 50 };
-    const mockUsersList = [
-      {
-        id: 3,
-        email: 'premium-other@example.com',
-        ghostMode: false,
-        lastActiveAt: new Date(),
-        premiumTier: 'gold',
-        profile: {
-          fullName: 'Premium Other',
-          location: 'Nairobi',
-          latitude: 1.2,
-          longitude: 36.8,
-        },
-      },
-    ];
-
-    vi.mocked(db.query.profiles.findFirst).mockResolvedValue(mockProfile as any);
-    vi.mocked(db.query.userPreferences.findFirst).mockResolvedValue(mockPrefs as any);
-    vi.mocked(db.query.users.findMany).mockResolvedValue(mockUsersList as any);
-    vi.mocked(db.execute).mockResolvedValue({
-      rows: [{ total: '1' }],
-    } as any);
-
-    req = {
-      method: 'GET',
-      url: '/users',
-      user: { id: 1 },
-      query: {},
-    };
-
-    const route = router.stack.find((s) => s.route?.path === '/users' && s.route?.methods?.get);
-    expect(route).toBeDefined();
-
-    const handler = route.route.stack[route.route.stack.length - 1].handle;
-    await handler(req, res);
-
-    expect(res.json).toHaveBeenCalledWith({
-      status: 'success',
-      data: expect.any(Array),
-      pagination: expect.any(Object),
+      const res = await request(app)
+        .get('/api/discovery/users')
+        .set('Authorization', 'Bearer mock_token');
+      
+      expect(res.status).toBe(500);
     });
   });
 });

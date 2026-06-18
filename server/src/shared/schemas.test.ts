@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { registerSchema, loginSchema, profileUpdateSchema } from './schemas';
+import { registerSchema, loginSchema, profileUpdateSchema, sendOtpSchema } from './schemas';
 
 describe('Shared Schemas', () => {
   describe('registerSchema', () => {
@@ -82,6 +82,23 @@ describe('Shared Schemas', () => {
       const data = { bio: 'a'.repeat(301) };
       const result = profileUpdateSchema.safeParse(data);
       expect(result.success).toBe(false);
+    });
+  });
+
+  describe('sendOtpSchema', () => {
+    it('should validate valid email', () => {
+      const validData = { email: 'test@lustre.com' };
+      expect(sendOtpSchema.safeParse(validData).success).toBe(true);
+    });
+
+    it('should reject invalid email format', () => {
+      const invalidData = { email: 'not-an-email' };
+      expect(sendOtpSchema.safeParse(invalidData).success).toBe(false);
+    });
+
+    it('should reject missing email', () => {
+      const invalidData = {};
+      expect(sendOtpSchema.safeParse(invalidData).success).toBe(false);
     });
   });
 });

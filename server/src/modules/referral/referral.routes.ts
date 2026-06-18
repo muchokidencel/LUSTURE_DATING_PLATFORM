@@ -208,6 +208,7 @@ router.post('/withdraw', authenticate, async (req: AuthRequest, res) => {
   const userId = req.user!.id;
 
   try {
+    let insufficientBalance = false;
     await db.transaction(async (tx) => {
       // 1. Get user's available balance
       const user = await tx.query.users.findFirst({
@@ -215,7 +216,8 @@ router.post('/withdraw', authenticate, async (req: AuthRequest, res) => {
       });
 
       if (!user || (user.totalEarnings || 0) < 500) {
-        return res.status(400).json({ message: 'Minimum KES 500 required for withdrawal' });
+        insufficientBalance = true;
+        return;
       }
 
       const amountToWithdraw = user.totalEarnings!;
@@ -244,6 +246,10 @@ router.post('/withdraw', authenticate, async (req: AuthRequest, res) => {
       
       // Trigger notification: "Your withdrawal of KES X is being processed"
     });
+
+    if (insufficientBalance) {
+      return res.status(400).json({ message: 'Minimum KES 500 required for withdrawal' });
+    }
 
     res.json({ status: 'success', message: 'Withdrawal requested successfully' });
   } catch (error) {
