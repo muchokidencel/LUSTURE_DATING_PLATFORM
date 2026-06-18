@@ -11,8 +11,9 @@ if (!process.env.DATABASE_URL) {
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  connectionTimeoutMillis: 30000, // Wait up to 30s for a connection (Neon cold start support)
-  max: 10, // Limit pool size for serverless compatibility
+  connectionTimeoutMillis: 60000, // Wait up to 60s for a connection (Neon cold start support)
+  idleTimeoutMillis: 30000,       // Close idle connections after 30s
+  max: 5,                         // Smaller pool for serverless/Neon compatibility
 });
 
 pool.on('connect', (client) => {

@@ -9,6 +9,7 @@ import { validate } from '../../middleware/validate.js';
 import { registerSchema, loginSchema, sendOtpSchema } from '../../shared/schemas.js';
 import crypto from 'crypto';
 import rateLimit from 'express-rate-limit';
+import { sendVerificationEmail } from '../../services/email.service.js';
 
 const router = Router();
 
@@ -84,7 +85,13 @@ router.post('/send-otp', validate(sendOtpSchema), async (req, res) => {
       expiresAt,
     });
 
-    console.log(`[EMAIL:VERIFICATION] OTP code for ${email} is: ${code}`);
+    console.log(`[EMAIL:VERIFICATION] OTP code generated for ${email}`);
+
+    // Actually send the email
+    const sent = await sendVerificationEmail({ to: email, code });
+    if (!sent) {
+      return res.status(500).json({ message: 'Failed to send verification email. Please try again.' });
+    }
 
     res.json({
       status: 'success',

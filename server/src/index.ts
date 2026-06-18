@@ -32,9 +32,36 @@ const httpServer = createServer(app);
 
 // Initialize background services
 if (process.env.NODE_ENV !== 'test') {
-  setupMatchingEngines().catch((error) => {
-    console.error('[INIT:ERROR] Failed to setup matching engines:', error);
+  const initWithRetry = async (fn: () => Promise<void>, name: string, retries = 3) => {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        await fn();
+        return;
+      } catch (error: any) {
+        const isTimeout = error?.cause?.code === 'ETIMEDOUT' || error?.code === 'ETIMEDOUT';
+        if (isTimeout && attempt < retries) {
+          console.log(`[INIT] ${name} timed out (attempt ${attempt}/${retries}). Retrying in 5s...`);
+          await new Promise(r => setTimeout(r, 5000));
+        } else {
+          console.error(`[INIT:ERROR] ${name} failed after ${attempt} attempt(s):`, error.message || error);
+        }
+      }
+    }
+  };
+
+  // Warm up the Neon DB connection first, then init services
+  import('./db/index.js').then(({ db }) => {
+    import('drizzle-orm').then(({ sql }) => {
+      db.execute(sql`SELECT 1`).then(() => {
+        console.log('[INIT] Database connection warmed up.');
+        initWithRetry(setupMatchingEngines, 'Matching Engines');
+      }).catch(() => {
+        console.warn('[INIT] DB warmup failed, attempting engines anyway...');
+        initWithRetry(setupMatchingEngines, 'Matching Engines');
+      });
+    });
   });
+
   initReferralCron();
 }
 
@@ -47,7 +74,7 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:3000'
-].filter(Boolean).map(url => url.replace(/\/$/, '')) as string[];
+].filter((url): url is string => Boolean(url)).map(url => url.replace(/\/$/, ''));
 
 app.use(
   cors({
