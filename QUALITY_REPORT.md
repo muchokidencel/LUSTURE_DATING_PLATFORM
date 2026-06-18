@@ -48,9 +48,9 @@ The testing strategy spans Unit, Integration, and Behavior-Driven Development (B
 
 | Test Harness | Total Files | Total Tests | Status | Code Coverage (Lines) |
 | :--- | :---: | :---: | :---: | :---: |
-| **Server (Vitest)** | 13 | 43 | **100% Passed** | **75.12%** |
-| **Client (Vitest)** | 18 | 43 | **100% Passed** | **97.66%** |
-| **E2E BDD (Playwright)** | 4 | 4 | **100% Passed** | *System-wide integration* |
+| **Server (Vitest)** | 24 | 128 | **100% Passed** | **≥ 78%** |
+| **Client (Vitest)** | 25 | 84 | **100% Passed** | **≥ 98%** |
+| **E2E BDD (Playwright)** | 16 | 16 | **100% Passed** | *System-wide integration* |
 | **UI Exploration** | 2 | 4 | **100% Passed** | *Visual regression* |
 
 ---

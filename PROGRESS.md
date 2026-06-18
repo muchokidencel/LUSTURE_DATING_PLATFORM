@@ -29,9 +29,6 @@ The core platform architecture is now hardened. Referral, Payment, and Matching 
 - [x] **Components**: Full migration to Shadcn UI (Button, Card, Badge, Dialog, Input, Skeleton).
 - [x] **Visuals**: Lucide React integration for high-fidelity iconography.
 - [x] **Global UI Reskin**: Transitioned entire app to a dark, refined aesthetic.
-    - [x] Background shifted to `#08080f` (near black).
-    - [x] Muted brand palette: Primary Purple (`#7c5cbf`), Deep Rose (`#a0446e`), and Dark Gold (`#8a6a00`).
-    - [x] Redesigned cards and surfaces with subtle borders (`#1e1e2e`) and glass effects.
 - [x] **Discovery Grid**: Responsive 2-4 column grid for premium users.
 - [x] **Recommendation Feed**: Vertical list with Like/Pass and same-city prioritization.
 - [x] **Mobile Optimized**: Bottom navigation with quick access to Matching and Discovery.
@@ -50,6 +47,13 @@ The core platform architecture is now hardened. Referral, Payment, and Matching 
 - [x] **Contact Columns**: Added dedicated `whatsapp` and `instagram` columns to the `users` table.
 - [x] **Relation Integrity**: Renamed `photos` relation to `photosTable` to resolve naming conflicts with the new column.
 - [x] **Data Healing**: Automated "healing" of 12 legacy user accounts with null display names.
+
+### 7. Sprint 2: BDD & Integration Testing (Completed)
+- [x] **Behavior-Driven Development**: 16 feature files implemented and verified via Playwright.
+- [x] **Server Integration**: Full route coverage for Auth, Profile, Match, and Referral modules.
+- [x] **Client Hook Hardening**: 100% coverage (21/21 hooks) in `useQueries.test.tsx`.
+- [x] **Page Coverage**: Expanded edge case testing for Registration and Profile Edit pages.
+- [x] **Schema Validation**: Unit tests for all shared Zod schemas (Auth, Profile, Admin).
 
 ---
 

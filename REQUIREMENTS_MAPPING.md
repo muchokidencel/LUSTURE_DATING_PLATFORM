@@ -9,6 +9,7 @@ This document maps API endpoints to high-level features for STLC Requirement Ana
 | POST | `/api/auth/login` | User Login |
 | POST | `/api/auth/refresh` | Token Refresh |
 | POST | `/api/auth/logout` | User Logout |
+| POST | `/api/auth/send-otp` | Send Email Verification OTP |
 
 ## 2. Profile Management
 | Method | Endpoint | Feature |
@@ -23,6 +24,7 @@ This document maps API endpoints to high-level features for STLC Requirement Ana
 | --- | --- | --- |
 | GET | `/api/discovery/users` | Discovery Feed |
 | POST | `/api/discovery/like` | Swipe Right (Like) |
+| POST | `/api/discovery/pass` | Swipe Left (Pass) |
 | GET | `/api/likes/received` | View Received Likes |
 
 ## 4. Matching
