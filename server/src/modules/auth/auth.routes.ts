@@ -320,15 +320,32 @@ router.post('/google', async (req, res) => {
       return res.status(400).json({ message: 'Failed to retrieve Google user profile' });
     }
 
-    const { email, name } = googleUser;
+    const { email, name, sub: googleId } = googleUser;
 
-    // Check if user already exists
+    // 1. Look up by Google ID first (fast, no ambiguity)
     let user = await db.query.users.findFirst({
-      where: eq(users.email, email),
+      where: eq(users.googleId, googleId),
     });
 
+    // 2. If not found by googleId, check by email (account linking)
     if (!user) {
-      // Create a new user with Google verified email
+      user = await db.query.users.findFirst({
+        where: eq(users.email, email),
+      });
+
+      // Link Google account to existing email-based user
+      if (user) {
+        await db.update(users).set({
+          googleId,
+          authProvider: 'google',
+          isEmailVerified: true,
+        }).where(eq(users.id, user.id));
+        console.log(`[GOOGLE:OAUTH] Linked Google (${googleId}) to existing user ${user.id}`);
+      }
+    }
+
+    // 3. Create new user if doesn't exist
+    if (!user) {
       const randomPassword = crypto.randomBytes(16).toString('hex');
       const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
@@ -368,11 +385,14 @@ router.post('/google', async (req, res) => {
         email,
         password: hashedPassword,
         isEmailVerified: true,
+        googleId,
+        authProvider: 'google',
         referralCode: newReferralCode,
         referredBy: referrerId,
       }).returning();
 
       user = result[0];
+      console.log(`[GOOGLE:OAUTH] Created new user ${user.id} (Google ID: ${googleId})`);
 
       // Store in referral_codes table
       await db.insert(referralCodes).values({

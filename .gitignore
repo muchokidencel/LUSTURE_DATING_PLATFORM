@@ -40,3 +40,9 @@ yarn-error.log*
 .idea/
 .DS_Store
 Thumbs.db
+
+# Secrets
+.secrets/
+client_secret_*.json
+lutre-email-service-*.json
+*.credentials.json

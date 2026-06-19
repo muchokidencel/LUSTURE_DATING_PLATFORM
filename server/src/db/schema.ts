@@ -19,6 +19,8 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   role: varchar("role", { length: 20 }).default("user"), // 'user' | 'admin'
   isEmailVerified: boolean("is_email_verified").default(false),
+  googleId: varchar("google_id", { length: 255 }).unique(),
+  authProvider: varchar("auth_provider", { length: 50 }).default("email"), // 'email' | 'google'
   referralCode: varchar("referral_code", { length: 50 }).unique(),
   referredBy: integer("referred_by").references((): AnyPgColumn => users.id),
   premiumTier: premiumTierEnum("premium_tier").default("free"),

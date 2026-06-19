@@ -1,4 +1,4 @@
-import { resend, EMAIL_FROM } from '../config/resend.js';
+import { transporter, EMAIL_FROM } from '../config/mailer.js';
 
 interface SendVerificationEmailParams {
   to: string;
@@ -6,18 +6,18 @@ interface SendVerificationEmailParams {
 }
 
 /**
- * Sends a verification OTP email using Resend.
- * Falls back to console logging if Resend is not configured.
+ * Sends a verification OTP email using Gmail SMTP.
+ * Falls back to console logging if Gmail is not configured.
  */
 export async function sendVerificationEmail({ to, code }: SendVerificationEmailParams): Promise<boolean> {
-  // Fallback: log to console when Resend isn't configured
-  if (!resend) {
-    console.log(`[EMAIL:VERIFICATION] (no Resend key) OTP code for ${to} is: ${code}`);
+  // Fallback: log to console when Gmail isn't configured
+  if (!transporter) {
+    console.log(`[EMAIL:VERIFICATION] (no Gmail config) OTP code for ${to} is: ${code}`);
     return true;
   }
 
   try {
-    const { error } = await resend.emails.send({
+    await transporter.sendMail({
       from: EMAIL_FROM,
       to,
       subject: 'Your Lustre Verification Code',
@@ -40,17 +40,12 @@ export async function sendVerificationEmail({ to, code }: SendVerificationEmailP
           
           <div style="border-top: 1px solid rgba(139, 92, 246, 0.08); margin-top: 32px; padding-top: 20px;">
             <p style="font-size: 9px; color: rgba(245, 245, 247, 0.2); text-align: center; text-transform: uppercase; letter-spacing: 0.15em; margin: 0;">
-              © ${new Date().getFullYear()} Lustre. All rights reserved.
+              &copy; ${new Date().getFullYear()} Lustre. All rights reserved.
             </p>
           </div>
         </div>
       `,
     });
-
-    if (error) {
-      console.error('[EMAIL:VERIFICATION] Resend error:', error);
-      return false;
-    }
 
     console.log(`[EMAIL:VERIFICATION] Code sent to ${to}`);
     return true;
