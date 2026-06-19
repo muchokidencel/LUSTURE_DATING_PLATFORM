@@ -147,12 +147,38 @@ router.post('/pay/mpesa', authenticate, async (req: AuthRequest, res) => {
   const { phoneNumber, amount } = req.body;
   const userId = req.user!.id;
 
+  // Validate required env vars
+  const shortCode = process.env.MPESA_SHORTCODE;
+  const passkey = process.env.MPESA_PASSKEY;
+  const callbackUrl = process.env.MPESA_CALLBACK_URL;
+
+  if (!shortCode || !passkey || !callbackUrl) {
+    console.error('M-Pesa Config Error: Missing env vars -', {
+      MPESA_SHORTCODE: !!shortCode,
+      MPESA_PASSKEY: !!passkey,
+      MPESA_CALLBACK_URL: !!callbackUrl,
+    });
+    return res.status(500).json({ message: 'M-Pesa is not configured on the server. Contact support.' });
+  }
+
+  if (!phoneNumber || !amount) {
+    return res.status(400).json({ message: 'Phone number and amount are required' });
+  }
+
+  // Ensure phone number is in 254XXXXXXXXX format
+  let formattedPhone = phoneNumber.replace(/\D/g, '');
+  if (formattedPhone.startsWith('0')) {
+    formattedPhone = '254' + formattedPhone.substring(1);
+  } else if (!formattedPhone.startsWith('254')) {
+    formattedPhone = '254' + formattedPhone;
+  }
+
   try {
     const accessToken = await getMpesaAccessToken();
     const timestamp = formatTimestamp();
-    const shortCode = process.env.MPESA_SHORTCODE;
-    const passkey = process.env.MPESA_PASSKEY;
     const password = Buffer.from(`${shortCode}${passkey}${timestamp}`).toString('base64');
+
+    console.log(`[M-Pesa] STK Push: phone=${formattedPhone}, amount=${amount}, user=${userId}`);
 
     const response = await axios.post(
       'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
@@ -162,10 +188,10 @@ router.post('/pay/mpesa', authenticate, async (req: AuthRequest, res) => {
         Timestamp: timestamp,
         TransactionType: 'CustomerPayBillOnline',
         Amount: amount,
-        PartyA: phoneNumber,
+        PartyA: formattedPhone,
         PartyB: shortCode,
-        PhoneNumber: phoneNumber,
-        CallBackURL: process.env.MPESA_CALLBACK_URL,
+        PhoneNumber: formattedPhone,
+        CallBackURL: callbackUrl,
         AccountReference: 'Lustre Premium',
         TransactionDesc: 'Payment for Lustre Premium Subscription',
       },
@@ -187,11 +213,13 @@ router.post('/pay/mpesa', authenticate, async (req: AuthRequest, res) => {
 
       res.json({ status: 'success', message: 'STK Push sent successfully', checkoutRequestId: response.data.CheckoutRequestID });
     } else {
+      console.error('[M-Pesa] STK Push rejected:', response.data);
       res.status(400).json({ message: 'STK Push failed', details: response.data });
     }
   } catch (error: any) {
-    console.error('M-Pesa Error:', error.response?.data || error.message);
-    res.status(500).json({ message: 'Error initiating M-Pesa payment' });
+    console.error('[M-Pesa] Error:', error.response?.data || error.message);
+    const safaricomMsg = error.response?.data?.errorMessage || error.response?.data?.ResultDesc;
+    res.status(500).json({ message: safaricomMsg || 'Error initiating M-Pesa payment' });
   }
 });
 
