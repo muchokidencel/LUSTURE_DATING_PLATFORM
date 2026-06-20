@@ -45,7 +45,9 @@ function UserCard({
         }} 
       />
 
-      {/* Gradient overlay to protect text readability on photos */}
+      {/* Gradient overlay to protect text readability on photos — intentionally
+          theme-invariant: a photo always needs a dark scrim under white text,
+          in both light and dark site themes. */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent z-10" />
 
       {/* No photo placeholder */}
@@ -58,7 +60,7 @@ function UserCard({
       {/* Card content bottom */}
       <div className="absolute bottom-0 left-0 right-0 p-6 z-20 flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          <span className="font-headline text-lg font-semibold text-white">
+          <span className="font-garamond italic text-xl font-semibold text-white">
             {user.displayName}{user.age ? `, ${user.age}` : ''}
           </span>
           {isPremium && (
@@ -174,13 +176,14 @@ export default function Discovery() {
             <Lock size={40} strokeWidth={1.5} className="text-lustre-gold" />
           </div>
           <div className="space-y-4">
-            <h1 className="font-garamond text-4xl text-white italic">Discovery is Reserved</h1>
+            <h1 className="font-garamond text-4xl text-lustre-text italic">Discovery is Reserved</h1>
             <p className="font-sans text-lustre-muted leading-relaxed">
               Unlock the community grid and connect with high-intent individuals. Upgrade to Premium to explore beyond your recommendations.
             </p>
           </div>
-          <Button 
-            className="w-full h-14 rounded-xl bg-gradient-gold text-black font-sans font-bold uppercase tracking-widest text-[10px]"
+          <Button
+            variant="gold"
+            className="w-full h-14 rounded-xl font-sans font-bold uppercase tracking-widest text-[10px]"
             onClick={() => navigate('/premium')}
           >
             Upgrade to Elite
@@ -218,7 +221,7 @@ export default function Discovery() {
                <option value="Female">Female</option>
              </select>
              <div className="flex items-center gap-3 px-4 py-2 bg-card rounded-full border border-border-subtle">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-[var(--success)] animate-pulse" />
                 <span className="font-headline text-[10px] uppercase tracking-[0.2em] text-lustre-text font-bold">
                   {users.length > 0 ? `${users.length * 3}+ Online Now` : 'Connecting...'}
                 </span>
@@ -230,7 +233,7 @@ export default function Discovery() {
         {loading && users.length === 0 ? (
           <div id="discovery-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-              <Skeleton key={i} className="aspect-[2/3] rounded-xl bg-card shadow-sm" />
+              <Skeleton key={i} className="aspect-[2/3] rounded-xl bg-card shadow-[var(--shadow-card)]" />
             ))}
           </div>
         ) : (
@@ -277,11 +280,11 @@ export default function Discovery() {
 
       <Dialog open={isUpgradeModalOpen} onOpenChange={setIsUpgradeModalOpen}>
         <DialogContent className="max-w-md mx-auto p-10 bg-card-alt border-outline-variant/40 rounded-3xl text-center space-y-6">
-          <div className="w-20 h-20 bg-gradient-gold/10 rounded-full flex items-center justify-center mx-auto border border-lustre-gold/30 shadow-lg">
+          <div className="w-20 h-20 bg-lustre-gold/10 rounded-full flex items-center justify-center mx-auto border border-lustre-gold/30 shadow-[var(--shadow-card)]">
             <Crown size={32} className="text-lustre-gold fill-lustre-gold/20" strokeWidth={1.5} />
           </div>
           <div className="space-y-3">
-            <DialogTitle className="font-garamond text-3xl text-white italic">
+            <DialogTitle className="font-garamond text-3xl italic">
               A Glimpse of Connection...
             </DialogTitle>
             <DialogDescription className="font-sans text-lustre-muted text-sm leading-relaxed px-4">
@@ -289,8 +292,8 @@ export default function Discovery() {
             </DialogDescription>
           </div>
           <div className="w-full space-y-3 pt-4">
-            <Button 
-              className="w-full h-14 rounded-full bg-gradient-brand text-white font-headline text-[10px] uppercase tracking-widest font-bold shadow-lg hover:scale-105 active:scale-95 transition-transform" 
+            <Button
+              className="w-full h-14 rounded-full font-headline text-[10px] uppercase tracking-widest font-bold shadow-[var(--shadow-card-hover)] hover:scale-105 active:scale-95 transition-transform"
               onClick={() => {
                 setIsUpgradeModalOpen(false);
                 navigate('/premium');
