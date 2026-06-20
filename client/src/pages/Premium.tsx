@@ -19,7 +19,15 @@ export default function Premium() {
   const [paymentMethod, setPaymentMethod] = useState<'mpesa' | 'paystack' | null>(null);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [polling, setPolling] = useState(false);
+  const [paymentSucceeded, setPaymentSucceeded] = useState(false);
   const verifiedRef = useRef<string | null>(null);
+
+  const closeAndReset = () => {
+    setShowPaymentModal(false);
+    setPaymentMethod(null);
+    setPaymentSucceeded(false);
+    setPhoneNumber('');
+  };
 
   useEffect(() => {
     const verifyPaystack = async (reference: string) => {
@@ -50,13 +58,20 @@ export default function Premium() {
         const { data } = await refetchSub();
         if (data && new Date(data.endDate) > new Date()) {
           setPolling(false);
-          setShowPaymentModal(false);
+          setPaymentSucceeded(true);
           clearInterval(interval);
         }
       }, 3000);
     }
     return () => clearInterval(interval);
   }, [polling, refetchSub]);
+
+  // Auto-dismiss the modal a moment after the real poll confirms success
+  useEffect(() => {
+    if (!paymentSucceeded) return;
+    const timeout = setTimeout(closeAndReset, 2200);
+    return () => clearTimeout(timeout);
+  }, [paymentSucceeded]);
 
   const isPremium = subscription && new Date(subscription.endDate) > new Date();
 
@@ -68,6 +83,7 @@ export default function Premium() {
         amount,
         phoneNumber: phoneNumber.replace(/\D/g, ''),
       });
+      setLoading(false);
       setPolling(true);
     } catch (error: any) {
       setLoading(false);
@@ -140,9 +156,9 @@ export default function Premium() {
               ))}
             </div>
 
-            <Button 
-              variant="outline" 
-              className="w-full h-14 rounded-xl border-border-subtle text-lustre-text font-headline text-[10px] uppercase tracking-widest font-bold hover:bg-hover active:scale-95 transition-all bg-transparent"
+            <Button
+              variant={isPremium ? "outline" : "gold"}
+              className="w-full h-14 rounded-xl font-headline text-[10px] uppercase tracking-widest font-bold active:scale-95 transition-all"
               onClick={() => !isPremium && setShowPaymentModal(true)}
               disabled={isPremium || subLoading}
             >
@@ -190,7 +206,7 @@ export default function Premium() {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <Button className="w-full sm:w-auto px-12 h-14 rounded-full bg-gradient-brand text-white font-headline text-[10px] uppercase tracking-widest font-bold shadow-md hover:scale-105 active:scale-95 transition-all" onClick={() => setShowPaymentModal(true)}>
+            <Button variant="gold" className="w-full sm:w-auto px-12 h-14 rounded-full font-headline text-[10px] uppercase tracking-widest font-bold shadow-[var(--shadow-card-hover)] hover:scale-105 active:scale-95 transition-all" onClick={() => setShowPaymentModal(true)}>
               Upgrade Now
             </Button>
             <Button variant="outline" className="w-full sm:w-auto px-12 h-14 rounded-full border-border-subtle text-lustre-muted font-headline text-[10px] uppercase tracking-widest font-bold hover:bg-hover transition-all bg-transparent">
@@ -201,23 +217,47 @@ export default function Premium() {
       </div>
 
       {/* Payment Modal */}
-      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+      <Dialog open={showPaymentModal} onOpenChange={(open) => { if (!open) closeAndReset(); else setShowPaymentModal(true); }}>
         <DialogContent className="max-w-md p-10 bg-card-alt">
           <DialogHeader className="text-center space-y-6 mb-10">
-             <div className="w-20 h-20 bg-lustre-gold/10 rounded-full mx-auto flex items-center justify-center border border-lustre-gold/20">
-                <Crown size={36} strokeWidth={1.5} className="text-lustre-gold" />
-             </div>
+             {paymentSucceeded ? (
+               <div className="w-20 h-20 bg-[var(--success-bg)] rounded-full mx-auto flex items-center justify-center border border-[var(--success)]/30">
+                  <CircleCheck size={36} strokeWidth={1.5} className="text-[var(--success)]" />
+               </div>
+             ) : polling ? (
+               <div className="w-20 h-20 bg-lustre-gold/10 rounded-full mx-auto flex items-center justify-center border border-lustre-gold/20">
+                  <Smartphone size={36} strokeWidth={1.5} className="text-lustre-gold animate-pulse" />
+               </div>
+             ) : (
+               <div className="w-20 h-20 bg-lustre-gold/10 rounded-full mx-auto flex items-center justify-center border border-lustre-gold/20">
+                  <Crown size={36} strokeWidth={1.5} className="text-lustre-gold" />
+               </div>
+             )}
              <div className="space-y-2">
-               <DialogTitle className="text-3xl">Secure Settlement</DialogTitle>
+               <DialogTitle className="text-3xl">
+                 {paymentSucceeded ? "Payment Confirmed" : polling ? "Check Your Phone" : "Secure Settlement"}
+               </DialogTitle>
                <DialogDescription className="text-sm">
-                  Confirm your subscription to Lustre Elite and unlock your premium experience.
+                  {paymentSucceeded
+                    ? "Welcome to Lustre Elite — your premium access is now active."
+                    : polling
+                    ? "We sent an STK push to your phone. Enter your M-Pesa PIN to confirm payment."
+                    : "Confirm your subscription to Lustre Elite and unlock your premium experience."}
                </DialogDescription>
              </div>
           </DialogHeader>
 
-          {!paymentMethod ? (
+          {paymentSucceeded ? (
+            <Button variant="gold" className="w-full h-12 rounded-full font-sans font-bold text-[10px] uppercase tracking-widest" onClick={closeAndReset}>
+              Continue
+            </Button>
+          ) : polling ? (
+            <div className="flex justify-center">
+              <Loader2 size={24} strokeWidth={1.5} className="animate-spin text-lustre-gold" />
+            </div>
+          ) : !paymentMethod ? (
             <div className="space-y-4">
-              <button 
+              <button
                 className="w-full flex items-center gap-4 p-6 bg-base rounded-xl border border-border-subtle hover:bg-hover transition-all text-left"
                 onClick={() => setPaymentMethod('mpesa')}
               >
@@ -230,7 +270,7 @@ export default function Premium() {
                 </div>
               </button>
 
-              <button 
+              <button
                 className="w-full flex items-center gap-4 p-6 bg-base rounded-xl border border-border-subtle hover:bg-hover transition-all text-left"
                 onClick={() => handlePaystackPay(500)}
               >
@@ -247,8 +287,8 @@ export default function Premium() {
             <div className="space-y-8 animate-fade-up">
               <div className="space-y-4">
                  <p className="font-sans text-[10px] uppercase tracking-widest text-lustre-faint font-bold ml-1">M-Pesa Number</p>
-                 <Input 
-                    placeholder="e.g. 0712345678" 
+                 <Input
+                    placeholder="e.g. 0712345678"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     className="h-14 text-lg rounded-xl"
@@ -258,7 +298,7 @@ export default function Premium() {
                  <Button variant="outline" className="flex-1 h-12 rounded-full font-sans font-bold text-[10px] uppercase tracking-widest" onClick={() => setPaymentMethod(null)}>
                     Return
                  </Button>
-                 <Button className="flex-[2] h-12 rounded-full bg-gradient-brand text-white font-sans font-bold text-[10px] uppercase tracking-widest" onClick={() => handleMpesaPay(500)} disabled={loading}>
+                 <Button variant="gold" className="flex-[2] h-12 rounded-full font-sans font-bold text-[10px] uppercase tracking-widest" onClick={() => handleMpesaPay(500)} disabled={loading}>
                     {loading ? <Loader2 size={18} strokeWidth={1.5} className="animate-spin" /> : "Dispatch Prompt"}
                  </Button>
               </div>
