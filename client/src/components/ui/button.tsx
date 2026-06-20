@@ -15,6 +15,8 @@ const buttonVariants = cva(
           "bg-transparent border border-border-strong text-lustre-text font-sans font-medium hover:border-lustre-purple/50 hover:bg-lustre-purple/5",
         destructive:
           "bg-lustre-rose/10 border border-lustre-rose/20 text-lustre-rose hover:bg-lustre-rose/20 font-sans font-medium",
+        success:
+          "bg-[var(--success)]/10 border border-[var(--success)]/30 text-[var(--success)] hover:bg-[var(--success)]/20 font-sans font-medium",
         secondary:
           "bg-elevated border border-border text-lustre-muted hover:text-lustre-text hover:bg-hover font-sans",
         ghost: "bg-transparent text-lustre-muted hover:text-lustre-text hover:bg-elevated font-sans",

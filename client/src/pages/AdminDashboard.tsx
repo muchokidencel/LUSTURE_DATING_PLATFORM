@@ -5,7 +5,7 @@ import { useAdminStats, useAdminWithdrawals, useUpdateWithdrawal } from '../hook
 import { Card } from '../components/ui/card';
 import { ScrollArea } from '../components/ui/scroll-area';
 import { Badge } from '../components/ui/badge';
-import { Users, Crown, Wallet, RefreshCw, LogOut, Loader2, TableProperties, Download, Award, User, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { Users, Crown, Wallet, RefreshCw, LogOut, Loader2, TableProperties, Download, Award, User, TrendingUp, CheckCircle2, CircleX } from 'lucide-react';
 import { cn } from '../lib/utils';
 import api from '../lib/api';
 
@@ -15,6 +15,8 @@ export default function AdminDashboard() {
   const updateWithdrawalMutation = useUpdateWithdrawal();
   const { logout } = useAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [actioningId, setActioningId] = useState<number | null>(null);
+  const [actioningType, setActioningType] = useState<'approve' | 'reject' | null>(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -31,6 +33,8 @@ export default function AdminDashboard() {
   };
 
   const handlePay = async (id: number) => {
+    setActioningId(id);
+    setActioningType('approve');
     try {
       console.log(`[INTEGRATION:ADMIN_PAY] Processing payout for withdrawal ${id}`);
       await updateWithdrawalMutation.mutateAsync({
@@ -40,6 +44,17 @@ export default function AdminDashboard() {
       });
     } catch (error) {
       console.error('[INTEGRATION:ADMIN_PAY] Failed to process payout:', error);
+    }
+  };
+
+  const handleReject = async (id: number) => {
+    setActioningId(id);
+    setActioningType('reject');
+    try {
+      console.log(`[INTEGRATION:ADMIN_REJECT] Rejecting withdrawal ${id}`);
+      await updateWithdrawalMutation.mutateAsync({ id, status: 'rejected' });
+    } catch (error) {
+      console.error('[INTEGRATION:ADMIN_REJECT] Failed to reject withdrawal:', error);
     }
   };
 
@@ -107,7 +122,7 @@ export default function AdminDashboard() {
             <p className="font-sans text-4xl font-bold text-lustre-text mb-4">
               {userStats.total.toLocaleString()}
             </p>
-            <div className="flex items-center gap-2 text-green-500 font-sans text-[10px] font-bold uppercase tracking-widest">
+            <div className="flex items-center gap-2 text-[var(--success)] font-sans text-[10px] font-bold uppercase tracking-widest">
               <TrendingUp size={12} strokeWidth={1.5} />
               <span>Growth trending positive</span>
             </div>
@@ -240,14 +255,36 @@ export default function AdminDashboard() {
                               </Badge>
                            </td>
                            <td className="px-8 py-6 text-right">
-                              <Button 
-                                onClick={() => handlePay(withdrawal.id)}
-                                disabled={updateWithdrawalMutation.isPending}
-                                className="bg-gradient-brand text-white rounded-lg px-5 h-9 text-xs font-sans font-semibold gap-2"
-                              >
-                                {updateWithdrawalMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
-                                Approve & Pay
-                              </Button>
+                              <div className="flex items-center justify-end gap-2">
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => handleReject(withdrawal.id)}
+                                  disabled={updateWithdrawalMutation.isPending}
+                                  className="rounded-lg gap-2"
+                                >
+                                  {actioningId === withdrawal.id && actioningType === 'reject' && updateWithdrawalMutation.isPending ? (
+                                    <Loader2 size={14} className="animate-spin" />
+                                  ) : (
+                                    <CircleX size={14} />
+                                  )}
+                                  Reject
+                                </Button>
+                                <Button
+                                  variant="success"
+                                  size="sm"
+                                  onClick={() => handlePay(withdrawal.id)}
+                                  disabled={updateWithdrawalMutation.isPending}
+                                  className="rounded-lg gap-2"
+                                >
+                                  {actioningId === withdrawal.id && actioningType === 'approve' && updateWithdrawalMutation.isPending ? (
+                                    <Loader2 size={14} className="animate-spin" />
+                                  ) : (
+                                    <CheckCircle2 size={14} />
+                                  )}
+                                  Approve & Pay
+                                </Button>
+                              </div>
                            </td>
                         </tr>
                       ))
