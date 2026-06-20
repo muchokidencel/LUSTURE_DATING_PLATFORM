@@ -35,7 +35,8 @@ describe('ReferralDashboard', () => {
     );
     expect(screen.getAllByText(/REFERRAL/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Lustre Rewards/i)).toBeInTheDocument();
-    expect(screen.getByText('100')).toBeInTheDocument();
+    // "100" (availableEarnings) appears both in the wallet hero and the stats tile
+    expect(screen.getAllByText('100').length).toBeGreaterThan(0);
   });
 });
 

@@ -28,12 +28,14 @@ router.get('/stats', authenticate, async (req: AuthRequest, res) => {
     const earningStats = await db.select({
       totalEarnings: sql<number>`coalesce(sum(amount) filter (where status in ('available', 'withdrawn')), 0)::int`,
       pendingEarnings: sql<number>`coalesce(sum(amount) filter (where status = 'pending'), 0)::int`,
+      availableEarnings: sql<number>`coalesce(sum(amount) filter (where status = 'available'), 0)::int`,
+      withdrawnEarnings: sql<number>`coalesce(sum(amount) filter (where status = 'withdrawn'), 0)::int`,
     })
     .from(affiliateEarnings)
     .where(eq(affiliateEarnings.userId, userId));
 
     const ref = referralStats[0] || { totalReferrals: 0, conversions: 0 };
-    const earn = earningStats[0] || { totalEarnings: 0, pendingEarnings: 0 };
+    const earn = earningStats[0] || { totalEarnings: 0, pendingEarnings: 0, availableEarnings: 0, withdrawnEarnings: 0 };
 
     // 3. Compatible History for legacy UI (prevents crash)
     const historyData = await db.query.referrals.findMany({
@@ -62,6 +64,8 @@ router.get('/stats', authenticate, async (req: AuthRequest, res) => {
         conversionRate: `${conversionRate}%`,
         totalEarnings: Number(earn.totalEarnings),
         pendingEarnings: Number(earn.pendingEarnings),
+        availableEarnings: Number(earn.availableEarnings),
+        withdrawnEarnings: Number(earn.withdrawnEarnings),
         history: formattedHistory
       }
     });
@@ -143,7 +147,11 @@ router.get('/activity', authenticate, async (req: AuthRequest, res) => {
       })),
       ...withdrawalEvents.map(e => ({
         type: 'WITHDRAWN',
-        text: `KES ${e.amount} withdrawn successfully`,
+        text: e.withdrawalStatus === 'completed'
+          ? `KES ${e.amount} withdrawn successfully`
+          : e.withdrawalStatus === 'rejected'
+          ? `Withdrawal of KES ${e.amount} was rejected`
+          : `KES ${e.amount} withdrawal requested`,
         timestamp: e.processedAt || e.requestedAt,
         amount: e.amount,
         status: e.withdrawalStatus

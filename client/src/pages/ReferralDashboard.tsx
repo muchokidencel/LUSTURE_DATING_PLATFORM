@@ -6,6 +6,23 @@ import { Badge } from '../components/ui/badge';
 import { Sparkles, Copy, Share2, History, Loader2, User, Wallet } from 'lucide-react';
 import { cn } from '../lib/utils';
 
+// Activity events overload `status` with two vocabularies: affiliate-earning
+// status ('pending' | 'available') for signup/conversion events, and
+// withdrawal status ('requested' | 'completed' | 'rejected') for payouts.
+function activityBadgeVariant(status: string) {
+  switch (status) {
+    case 'completed':
+      return 'paid';
+    case 'available':
+    case 'requested':
+      return 'processing';
+    case 'rejected':
+      return 'destructive';
+    default:
+      return 'pending';
+  }
+}
+
 export default function ReferralDashboard() {
   const { user } = useAuth();
   const { data: stats, isLoading: statsLoading } = useReferralStats();
@@ -50,34 +67,61 @@ export default function ReferralDashboard() {
     { label: 'Available', value: stats?.availableEarnings || 0, color: 'text-lustre-gold' },
   ];
 
+  const availableEarnings = stats?.availableEarnings || 0;
+  const pendingEarnings = stats?.pendingEarnings || 0;
+  const withdrawThreshold = 500;
+  const canWithdraw = availableEarnings >= withdrawThreshold;
+  const amountToThreshold = Math.max(0, withdrawThreshold - availableEarnings);
+
   return (
     <div className="min-h-screen bg-void px-6 py-24 pb-32">
       <div className="max-w-6xl mx-auto space-y-12">
-        
+
         {/* Header Section */}
         <div className="space-y-4 animate-fade-up">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-lustre-purple">
+             <Sparkles size={16} strokeWidth={1.5} />
+             <span className="font-sans text-xs uppercase tracking-[0.2em] font-bold">Lustre Rewards</span>
+          </div>
+          <h1 className="font-garamond text-4xl md:text-5xl text-lustre-text">Referrals</h1>
+          <p className="font-sans text-lustre-muted max-w-2xl leading-relaxed">
+            Invite your circle to experience the Lustre standard and earn rewards for every successful match curated through your referral conduit.
+          </p>
+        </div>
+
+        {/* Wallet Hero */}
+        <div className="bg-card border border-lustre-gold/40 rounded-2xl p-8 md:p-10 shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-all duration-300 relative overflow-hidden animate-fade-up">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-gold" />
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-lustre-purple">
-                 <Sparkles size={16} strokeWidth={1.5} />
-                 <span className="font-sans text-xs uppercase tracking-[0.2em] font-bold">Lustre Rewards</span>
+              <p className="font-headline text-[10px] uppercase tracking-[0.2em] text-lustre-faint font-bold">Your Wallet</p>
+              <div className="flex items-baseline gap-2">
+                <span className="font-headline text-sm text-lustre-gold font-bold opacity-70">KES</span>
+                <span className="font-garamond text-5xl font-semibold text-lustre-gold">{availableEarnings.toLocaleString()}</span>
               </div>
-              <h1 className="font-garamond text-4xl md:text-5xl text-lustre-text">Referrals</h1>
+              <p className="font-sans text-xs text-lustre-muted">
+                KES {pendingEarnings.toLocaleString()} pending · KES 50 earned per upgrade
+              </p>
             </div>
-            {stats?.availableEarnings > 0 && (
-              <Button 
+            <div className="space-y-2 flex flex-col items-stretch md:items-end">
+              <Button
+                variant="gold"
                 onClick={handleWithdraw}
-                disabled={withdrawMutation.isPending}
-                className="bg-gradient-gold text-black rounded-full px-8 h-12 font-sans font-bold uppercase tracking-widest text-[10px]"
+                disabled={!canWithdraw || withdrawMutation.isPending}
+                className="rounded-full px-8 h-12 font-sans font-bold uppercase tracking-widest text-[10px]"
               >
                 {withdrawMutation.isPending ? <Loader2 size={16} className="animate-spin mr-2" /> : <Wallet size={16} className="mr-2" />}
                 Withdraw to M-Pesa
               </Button>
-            )}
+              {!canWithdraw && (
+                <p className="font-sans text-[10px] text-lustre-faint">
+                  {amountToThreshold > 0
+                    ? `KES ${amountToThreshold.toLocaleString()} more to unlock withdrawal`
+                    : `Minimum KES ${withdrawThreshold} to withdraw`}
+                </p>
+              )}
+            </div>
           </div>
-          <p className="font-sans text-lustre-muted max-w-2xl leading-relaxed">
-            Invite your circle to experience the Lustre standard and earn rewards for every successful match curated through your referral conduit.
-          </p>
         </div>
 
         {/* Stats Grid */}
@@ -101,7 +145,7 @@ export default function ReferralDashboard() {
             <div className="bg-card shadow-[var(--shadow-card)] p-8 rounded-xl space-y-8">
                <h3 className="font-headline text-xs font-semibold text-lustre-purple uppercase tracking-[0.2em]">Your Personal Invitation</h3>
                
-               <div className="bg-base border border-border-subtle rounded-xl p-8 text-center shadow-inner relative overflow-hidden flex flex-col items-center justify-center gap-3">
+               <div className="bg-base border border-border-subtle rounded-xl p-8 text-center relative overflow-hidden flex flex-col items-center justify-center gap-3">
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-brand opacity-80" />
                   <span className="font-headline text-[10px] uppercase tracking-[0.2em] text-lustre-muted font-bold">Your Referral Link</span>
                   <a
@@ -188,7 +232,7 @@ export default function ReferralDashboard() {
                                     <span className="font-sans text-sm font-bold text-lustre-text">KES {item.amount || '50'}</span>
                                  </td>
                                  <td className="px-8 py-6 text-right">
-                                    <Badge variant={item.status === 'available' ? 'paid' : item.status === 'withdrawn' ? 'processing' : 'pending'}>
+                                    <Badge variant={activityBadgeVariant(item.status)}>
                                        {item.status || 'Pending'}
                                     </Badge>
                                  </td>

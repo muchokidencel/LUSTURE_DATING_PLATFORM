@@ -989,6 +989,17 @@ Given('the referral API returns dashboard stats', async ({ page }) => {
       body: JSON.stringify({ status: 'success', data: mockReferralStats }),
     });
   });
+
+  // Without this, the unmocked /activity call 401s, the resulting failed
+  // token refresh hard-redirects to /login, and the test flakily races that
+  // redirect depending on render timing.
+  await page.route(`${API_BASE}/referrals/activity`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ status: 'success', data: [] }),
+    });
+  });
 });
 
 Given('the referral link API returns a valid link', async ({ page }) => {
@@ -1295,10 +1306,11 @@ Then('I should see a withdrawal success message', async ({ page }) => {
 });
 
 Then('the withdraw button should be disabled', async ({ page }) => {
-  // When balance < 500, the withdraw button should not be visible
-  // (The ReferralDashboard only shows the button when availableEarnings > 0 AND canWithdraw)
+  // Below the KES 500 threshold the button stays visible (with below-threshold
+  // messaging) but disabled, rather than disappearing.
   const withdrawBtn = page.locator('button:has-text("Withdraw to M-Pesa")');
-  await expect(withdrawBtn).not.toBeVisible({ timeout: 5000 });
+  await expect(withdrawBtn).toBeVisible({ timeout: 5000 });
+  await expect(withdrawBtn).toBeDisabled();
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
