@@ -10,7 +10,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-gradient-brand text-white hover:opacity-90 font-sans font-medium",
+          "bg-gradient-brand text-[var(--primary-foreground)] hover:opacity-90 font-sans font-medium",
         outline:
           "bg-transparent border border-border-strong text-lustre-text font-sans font-medium hover:border-lustre-purple/50 hover:bg-lustre-purple/5",
         destructive:
@@ -20,6 +20,10 @@ const buttonVariants = cva(
         ghost: "bg-transparent text-lustre-muted hover:text-lustre-text hover:bg-elevated font-sans",
         link: "text-lustre-purple underline-offset-4 hover:underline font-sans",
         pill: "rounded-full border border-lustre-purple/40 text-lustre-purple px-6 py-2.5 font-sans hover:bg-lustre-purple/10",
+        // Kept as the premium "elite" CTA — brighter/flatter than the brand
+        // gradient so upgrade actions still read as distinct. text-black is
+        // intentional: --gold stays light-to-medium in both themes, unlike
+        // --primary, so it always wants dark text (no --gold-foreground token yet).
         gold: "bg-gradient-gold text-black font-semibold rounded-lg hover:opacity-90",
       },
       size: {
