@@ -40,6 +40,11 @@ export default {
         sans: ['Be Vietnam Pro', 'sans-serif'],
         headline: ['Manrope', 'sans-serif'],
       },
+      borderRadius: {
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 0.25rem)',
+        sm: 'calc(var(--radius) - 0.5rem)',
+      },
       backgroundImage: {
         'gradient-brand': 'var(--gradient-brand)',
         'gradient-gold': 'var(--gradient-gold)',

@@ -2,143 +2,152 @@
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
+/* LX-1: --purple/--rose/lustre.purple keep their names but now carry the
+   champagne-gold brand. --gold stays a distinct, brighter "elite" accent
+   for premium badges so premium still reads as special. */
 @layer base {
   :root {
-    /* Base surfaces */
-    --bg-void:        #08080f;
-    --bg-base:        #0e0d15;
-    --bg-card:        #13131a;
-    --bg-card-alt:    #1b1b23;
-    --bg-elevated:    #1f1f27;
-    --bg-hover:       #2a2931;
+    /* ---- one-knob system tokens ---- */
+    --radius: 1rem;
+    --tracking-normal: -0.015em;
+
+    /* Base surfaces (warm near-black, gold-hue tint) */
+    --bg-void:        oklch(0.145 0.008 70);
+    --bg-base:        oklch(0.168 0.008 72);
+    --bg-card:        oklch(0.205 0.010 72);
+    --bg-card-alt:    oklch(0.228 0.012 73);
+    --bg-elevated:    oklch(0.248 0.012 74);
+    --bg-hover:       oklch(0.290 0.014 74);
 
     /* Borders */
-    --border:         #2a2931;
-    --border-subtle:  #1b1b23;
-    --border-strong:  #494551;
+    --border:         oklch(1 0 0 / 0.10);
+    --border-subtle:  oklch(1 0 0 / 0.06);
+    --border-strong:  oklch(1 0 0 / 0.17);
 
     /* Text */
-    --text-primary:   #e4e1ec;
-    --text-secondary: #cbc3d3;
-    --text-muted:     #958e9d;
+    --text-primary:   oklch(0.965 0.006 80);
+    --text-secondary: oklch(0.800 0.012 80);
+    --text-muted:     oklch(0.620 0.012 78);
+    --text-faint:     oklch(0.520 0.012 76);
 
-    /* Brand */
-    --purple:         #d2bcff;
-    --purple-dim:     #7c5cbf;
-    --rose:           #ffb0ce;
-    --rose-dim:       #7b2650;
-    --gradient-brand: linear-gradient(135deg, #d2bcff 0%, #ffb0ce 100%);
+    /* Brand (now gold; legacy var names) */
+    --purple:         oklch(0.815 0.122 84);   /* primary champagne gold */
+    --purple-dim:     oklch(0.740 0.135 78);
+    --rose:           oklch(0.860 0.100 70);   /* warm secondary */
+    --rose-dim:       oklch(0.660 0.120 58);
+    --gradient-brand: linear-gradient(135deg, oklch(0.865 0.110 90) 0%, oklch(0.735 0.140 64) 100%);
 
-    /* Gold (premium only) */
-    --gold:           #ecc246;
-    --gold-dim:       #cea62b;
-    --gold-bg:        rgba(236,194,70,0.1);
+    /* Gold (premium "elite" accent — kept distinct & brighter) */
+    --gold:           oklch(0.845 0.140 92);
+    --gold-dim:       oklch(0.745 0.150 86);
+    --gold-bg:        oklch(0.845 0.140 92 / 0.12);
+    --gradient-gold:  linear-gradient(135deg, var(--gold) 0%, var(--gold-dim) 100%);
 
     /* Status */
-    --success:        #4ade80;
-    --success-bg:     rgba(74,222,128,0.1);
-    --warning:        #ecc246;
-    --warning-bg:     rgba(236,194,70,0.1);
-    --error:          #ffb4ab;
-    --error-bg:       rgba(255,180,171,0.1);
+    --success:        oklch(0.780 0.130 155);
+    --success-bg:     oklch(0.780 0.130 155 / 0.12);
+    --warning:        oklch(0.835 0.130 86);
+    --warning-bg:     oklch(0.835 0.130 86 / 0.12);
+    --error:          oklch(0.705 0.175 25);
+    --error-bg:       oklch(0.705 0.175 25 / 0.12);
 
     /* Pending/processing/paid badges */
-    --badge-pending-bg:    #1f1f27;
-    --badge-pending-text:  #958e9d;
-    --badge-processing-bg: rgba(236,194,70,0.15);
-    --badge-processing-text: #ecc246;
-    --badge-paid-bg:       rgba(74,222,128,0.12);
-    --badge-paid-text:     #4ade80;
+    --badge-pending-bg:      oklch(0.248 0.012 74);
+    --badge-pending-text:    oklch(0.620 0.012 78);
+    --badge-processing-bg:   oklch(0.835 0.130 86 / 0.15);
+    --badge-processing-text: oklch(0.835 0.130 86);
+    --badge-paid-bg:         oklch(0.780 0.130 155 / 0.12);
+    --badge-paid-text:       oklch(0.780 0.130 155);
 
     /* Shadcn required variables (mapped) */
-    --background: #08080f;
-    --foreground: #e4e1ec;
-    --primary: #d2bcff;
-    --primary-foreground: #3c167c;
-    --secondary: #ffb0ce;
-    --secondary-foreground: #5f0d39;
-    --muted: #1f1f27;
-    --muted-foreground: #cbc3d3;
-    --accent: #1f1f27;
-    --accent-foreground: #e4e1ec;
-    --destructive: #ffb4ab;
-    --destructive-foreground: #690005;
-    --input: #1f1f27;
-    --ring: #d2bcff;
-    --radius: 0.75rem;
+    --background: oklch(0.145 0.008 70);
+    --foreground: oklch(0.965 0.006 80);
+    --primary: oklch(0.815 0.122 84);
+    --primary-foreground: oklch(0.200 0.030 70);
+    --secondary: oklch(0.860 0.100 70);
+    --secondary-foreground: oklch(0.200 0.030 60);
+    --muted: oklch(0.248 0.012 74);
+    --muted-foreground: oklch(0.800 0.012 80);
+    --accent: oklch(0.248 0.012 74);
+    --accent-foreground: oklch(0.965 0.006 80);
+    --destructive: oklch(0.705 0.175 25);
+    --destructive-foreground: oklch(0.985 0.004 86);
+    --input: oklch(0.248 0.012 74);
+    --ring: oklch(0.815 0.122 84);
 
-    /* Shadows disabled by default for dark mode */
-    --shadow-card: none;
-    --shadow-card-hover: none;
+    /* Brand-tinted shadows — gold hue, low opacity, large blur. Was `none`. */
+    --shadow-card: 0px 8px 30px oklch(0.815 0.12 84 / 0.05), 0px 1px 2px oklch(0 0 0 / 0.45);
+    --shadow-card-hover: 0px 14px 40px oklch(0.815 0.12 84 / 0.09), 0px 4px 10px oklch(0 0 0 / 0.50);
   }
 
   .light {
-    /* Base surfaces — MORE SATURATED & VIBRANT warm cream tones */
-    --bg-void:        #fffcfa;           /* warm white background */
-    --bg-base:        #faf7f6;
-    --bg-card:        #f4f1ee;
-    --bg-card-alt:    #ede9e6;
-    --bg-elevated:    #e6e2df;
-    --bg-hover:       #ddd8d3;
+    /* Base surfaces (warm cream) */
+    --bg-void:        oklch(0.985 0.006 85);
+    --bg-base:        oklch(0.972 0.007 84);
+    --bg-card:        oklch(0.955 0.008 84);
+    --bg-card-alt:    oklch(0.930 0.009 83);
+    --bg-elevated:    oklch(0.910 0.010 82);
+    --bg-hover:       oklch(0.880 0.011 82);
 
-    /* Borders — softer, warmer, and more subtle */
-    --border:         #d7d2cd;
-    --border-subtle:  #f2efec;
-    --border-strong:  #bcb4aa;
+    /* Borders */
+    --border:         oklch(0.22 0.02 70 / 0.12);
+    --border-subtle:  oklch(0.22 0.02 70 / 0.06);
+    --border-strong:  oklch(0.22 0.02 70 / 0.20);
 
-    /* Text — darker, warm mauve/purple tinted */
-    --text-primary:   #190f14;
-    --text-secondary: #5a4b5f;
-    --text-muted:     #827387;
-    --text-faint:     #a09aa0;
+    /* Text (warm, dark) */
+    --text-primary:   oklch(0.220 0.018 60);
+    --text-secondary: oklch(0.420 0.020 56);
+    --text-muted:     oklch(0.550 0.020 60);
+    --text-faint:     oklch(0.660 0.020 64);
 
-    /* Brand Colors — MORE SATURATED */
-    --purple:         #5b32bd;
-    --purple-dim:     #6e4ba0;
-    --rose:           #a53255;
-    --rose-dim:       #913c5a;
-    --gradient-brand: linear-gradient(135deg, #5b32bd 0%, #a53255 100%);
+    /* Brand (deeper amber so it passes AA on cream) */
+    --purple:         oklch(0.580 0.120 62);
+    --purple-dim:     oklch(0.500 0.120 58);
+    --rose:           oklch(0.550 0.130 40);
+    --rose-dim:       oklch(0.500 0.120 38);
+    --gradient-brand: linear-gradient(135deg, oklch(0.660 0.130 72) 0%, oklch(0.540 0.130 50) 100%);
 
-    /* Gold (premium only) */
-    --gold:           #b98c1e;
-    --gold-dim:       #a06e14;
-    --gold-bg:        rgba(185, 140, 30, 0.08);
+    /* Gold */
+    --gold:           oklch(0.620 0.130 80);
+    --gold-dim:       oklch(0.540 0.130 78);
+    --gold-bg:        oklch(0.620 0.130 80 / 0.10);
+    --gradient-gold:  linear-gradient(135deg, var(--gold) 0%, var(--gold-dim) 100%);
 
     /* Status */
-    --success:        #15803d;
-    --success-bg:     rgba(21, 128, 61, 0.08);
-    --warning:        #b98c1e;
-    --warning-bg:     rgba(185, 140, 30, 0.08);
-    --error:          #b91c1c;
-    --error-bg:       rgba(185, 28, 28, 0.08);
+    --success:        oklch(0.520 0.130 152);
+    --success-bg:     oklch(0.520 0.130 152 / 0.10);
+    --warning:        oklch(0.580 0.120 76);
+    --warning-bg:     oklch(0.580 0.120 76 / 0.10);
+    --error:          oklch(0.520 0.180 25);
+    --error-bg:       oklch(0.520 0.180 25 / 0.10);
 
     /* Pending/processing/paid badges */
-    --badge-pending-bg:    #e6e2df;
-    --badge-pending-text:  #827387;
-    --badge-processing-bg: rgba(185, 140, 30, 0.12);
-    --badge-processing-text: #b98c1e;
-    --badge-paid-bg:       rgba(21, 128, 61, 0.12);
-    --badge-paid-text:     #15803d;
+    --badge-pending-bg:      oklch(0.910 0.010 82);
+    --badge-pending-text:    oklch(0.550 0.020 60);
+    --badge-processing-bg:   oklch(0.580 0.120 76 / 0.14);
+    --badge-processing-text: oklch(0.540 0.130 78);
+    --badge-paid-bg:         oklch(0.520 0.130 152 / 0.12);
+    --badge-paid-text:       oklch(0.520 0.130 152);
 
     /* Shadcn required variables (mapped to warm theme) */
-    --background: #fffcfa;
-    --foreground: #190f14;
-    --primary: #5b32bd;
-    --primary-foreground: #ffffff;
-    --secondary: #a53255;
-    --secondary-foreground: #ffffff;
-    --muted: #f4f1ee;
-    --muted-foreground: #5a4b5f;
-    --accent: #e6e2df;
-    --accent-foreground: #190f14;
-    --destructive: #b91c1c;
-    --destructive-foreground: #ffffff;
-    --input: #e6e2df;
-    --ring: #5b32bd;
+    --background: oklch(0.985 0.006 85);
+    --foreground: oklch(0.220 0.018 60);
+    --primary: oklch(0.580 0.120 62);
+    --primary-foreground: oklch(0.990 0.004 86);
+    --secondary: oklch(0.550 0.130 40);
+    --secondary-foreground: oklch(0.990 0.004 86);
+    --muted: oklch(0.955 0.008 84);
+    --muted-foreground: oklch(0.420 0.020 56);
+    --accent: oklch(0.910 0.010 82);
+    --accent-foreground: oklch(0.220 0.018 60);
+    --destructive: oklch(0.520 0.180 25);
+    --destructive-foreground: oklch(0.990 0.004 86);
+    --input: oklch(0.910 0.010 82);
+    --ring: oklch(0.580 0.120 62);
 
-    /* Shadows for depth instead of borders */
-    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05);
-    --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.08);
+    /* Shadows: depth via gold-tinted shadow instead of borders */
+    --shadow-card: 0 1px 3px oklch(0.55 0.10 70 / 0.08);
+    --shadow-card-hover: 0 8px 30px oklch(0.55 0.10 70 / 0.14), 0 2px 6px oklch(0.40 0.06 70 / 0.08);
   }
 }
 
@@ -148,17 +157,18 @@
   body {
     @apply bg-void text-lustre-text antialiased;
     font-family: 'Be Vietnam Pro', sans-serif;
+    letter-spacing: var(--tracking-normal);
   }
 
   /* Custom scrollbar */
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: var(--bg-void); }
-  ::-webkit-scrollbar-thumb { 
-    background: var(--border); 
-    border-radius: 2px; 
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
   }
-  ::-webkit-scrollbar-thumb:hover { 
-    background: rgba(210,188,255,0.4); 
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(from var(--purple) l c h / 0.4);
   }
 }
 
@@ -196,12 +206,12 @@
 }
 
 .bg-gradient-gold {
-  background: linear-gradient(135deg, #ecc246 0%, #cea62b 100%);
+  background: var(--gradient-gold);
 }
 
 .lustre-orbs {
-  background-image: 
-    radial-gradient(circle at 10% 20%, rgba(210, 188, 255, 0.03) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(255, 176, 206, 0.03) 0%, transparent 40%);
+  background-image:
+    radial-gradient(circle at 10% 20%, oklch(from var(--purple) l c h / 0.03) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, oklch(from var(--rose) l c h / 0.03) 0%, transparent 40%);
   background-attachment: fixed;
 }
