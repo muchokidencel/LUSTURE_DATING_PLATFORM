@@ -48,9 +48,16 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
 
         const age = otherProfile.birthDate ? Math.floor((new Date().getTime() - new Date(otherProfile.birthDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : null;
 
+        // Contact links stay hidden until BOTH sides have opted in via /reveal.
+        const consentedByMe = m.userOneId === userId ? !!m.userOneRevealConsent : !!m.userTwoRevealConsent;
+        const consentedByOther = m.userOneId === userId ? !!m.userTwoRevealConsent : !!m.userOneRevealConsent;
+        const isRevealed = consentedByMe && consentedByOther;
+
         const matchObj = {
           id: m.id,
           isPremium: isBasicPremium,
+          consentedByMe,
+          consentedByOther,
           otherUser: {
             id: otherProfile.userId, // Standardized to id
             displayName: otherProfile.fullName,
@@ -58,15 +65,15 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
             gender: otherProfile.gender,
             city: otherProfile.location || 'Unknown',
             bio: otherProfile.bio,
-            whatsapp: otherUser.whatsapp || otherProfile.whatsappNumber || null,
-            instagram: otherUser.instagram || otherProfile.instagramUsername || null,
+            whatsapp: isRevealed ? (otherUser.whatsapp || otherProfile.whatsappNumber || null) : null,
+            instagram: isRevealed ? (otherUser.instagram || otherProfile.instagramUsername || null) : null,
             photos: normalizePhotos(otherUser.photos),
             premiumTier: otherUser.premiumTier,
             isVerified: otherProfile.isVerified || false,
           },
         };
-        
-        console.log(`[MATCH:CONTACT:REVEALED] users ${userId} and ${otherUserId} (whatsappPresent: ${!!matchObj.otherUser.whatsapp}, instagramPresent: ${!!matchObj.otherUser.instagram})`);
+
+        console.log(`[MATCH:CONTACT:REVEAL_STATE] users ${userId} and ${otherUserId} (consentedByMe: ${consentedByMe}, consentedByOther: ${consentedByOther}, revealed: ${isRevealed})`);
 
         return matchObj;
       } catch (err: any) {

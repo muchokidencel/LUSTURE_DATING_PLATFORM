@@ -1137,6 +1137,8 @@ const mockMatchesWithContacts = [
   {
     id: 1,
     isPremium: true,
+    consentedByMe: true,
+    consentedByOther: true,
     otherUser: {
       id: 10,
       displayName: 'Sarah Match',
@@ -1176,6 +1178,63 @@ Then('I should see WhatsApp contact for my match', async ({ page }) => {
 Then('I should see Instagram contact for my match', async ({ page }) => {
   await expect(page.locator('text=Instagram Profile')).toBeVisible({ timeout: 10000 });
   await expect(page.locator('text=sarah_lustre')).toBeVisible();
+});
+
+Given('I have a match who has not yet consented to reveal contact details', async ({ page }) => {
+  let consentedByMe = false;
+
+  await page.route(`${API_BASE}/matches*`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'success',
+        data: [
+          {
+            id: 1,
+            isPremium: true,
+            consentedByMe,
+            consentedByOther: false,
+            otherUser: {
+              id: 11,
+              displayName: 'Amara Pending',
+              bio: 'Loves hiking',
+              city: 'Kisumu',
+              whatsapp: null,
+              instagram: null,
+              photos: [{ url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330', public_id: 'amara-1' }],
+              premiumTier: 'free',
+            },
+          },
+        ],
+      }),
+    });
+  });
+
+  await page.route(`${API_BASE}/matches/1/reveal`, async (route) => {
+    consentedByMe = true;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ status: 'success', message: 'Consent recorded' }),
+    });
+  });
+});
+
+When('I open the connect dialog for my match', async ({ page }) => {
+  await page.locator('button:has-text("Connect")').first().click();
+});
+
+Then('I should see a request to connect prompt', async ({ page }) => {
+  await expect(page.locator('button:has-text("Request to Connect")')).toBeVisible({ timeout: 10000 });
+});
+
+When('I request to connect with my match', async ({ page }) => {
+  await page.click('button:has-text("Request to Connect")');
+});
+
+Then('I should see a waiting for mutual consent message', async ({ page }) => {
+  await expect(page.locator('text=Waiting on Amara')).toBeVisible({ timeout: 10000 });
 });
 
 // ══════════════════════════════════════════════════════════════════════════════

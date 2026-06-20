@@ -48,7 +48,7 @@ describe('Match Routes', () => {
   });
 
   describe('GET /api/matches', () => {
-    it('should return formatted match list with contact details', async () => {
+    it('should return contact details once both sides have consented to reveal', async () => {
       const { db } = await import('../../db/index.js');
 
       // Mock current user
@@ -56,9 +56,9 @@ describe('Match Routes', () => {
         .mockResolvedValueOnce({ id: 1, premiumTier: 'basic' } as any) // Current user
         .mockResolvedValueOnce({ id: 2, whatsapp: '+254700111222', instagram: '@jane', photos: [], premiumTier: 'basic' } as any); // Other user
 
-      // Mock matches
+      // Mock matches - both sides have already consented to reveal
       vi.mocked(db.query.matches.findMany).mockResolvedValue([
-        { id: 100, userOneId: 1, userTwoId: 2, createdAt: new Date() },
+        { id: 100, userOneId: 1, userTwoId: 2, userOneRevealConsent: true, userTwoRevealConsent: true, createdAt: new Date() },
       ] as any);
 
       // Mock other user's profile
@@ -80,7 +80,43 @@ describe('Match Routes', () => {
       expect(res.body.status).toBe('success');
       expect(res.body.data).toHaveLength(1);
       expect(res.body.data[0].otherUser.displayName).toBe('Jane Doe');
+      expect(res.body.data[0].consentedByMe).toBe(true);
+      expect(res.body.data[0].consentedByOther).toBe(true);
       expect(res.body.data[0].otherUser.whatsapp).toBe('+254700111222');
+    });
+
+    it('should hide contact details when reveal consent is not yet mutual', async () => {
+      const { db } = await import('../../db/index.js');
+
+      vi.mocked(db.query.users.findFirst)
+        .mockResolvedValueOnce({ id: 1, premiumTier: 'basic' } as any) // Current user
+        .mockResolvedValueOnce({ id: 2, whatsapp: '+254700111222', instagram: '@jane', photos: [], premiumTier: 'basic' } as any); // Other user
+
+      // Current user (userOneId: 1) has consented; the other side has not.
+      vi.mocked(db.query.matches.findMany).mockResolvedValue([
+        { id: 100, userOneId: 1, userTwoId: 2, userOneRevealConsent: true, userTwoRevealConsent: false, createdAt: new Date() },
+      ] as any);
+
+      vi.mocked(db.query.profiles.findFirst).mockResolvedValue({
+        userId: 2,
+        fullName: 'Jane Doe',
+        gender: 'female',
+        bio: 'Hello',
+        location: 'Nairobi',
+        birthDate: new Date('1998-01-01'),
+        isVerified: true,
+      } as any);
+
+      const res = await request(app)
+        .get('/api/matches')
+        .set('Authorization', 'Bearer mock_token');
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toHaveLength(1);
+      expect(res.body.data[0].consentedByMe).toBe(true);
+      expect(res.body.data[0].consentedByOther).toBe(false);
+      expect(res.body.data[0].otherUser.whatsapp).toBeNull();
+      expect(res.body.data[0].otherUser.instagram).toBeNull();
     });
 
     it('should return empty array when no matches exist', async () => {

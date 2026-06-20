@@ -1,16 +1,20 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../lib/api';
 import { Button } from '../components/ui/button';
 import { Dialog, DialogContent } from "../components/ui/dialog";
 import { useMatches, useProfile } from '../hooks/useQueries';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
 import { Card } from '../components/ui/card';
-import { Heart, MapPin, MessageCircle, ChevronRight, Search, Crown } from 'lucide-react';
+import { Badge } from '../components/ui/badge';
+import { Heart, MapPin, MessageCircle, ChevronRight, Search, Crown, Lock, Clock, Link2, Loader2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface Match {
   id: number;
   isPremium: boolean; // Viewer's premium status
+  consentedByMe: boolean;
+  consentedByOther: boolean;
   otherUser: {
     id: number;
     displayName: string;
@@ -24,20 +28,34 @@ interface Match {
 }
 
 export default function Matches() {
-  const { data: matchesData, isLoading: loading } = useMatches();
+  const { data: matchesData, isLoading: loading, refetch: refetchMatches } = useMatches();
   const { data: profile, isLoading: profileLoading } = useProfile();
-  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+  const [selectedMatchId, setSelectedMatchId] = useState<number | null>(null);
+  const [revealingId, setRevealingId] = useState<number | null>(null);
   const navigate = useNavigate();
 
   const isPremium = profile?.premiumTier !== 'free';
-  const matches = matchesData || [];
+  const matches: Match[] = matchesData || [];
+  const selectedMatch = selectedMatchId != null ? matches.find(m => m.id === selectedMatchId) ?? null : null;
+
+  const handleRequestConnect = async (matchId: number) => {
+    setRevealingId(matchId);
+    try {
+      await api.post(`/matches/${matchId}/reveal`);
+      await refetchMatches();
+    } catch (err) {
+      console.error('Failed to record reveal consent:', err);
+    } finally {
+      setRevealingId(null);
+    }
+  };
 
   if (profileLoading || loading) {
     return (
       <div className="min-h-screen bg-void px-6 py-24 pb-32">
         <div className="max-w-4xl mx-auto space-y-4">
           {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="h-24 animate-pulse rounded-xl bg-card shadow-sm border-transparent" />
+            <Card key={i} className="h-24 animate-pulse rounded-xl bg-card shadow-[var(--shadow-card)] border-transparent" />
           ))}
         </div>
       </div>
@@ -48,17 +66,18 @@ export default function Matches() {
     return (
       <div className="min-h-screen bg-void px-6 py-24 flex items-center justify-center">
         <div className="max-w-md w-full text-center space-y-8 animate-fade-up">
-          <div className="w-24 h-24 bg-gradient-gold/10 rounded-full flex items-center justify-center mx-auto border border-lustre-gold/20 shadow-lg">
+          <div className="w-24 h-24 bg-lustre-gold/10 rounded-full flex items-center justify-center mx-auto border border-lustre-gold/20 shadow-[var(--shadow-card)]">
             <Crown size={40} strokeWidth={1.5} className="text-lustre-gold fill-lustre-gold/10" />
           </div>
           <div className="space-y-4">
-            <h1 className="font-garamond text-4xl text-white italic">Your Connections Await</h1>
+            <h1 className="font-garamond text-4xl text-lustre-text italic">Your Connections Await</h1>
             <p className="font-sans text-lustre-muted leading-relaxed">
               Matches and direct social connections are exclusive features for our Elite and Gold members. Upgrade today to unlock your matches and start conversing.
             </p>
           </div>
-          <Button 
-            className="w-full h-14 rounded-xl bg-gradient-gold text-black font-sans font-bold uppercase tracking-widest text-[10px]"
+          <Button
+            variant="gold"
+            className="w-full h-14 rounded-xl font-sans font-bold uppercase tracking-widest text-[10px]"
             onClick={() => navigate('/premium')}
           >
             Unlock Premium Access
@@ -102,7 +121,7 @@ export default function Matches() {
         {loading ? (
           <div className="space-y-4">
             {[1, 2, 3, 4].map((i) => (
-              <Card key={i} className="h-24 animate-pulse rounded-xl bg-card shadow-sm border-transparent" />
+              <Card key={i} className="h-24 animate-pulse rounded-xl bg-card shadow-[var(--shadow-card)] border-transparent" />
             ))}
           </div>
         ) : matches.length > 0 ? (
@@ -135,6 +154,12 @@ export default function Matches() {
                          {isOtherPremium && (
                             <span className="px-2 py-0.5 bg-lustre-rose-dim/40 text-lustre-rose text-[9px] uppercase font-bold tracking-widest rounded">Premium</span>
                          )}
+                         {match.consentedByMe && !match.consentedByOther && (
+                            <Badge variant="pending" className="text-[9px]">
+                              <Clock size={10} strokeWidth={1.5} className="mr-1" />
+                              Pending
+                            </Badge>
+                         )}
                       </div>
                       <div className="flex items-center gap-1.5 text-lustre-muted">
                          <MapPin size={12} strokeWidth={1.5} className="text-lustre-purple shrink-0" />
@@ -143,10 +168,10 @@ export default function Matches() {
                     </div>
                   </div>
 
-                  <Button 
-                     variant="outline" 
+                  <Button
+                     variant="outline"
                      className="border border-border-subtle text-lustre-purple px-5 h-10 md:px-8 md:h-12 rounded-full font-headline text-[10px] uppercase tracking-widest font-bold hover:bg-lustre-purple/10 transition-all active:scale-95 bg-transparent"
-                     onClick={() => setSelectedMatch(match)}
+                     onClick={() => setSelectedMatchId(match.id)}
                   >
                     Connect
                   </Button>
@@ -156,39 +181,79 @@ export default function Matches() {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-24 text-center animate-fade-up">
-            <div className="w-24 h-24 bg-surface-container rounded-full flex items-center justify-center mb-8 border border-outline-variant/35 shadow-md">
+            <div className="w-24 h-24 bg-surface-container rounded-full flex items-center justify-center mb-8 border border-outline-variant/35 shadow-[var(--shadow-card)]">
               <Search size={32} strokeWidth={1.5} className="text-lustre-purple/20" />
             </div>
             <div className="space-y-2 mb-10">
-              <h2 className="font-headline text-2xl text-white font-bold">No matches yet</h2>
+              <h2 className="font-headline text-2xl text-lustre-text font-bold">No matches yet</h2>
               <p className="font-sans text-sm text-lustre-muted max-w-xs mx-auto">Keep exploring beautiful profiles in Discovery to find your perfect connection.</p>
             </div>
-            <Button className="px-10 h-14 bg-gradient-brand text-white rounded-full font-headline text-[10px] uppercase tracking-widest font-bold shadow-lg hover:scale-105 active:scale-95 transition-all" onClick={() => navigate('/discovery')}>
+            <Button className="px-10 h-14 rounded-full font-headline text-[10px] uppercase tracking-widest font-bold shadow-[var(--shadow-card-hover)] hover:scale-105 active:scale-95 transition-all" onClick={() => navigate('/discovery')}>
                Explore Discovery
             </Button>
           </div>
         )}
       </div>
 
-      <Dialog open={!!selectedMatch} onOpenChange={(open) => !open && setSelectedMatch(null)}>
+      <Dialog open={!!selectedMatch} onOpenChange={(open) => !open && setSelectedMatchId(null)}>
         <DialogContent className="max-w-md mx-auto p-8 bg-card/95 backdrop-blur-xl border border-border-subtle rounded-3xl flex flex-col items-center">
-          {selectedMatch && (
+          {selectedMatch && (() => {
+            const isRevealed = selectedMatch.consentedByMe && selectedMatch.consentedByOther;
+            const firstName = selectedMatch.otherUser.displayName.split(' ')[0];
+            return (
             <div className="flex flex-col items-center w-full relative">
-              <div className="w-20 h-20 bg-lustre-purple/15 rounded-full flex items-center justify-center mb-6 border border-lustre-purple/25">
-                <span className="font-headline text-lustre-purple text-2xl">🔗</span>
+              <div className={cn(
+                "w-20 h-20 rounded-full flex items-center justify-center mb-6 border",
+                isRevealed ? "bg-lustre-purple/15 border-lustre-purple/25" : "bg-elevated border-2 border-dashed border-border-strong"
+              )}>
+                {isRevealed ? (
+                  <Link2 size={28} strokeWidth={1.5} className="text-lustre-purple" />
+                ) : selectedMatch.consentedByMe ? (
+                  <Clock size={28} strokeWidth={1.5} className="text-lustre-muted" />
+                ) : (
+                  <Lock size={28} strokeWidth={1.5} className="text-lustre-muted" />
+                )}
               </div>
 
               <div className="text-center mb-8">
                 <h2 className="font-headline text-xl text-lustre-text mb-2 uppercase tracking-widest font-bold">
-                  Connect With {selectedMatch.otherUser.displayName.split(' ')[0]}
+                  {isRevealed
+                    ? `Connect With ${firstName}`
+                    : selectedMatch.consentedByMe
+                    ? `Waiting on ${firstName}`
+                    : `Connect With ${firstName}`}
                 </h2>
                 <p className="font-sans text-xs text-lustre-muted leading-relaxed max-w-[280px] mx-auto">
-                  Only verified connections can see each other's direct social links.
+                  {isRevealed
+                    ? "Only verified connections can see each other's direct social links."
+                    : selectedMatch.consentedByMe
+                    ? "You've requested to connect. We'll unlock contact details the moment they do too."
+                    : "Contact details unlock once you both opt in to connect."}
                 </p>
               </div>
 
               <div className="w-full space-y-4">
-                {selectedMatch.otherUser.whatsapp && (
+                {!isRevealed && (
+                  selectedMatch.consentedByMe ? (
+                    <div className="text-center py-12 bg-base/30 rounded-2xl border border-dashed border-border-subtle">
+                      <Clock size={32} strokeWidth={1.5} className="text-lustre-muted/40 mx-auto mb-4" />
+                      <p className="font-sans text-xs text-lustre-muted italic px-6 leading-relaxed">
+                        Waiting for {firstName} to also request a connection.
+                      </p>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="gold"
+                      className="w-full h-12 rounded-full font-sans font-bold text-[10px] uppercase tracking-widest"
+                      onClick={() => handleRequestConnect(selectedMatch.id)}
+                      disabled={revealingId === selectedMatch.id}
+                    >
+                      {revealingId === selectedMatch.id ? <Loader2 size={18} strokeWidth={1.5} className="animate-spin" /> : "Request to Connect"}
+                    </Button>
+                  )
+                )}
+
+                {isRevealed && selectedMatch.otherUser.whatsapp && (
                   <button 
                     className="w-full flex items-center justify-between p-4 bg-base rounded-2xl border border-border-subtle hover:bg-hover transition-colors cursor-pointer group"
                     onClick={() => openWhatsApp(selectedMatch.otherUser.whatsapp!)}
@@ -206,7 +271,7 @@ export default function Matches() {
                   </button>
                 )}
 
-                {selectedMatch.otherUser.instagram && (
+                {isRevealed && selectedMatch.otherUser.instagram && (
                   <button 
                     className="w-full flex items-center justify-between p-4 bg-base rounded-2xl border border-border-subtle hover:bg-hover transition-colors cursor-pointer group"
                     onClick={() => openInstagram(selectedMatch.otherUser.instagram!)}
@@ -224,7 +289,7 @@ export default function Matches() {
                   </button>
                 )}
 
-                {!selectedMatch.otherUser.whatsapp && !selectedMatch.otherUser.instagram && (
+                {isRevealed && !selectedMatch.otherUser.whatsapp && !selectedMatch.otherUser.instagram && (
                   <div className="text-center py-12 bg-base/30 rounded-2xl border border-dashed border-border-subtle">
                     <MessageCircle size={32} strokeWidth={1.5} className="text-lustre-muted/20 mx-auto mb-4" />
                     <p className="font-sans text-xs text-lustre-muted italic px-6 leading-relaxed">
@@ -234,7 +299,8 @@ export default function Matches() {
                 )}
               </div>
             </div>
-          )}
+            );
+          })()}
         </DialogContent>
       </Dialog>
     </div>
