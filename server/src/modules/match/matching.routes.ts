@@ -190,7 +190,8 @@ router.get('/recommendations', authenticate, async (req: AuthRequest, res) => {
         isOnline: p?.onlineStatus || false,
         lastActive: u.lastActiveAt,
         isPremium: u.premiumTier !== 'free',
-        distanceKm: u.distanceKm != null ? Math.round(u.distanceKm * 10) / 10 : null
+        distanceKm: u.distanceKm != null ? Math.round(u.distanceKm * 10) / 10 : null,
+        compatibilityScore: u.totalScore
       };
     });
 

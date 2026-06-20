@@ -116,6 +116,7 @@ describe('Matching Routes - Recommendations Engine', () => {
       expect(res.body.data).toBeInstanceOf(Array);
       expect(res.body.data.length).toBeGreaterThan(0);
       expect(res.body.data[0].displayName).toBe('Jane');
+      expect(typeof res.body.data[0].compatibilityScore).toBe('number');
     });
 
     it('should return 404 if user not found', async () => {

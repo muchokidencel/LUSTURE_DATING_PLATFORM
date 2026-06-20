@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Button } from '../components/ui/button';
 import api from '../lib/api';
-import { useRecommendations, useLike } from '../hooks/useQueries';
+import { useRecommendations, useLike, useProfile } from '../hooks/useQueries';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "../components/ui/dialog";
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, X, Heart, Star, MapPin, RefreshCw, Compass, ChevronRight, User, Crown, Lock, Zap } from 'lucide-react';
@@ -14,7 +14,9 @@ import DiscoveryTabs from '../components/layout/DiscoveryTabs';
 
 export default function Recommendations() {
   const { data: recs, isLoading, isError, error, refetch } = useRecommendations();
+  const { data: myProfile } = useProfile();
   const likeMutation = useLike();
+  const shouldReduceMotion = useReducedMotion();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showMatchModal, setShowMatchModal] = useState(false);
   const [lastMatch, setLastMatch] = useState<any>(null);
@@ -112,14 +114,15 @@ export default function Recommendations() {
               Our proprietary scoring engine is reserved for Elite members. Upgrade to see your most compatible connections.
             </p>
           </div>
-          <Button 
-            className="w-full h-14 rounded-xl bg-gradient-gold text-black font-sans font-bold uppercase tracking-widest text-[10px]"
+          <Button
+            variant="gold"
+            className="w-full h-14 rounded-xl font-sans font-bold uppercase tracking-widest text-[10px]"
             onClick={() => navigate('/premium')}
           >
             Upgrade to Elite
           </Button>
-          <Button 
-            variant="link" 
+          <Button
+            variant="link"
             className="text-lustre-faint font-sans text-[10px] uppercase tracking-widest"
             onClick={() => navigate('/')}
           >
@@ -143,7 +146,7 @@ export default function Recommendations() {
 
   if (isError || users.length === 0 || currentIndex >= users.length) return (
     <div className="min-h-screen bg-void flex flex-col items-center justify-center p-6 text-center animate-fade-up">
-      <div className="w-32 h-32 bg-elevated rounded-full flex items-center justify-center relative shadow-2xl border border-border mb-12">
+      <div className="w-32 h-32 bg-elevated rounded-full flex items-center justify-center relative shadow-[var(--shadow-card-hover)] border border-border mb-12">
          <Compass size={48} strokeWidth={1.5} className="text-lustre-purple/40" />
       </div>
       <div className="space-y-4 mb-12">
@@ -154,7 +157,7 @@ export default function Recommendations() {
         <Button variant="outline" className="px-10 h-12 rounded-full border-border-strong text-lustre-text" onClick={() => navigate('/discovery')}>
            Discovery
         </Button>
-        <Button className="px-10 h-12 rounded-full bg-gradient-brand text-white gap-2" onClick={() => { setCurrentIndex(0); refetch(); }}>
+        <Button className="px-10 h-12 rounded-full gap-2" onClick={() => { setCurrentIndex(0); refetch(); }}>
            <RefreshCw size={16} strokeWidth={1.5} />
            Refresh
         </Button>
@@ -170,7 +173,7 @@ export default function Recommendations() {
       </div>
 
       {/* Premium Age Range Filter Slider */}
-      <div className="w-full max-w-md md:max-w-[380px] bg-card border border-border-subtle rounded-2xl p-6 mb-6 space-y-4 shadow-xl">
+      <div className="w-full max-w-md md:max-w-[380px] bg-card border border-border-subtle rounded-2xl p-6 mb-6 space-y-4 shadow-[var(--shadow-card)]">
         <div className="flex justify-between items-center">
           <span className="font-sans text-[10px] uppercase tracking-widest text-lustre-faint font-bold">Age Filter: {ageRange[0]} - {ageRange[1]} yrs</span>
         </div>
@@ -186,16 +189,16 @@ export default function Recommendations() {
         <AnimatePresence mode="popLayout">
           <motion.div
             key={currentUser.id}
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            initial={shouldReduceMotion ? { opacity: 0 } : { scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ x: 500, opacity: 0, rotate: 20 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 120 }}
+            exit={shouldReduceMotion ? { opacity: 0 } : { x: 500, opacity: 0, rotate: 20 }}
+            transition={shouldReduceMotion ? { duration: 0.15 } : { type: 'spring', damping: 25, stiffness: 120 }}
             className="absolute inset-0 w-full h-full"
           >
-            <div className="relative w-full h-full rounded-[2rem] overflow-hidden shadow-2xl border border-border group bg-card">
+            <div className="relative w-full h-full rounded-[2rem] overflow-hidden shadow-[var(--shadow-card-hover)] border border-border group bg-card">
               {currentUser.photos?.[0] ? (
-                <img 
-                  src={currentUser.photos[0].url} 
+                <img
+                  src={currentUser.photos[0].url}
                   alt={currentUser.displayName}
                   className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                 />
@@ -207,7 +210,15 @@ export default function Recommendations() {
 
               {/* Gradient Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-              
+
+              {/* Compatibility score */}
+              {currentUser.compatibilityScore != null && (
+                <div className="absolute top-6 right-6 z-20 flex items-center gap-1.5 bg-card/80 backdrop-blur-md border border-lustre-gold/30 rounded-full px-3 py-1.5">
+                  <Zap size={12} strokeWidth={1.5} className="text-lustre-gold fill-lustre-gold/30" />
+                  <span className="font-headline text-[10px] font-bold text-lustre-gold uppercase tracking-widest">{currentUser.compatibilityScore}/80</span>
+                </div>
+              )}
+
               {/* Profile Narrative */}
               <div className="absolute bottom-0 left-0 w-full p-8 space-y-4 z-10">
                  <div className="space-y-1">
@@ -245,59 +256,65 @@ export default function Recommendations() {
 
       {/* Aesthetic Action Bar */}
       <div className="fixed bottom-20 md:bottom-auto md:relative md:mt-8 left-0 right-0 md:left-auto md:right-auto flex justify-center items-center gap-8 z-50 md:z-10 animate-fade-up">
-        <Button 
+        <Button
           variant="outline"
           size="icon"
           onClick={() => handleAction('left')}
-          className="w-16 h-16 rounded-full border-border-strong bg-card/80 backdrop-blur-md text-lustre-muted hover:text-lustre-text hover:bg-hover active:scale-90 transition-all shadow-xl"
+          className="w-16 h-16 rounded-full border-border-strong bg-card/80 backdrop-blur-md text-lustre-muted hover:text-lustre-text hover:bg-hover active:scale-90 transition-all shadow-[var(--shadow-card)]"
         >
           <X size={28} strokeWidth={1.5} />
         </Button>
-        
-        <Button 
+
+        <Button
           variant="outline"
           size="icon"
           onClick={() => handleAction('super')}
-          className="w-14 h-14 rounded-full border-lustre-gold/30 bg-lustre-gold/5 text-lustre-gold active:scale-90 transition-all shadow-glow-gold"
+          className="w-14 h-14 rounded-full border-lustre-gold/30 bg-lustre-gold/5 text-lustre-gold active:scale-90 transition-all shadow-[var(--shadow-card-hover)]"
         >
           <Star size={24} strokeWidth={1.5} fill="currentColor" className="opacity-20" />
         </Button>
 
-        <Button 
+        <Button
           size="icon"
           onClick={() => handleAction('right')}
-          className="w-16 h-16 rounded-full bg-gradient-brand text-white active:scale-90 transition-all shadow-2xl"
+          className="w-16 h-16 rounded-full active:scale-90 transition-all shadow-[var(--shadow-card-hover)]"
         >
           <Heart size={28} strokeWidth={1.5} className="fill-current" />
         </Button>
       </div>
 
-      {/* Potential Match Modal */}
+      {/* It's a Match celebration */}
       <Dialog open={showMatchModal} onOpenChange={setShowMatchModal}>
-        <DialogContent className="max-w-sm mx-auto p-10 bg-card-alt">
+        <DialogContent className="max-w-sm mx-auto p-10 bg-card-alt overflow-hidden">
           <div className="flex flex-col items-center text-center space-y-8">
-            <div className="relative">
+            <div className="relative flex items-center justify-center -space-x-7 py-2">
               <div className="absolute inset-0 bg-gradient-brand blur-3xl rounded-full opacity-30 animate-pulse" />
-              <Avatar className="w-28 h-28 border-2 border-lustre-purple/30 relative z-10 shadow-2xl">
+              <Avatar className="w-24 h-24 border-4 border-void relative z-10 shadow-[var(--shadow-card-hover)]">
+                <AvatarImage src={myProfile?.photos?.[0]?.url} className="object-cover" />
+                <AvatarFallback className="text-3xl font-garamond italic">
+                  {getInitial(myProfile?.fullName)}
+                </AvatarFallback>
+              </Avatar>
+              <Avatar className="w-24 h-24 border-4 border-void relative z-10 shadow-[var(--shadow-card-hover)]">
                 <AvatarImage src={lastMatch?.photos?.[0]?.url} className="object-cover" />
-                <AvatarFallback className="text-4xl font-garamond italic">
+                <AvatarFallback className="text-3xl font-garamond italic">
                   {getInitial(lastMatch?.displayName)}
                 </AvatarFallback>
               </Avatar>
-              <div className="absolute -bottom-2 -right-2 bg-gradient-brand p-2 rounded-full shadow-lg z-20">
-                <Sparkles size={20} className="text-white"  strokeWidth={1.5} />
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-gradient-gold p-2 rounded-full shadow-[var(--shadow-card)] z-20">
+                <Sparkles size={18} className="text-black" strokeWidth={1.5} />
               </div>
             </div>
 
             <div className="space-y-3">
-              <DialogTitle className="text-4xl font-garamond">Shared Spark</DialogTitle>
+              <DialogTitle className="text-4xl font-garamond italic">Shared Spark</DialogTitle>
               <DialogDescription className="text-base">
                 You and {lastMatch?.displayName} have recognized mutual potential.
               </DialogDescription>
             </div>
 
             <div className="w-full space-y-4 pt-2">
-              <Button className="w-full h-14 rounded-full bg-gradient-brand text-white font-sans font-bold uppercase tracking-widest text-[10px]" onClick={() => navigate('/matches')}>
+              <Button variant="gold" className="w-full h-14 rounded-full font-sans font-bold uppercase tracking-widest text-[10px]" onClick={() => navigate('/matches')}>
                 View Connections
               </Button>
               <Button variant="ghost" className="w-full h-12 rounded-full text-lustre-muted font-sans font-bold uppercase tracking-widest text-[10px]" onClick={() => setShowMatchModal(false)}>
@@ -324,8 +341,9 @@ export default function Recommendations() {
             </div>
 
             <div className="w-full space-y-4 pt-2">
-              <Button 
-                className="w-full h-14 rounded-full bg-gradient-gold text-black font-sans font-bold uppercase tracking-widest text-[10px]" 
+              <Button
+                variant="gold"
+                className="w-full h-14 rounded-full font-sans font-bold uppercase tracking-widest text-[10px]"
                 onClick={() => navigate('/premium')}
               >
                 Upgrade to Elite
