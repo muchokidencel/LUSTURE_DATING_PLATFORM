@@ -9,6 +9,13 @@ import { Users, Crown, Wallet, RefreshCw, LogOut, Loader2, TableProperties, Down
 import { cn } from '../lib/utils';
 import api from '../lib/api';
 
+interface Withdrawal {
+  id: number;
+  userId: number;
+  amount: number;
+  provider: string;
+}
+
 export default function AdminDashboard() {
   const { data: stats, isLoading: statsLoading, isFetching: statsFetching, refetch: refetchStats } = useAdminStats();
   const { data: withdrawals, isLoading: withdrawalsLoading, refetch: refetchWithdrawals } = useAdminWithdrawals();
@@ -179,7 +186,7 @@ export default function AdminDashboard() {
             <div className="space-y-3">
               <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-lustre-faint font-bold">Total Pending Value (KES)</p>
               <p className="font-garamond text-4xl font-bold text-lustre-text">
-                {(withdrawals?.reduce((acc: number, curr: any) => acc + curr.amount, 0) || 0).toLocaleString()}
+                {(withdrawals?.reduce((acc: number, curr: Withdrawal) => acc + curr.amount, 0) || 0).toLocaleString()}
               </p>
             </div>
             <div className="p-4 rounded-xl bg-lustre-rose/10 border border-lustre-rose/20">
@@ -234,7 +241,7 @@ export default function AdminDashboard() {
                 </thead>
                 <tbody className="divide-y divide-border-subtle">
                    {withdrawals && withdrawals.length > 0 ? (
-                      withdrawals.map((withdrawal: any) => (
+                      withdrawals.map((withdrawal: Withdrawal) => (
                         <tr key={withdrawal.id} className="hover:bg-hover/10 transition-colors group">
                            <td className="px-8 py-6">
                               <div className="flex items-center gap-3">

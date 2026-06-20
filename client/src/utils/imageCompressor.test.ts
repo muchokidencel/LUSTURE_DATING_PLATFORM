@@ -3,8 +3,8 @@ import { compressImage } from './imageCompressor';
 
 // Class-based constructor mock for FileReader
 class MockFileReader {
-  onload: any = null;
-  onerror: any = null;
+  onload: ((event: { target: { result: string } }) => void) | null = null;
+  onerror: ((error: Error) => void) | null = null;
   result = 'data:image/jpeg;base64,mock';
 
   readAsDataURL(file: File) {
@@ -15,7 +15,7 @@ class MockFileReader {
     } else {
       setTimeout(() => {
         if (this.onload) {
-          this.onload({ target: { result: file.name === 'error-load.jpg' ? 'error-src' : this.result } } as any);
+          this.onload({ target: { result: file.name === 'error-load.jpg' ? 'error-src' : this.result } });
         }
       }, 0);
     }
@@ -24,8 +24,8 @@ class MockFileReader {
 
 // Class-based constructor mock for Image
 class MockImage {
-  onload: any = null;
-  onerror: any = null;
+  onload: (() => void) | null = null;
+  onerror: ((error: Error) => void) | null = null;
   width = 1000;
   height = 1000;
 
@@ -72,13 +72,13 @@ describe('imageCompressor', () => {
       getContext: () => ({
         drawImage: vi.fn(),
       }),
-      toBlob: (callback: any) => {
+      toBlob: (callback: (blob: Blob | null) => void) => {
         callback(new Blob(['compressed-image'], { type: 'image/jpeg' }));
       }
     };
     vi.spyOn(document, 'createElement').mockImplementation((tag) => {
-      if (tag === 'canvas') return mockCanvas as any;
-      return {} as any;
+      if (tag === 'canvas') return mockCanvas as unknown as HTMLCanvasElement;
+      return {} as unknown as HTMLElement;
     });
 
     const result = await compressImage(file);
@@ -107,8 +107,8 @@ describe('imageCompressor', () => {
       getContext: () => null,
     };
     vi.spyOn(document, 'createElement').mockImplementation((tag) => {
-      if (tag === 'canvas') return mockCanvas as any;
-      return {} as any;
+      if (tag === 'canvas') return mockCanvas as unknown as HTMLCanvasElement;
+      return {} as unknown as HTMLElement;
     });
 
     await expect(compressImage(file)).rejects.toThrow('Failed to get canvas context');

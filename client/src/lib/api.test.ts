@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import api from './api';
-import axios from 'axios';
+import axios, { AxiosError, type InternalAxiosRequestConfig, type AxiosResponse } from 'axios';
 
 vi.mock('axios', async () => {
-  const actual = await vi.importActual('axios') as any;
+  const actual = await vi.importActual<typeof import('axios')>('axios');
   return {
     ...actual,
     default: {
@@ -23,13 +23,19 @@ vi.mock('axios', async () => {
   };
 });
 
+type RequestInterceptor = (config: InternalAxiosRequestConfig) => InternalAxiosRequestConfig;
+type ResponseFulfilledInterceptor = (response: AxiosResponse) => AxiosResponse;
+type ResponseRejectedInterceptor = (error: AxiosError) => Promise<unknown>;
+
 describe('API Interceptors', () => {
-  // @ts-ignore
-  const requestInterceptor = api.interceptors.request.handlers[0].fulfilled;
-  // @ts-ignore
-  const responseInterceptorFulfilled = api.interceptors.response.handlers[0].fulfilled;
-  // @ts-ignore
-  const responseInterceptorRejected = api.interceptors.response.handlers[0].rejected;
+  // axios doesn't expose interceptor handlers in its public types, so reaching
+  // into them for testing requires a cast.
+  // @ts-expect-error - handlers is a private axios internal, not in its public types
+  const requestInterceptor: RequestInterceptor = api.interceptors.request.handlers[0].fulfilled;
+  // @ts-expect-error - handlers is a private axios internal, not in its public types
+  const responseInterceptorFulfilled: ResponseFulfilledInterceptor = api.interceptors.response.handlers[0].fulfilled;
+  // @ts-expect-error - handlers is a private axios internal, not in its public types
+  const responseInterceptorRejected: ResponseRejectedInterceptor = api.interceptors.response.handlers[0].rejected;
 
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -40,13 +46,13 @@ describe('API Interceptors', () => {
   describe('Request Interceptor', () => {
     it('should add Authorization header if accessToken exists in localStorage', () => {
       localStorage.setItem('accessToken', 'test-access-token');
-      const config = { headers: {} } as any;
+      const config = { headers: {} } as InternalAxiosRequestConfig;
       const result = requestInterceptor(config);
       expect(result.headers.Authorization).toBe('Bearer test-access-token');
     });
 
     it('should not add Authorization header if accessToken does not exist', () => {
-      const config = { headers: {} } as any;
+      const config = { headers: {} } as InternalAxiosRequestConfig;
       const result = requestInterceptor(config);
       expect(result.headers.Authorization).toBeUndefined();
     });
@@ -54,29 +60,29 @@ describe('API Interceptors', () => {
 
   describe('Response Interceptor', () => {
     it('should return response directly on success', () => {
-      const response = { data: 'ok' } as any;
+      const response = { data: 'ok' } as AxiosResponse;
       const result = responseInterceptorFulfilled(response);
       expect(result).toBe(response);
     });
 
     it('should reject error directly if status is not 401', async () => {
-      const error = new Error('Bad request') as any;
-      error.response = { status: 400 };
+      const error = new AxiosError('Bad request');
+      error.response = { status: 400 } as AxiosResponse;
       await expect(responseInterceptorRejected(error)).rejects.toThrow('Bad request');
     });
 
     it('should reject error directly if originalRequest._retry is already true', async () => {
-      const error = new Error('Unauthorized') as any;
-      error.response = { status: 401 };
-      error.config = { _retry: true, headers: {} };
+      const error = new AxiosError('Unauthorized');
+      error.response = { status: 401 } as AxiosResponse;
+      error.config = { _retry: true, headers: {} } as InternalAxiosRequestConfig & { _retry: boolean };
       await expect(responseInterceptorRejected(error)).rejects.toThrow('Unauthorized');
     });
 
     it('should attempt token rotation on 401 and retry request', async () => {
       localStorage.setItem('refreshToken', 'old-refresh');
-      const error = new Error('Unauthorized') as any;
-      error.response = { status: 401 };
-      error.config = { _retry: false, headers: {} };
+      const error = new AxiosError('Unauthorized');
+      error.response = { status: 401 } as AxiosResponse;
+      error.config = { _retry: false, headers: {} } as InternalAxiosRequestConfig & { _retry: boolean };
 
       // Mock refresh success
       vi.mocked(axios.post).mockResolvedValue({
@@ -89,7 +95,7 @@ describe('API Interceptors', () => {
       });
 
       // Mock retried api call using Axios request spy
-      const apiSpy = vi.spyOn(api, 'request').mockResolvedValue('retry-result' as any);
+      const apiSpy = vi.spyOn(api, 'request').mockResolvedValue('retry-result' as unknown as AxiosResponse);
 
       const result = await responseInterceptorRejected(error);
       expect(axios.post).toHaveBeenCalledWith(
@@ -98,7 +104,7 @@ describe('API Interceptors', () => {
       );
       expect(localStorage.getItem('accessToken')).toBe('new-access');
       expect(localStorage.getItem('refreshToken')).toBe('new-refresh');
-      expect(error.config.headers.Authorization).toBe('Bearer new-access');
+      expect(error.config!.headers.Authorization).toBe('Bearer new-access');
       expect(apiSpy).toHaveBeenCalledWith(error.config);
       expect(result).toBe('retry-result');
     });
@@ -106,9 +112,9 @@ describe('API Interceptors', () => {
     it('should clear localStorage, redirect to login, and reject if token refresh fails', async () => {
       localStorage.setItem('accessToken', 'expired-access');
       localStorage.setItem('refreshToken', 'old-refresh');
-      const error = new Error('Unauthorized') as any;
-      error.response = { status: 401 };
-      error.config = { _retry: false, headers: {} };
+      const error = new AxiosError('Unauthorized');
+      error.response = { status: 401 } as AxiosResponse;
+      error.config = { _retry: false, headers: {} } as InternalAxiosRequestConfig & { _retry: boolean };
 
       // Mock refresh failure
       const refreshError = new Error('Refresh expired');

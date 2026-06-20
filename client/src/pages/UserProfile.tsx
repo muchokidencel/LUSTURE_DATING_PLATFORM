@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePublicProfile, useLike, useProfile } from '../hooks/useQueries';
 import { Button } from '../components/ui/button';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "../components/ui/dialog";
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
 import { Heart, HeartHandshake, ArrowLeft, Loader2, Share2, MoreHorizontal, Sparkles, Crown, CheckCircle2, Lock } from 'lucide-react';
@@ -14,13 +14,20 @@ export default function UserProfile() {
   const { data: loggedInProfile, isLoading: loggedInLoading } = useProfile();
   const likeMutation = useLike();
   const [showMatchModal, setShowMatchModal] = useState(false);
-  const [likedSent, setLikedSent] = useState(false);
+  const [likedSent, setLikedSent] = useState(() => !!user?.isLikedByMe);
 
-  useEffect(() => {
+  // Latch likedSent on whenever the server confirms a prior like (e.g. once
+  // the query resolves asynchronously, or later refetches). Adjusting state
+  // during render, rather than in an effect, per React's guidance for
+  // "adjusting state when a prop/state value changes" -- the click handler
+  // below also sets this independently for the optimistic-like case.
+  const [prevUser, setPrevUser] = useState(user);
+  if (user !== prevUser) {
+    setPrevUser(user);
     if (user?.isLikedByMe) {
       setLikedSent(true);
     }
-  }, [user]);
+  }
 
   if (isLoading || loggedInLoading) return (
     <div className="min-h-screen bg-void flex items-center justify-center">

@@ -5,7 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 // Mock AuthContext
 vi.mock('../../context/AuthContext', async () => {
-  const actual = await vi.importActual('../../context/AuthContext') as any;
+  const actual = await vi.importActual<typeof import('../../context/AuthContext')>('../../context/AuthContext');
   return {
     ...actual,
     useAuth: () => ({

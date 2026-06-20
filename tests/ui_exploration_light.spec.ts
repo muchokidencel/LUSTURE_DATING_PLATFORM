@@ -130,6 +130,17 @@ async function setupMocks(page: any) {
       }),
     });
   });
+
+  // Without this, the unmocked call hits the real backend, which can 401 and
+  // trigger the app's failed-refresh hard-redirect to /login mid-navigation,
+  // hanging page.goto() while waiting for the "load" event.
+  await page.route(`${API_BASE}/notifications*`, async (route: any) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ status: 'success', data: [] }),
+    });
+  });
 }
 
 test.describe('UI Exploration Desktop Light Mode', () => {
@@ -147,32 +158,32 @@ test.describe('UI Exploration Desktop Light Mode', () => {
     }, mockPremiumUser);
 
     // 1. Landing Page
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForTimeout(1000);
     await page.screenshot({ path: `${SCREENSHOT_DIR}/light_desktop_1_landing.png` });
 
     // 2. Register Page
-    await page.goto('/register');
+    await page.goto('/register', { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForTimeout(1000);
     await page.screenshot({ path: `${SCREENSHOT_DIR}/light_desktop_2_register.png` });
 
     // 3. Login Page
-    await page.goto('/login');
+    await page.goto('/login', { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForTimeout(1000);
     await page.screenshot({ path: `${SCREENSHOT_DIR}/light_desktop_3_login.png` });
 
     // 4. Discovery Page
-    await page.goto('/discovery');
+    await page.goto('/discovery', { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForTimeout(1500);
     await page.screenshot({ path: `${SCREENSHOT_DIR}/light_desktop_4_discovery.png` });
 
     // 5. Recommendations Page
-    await page.goto('/matching');
+    await page.goto('/matching', { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForTimeout(1500);
     await page.screenshot({ path: `${SCREENSHOT_DIR}/light_desktop_5_matching.png` });
 
     // 6. Premium Page
-    await page.goto('/premium');
+    await page.goto('/premium', { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForTimeout(1000);
     await page.screenshot({ path: `${SCREENSHOT_DIR}/light_desktop_6_premium.png` });
 
@@ -191,12 +202,12 @@ test.describe('UI Exploration Desktop Light Mode', () => {
     }
 
     // 7. Referral Dashboard
-    await page.goto('/referrals');
+    await page.goto('/referrals', { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForTimeout(1000);
     await page.screenshot({ path: `${SCREENSHOT_DIR}/light_desktop_7_referrals.png` });
 
     // 8. Edit Profile
-    await page.goto('/profile/edit');
+    await page.goto('/profile/edit', { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForTimeout(1000);
     await page.screenshot({ path: `${SCREENSHOT_DIR}/light_desktop_8_edit_profile.png` });
   });
@@ -221,42 +232,42 @@ test.describe('UI Exploration Mobile Light Mode', () => {
     }, mockFreeUser);
 
     // 1. Landing Page
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForTimeout(1000);
     await page.screenshot({ path: `${SCREENSHOT_DIR}/light_mobile_1_landing.png` });
 
     // 2. Register Page
-    await page.goto('/register');
+    await page.goto('/register', { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForTimeout(1000);
     await page.screenshot({ path: `${SCREENSHOT_DIR}/light_mobile_2_register.png` });
 
     // 3. Login Page
-    await page.goto('/login');
+    await page.goto('/login', { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForTimeout(1000);
     await page.screenshot({ path: `${SCREENSHOT_DIR}/light_mobile_3_login.png` });
 
     // 4. Discovery Page
-    await page.goto('/discovery');
+    await page.goto('/discovery', { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForTimeout(1500);
     await page.screenshot({ path: `${SCREENSHOT_DIR}/light_mobile_4_discovery.png` });
 
     // 5. Recommendations Page
-    await page.goto('/matching');
+    await page.goto('/matching', { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForTimeout(1500);
     await page.screenshot({ path: `${SCREENSHOT_DIR}/light_mobile_5_matching.png` });
 
     // 6. Premium Page
-    await page.goto('/premium');
+    await page.goto('/premium', { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForTimeout(1000);
     await page.screenshot({ path: `${SCREENSHOT_DIR}/light_mobile_6_premium.png` });
 
     // 7. Referral Dashboard
-    await page.goto('/referrals');
+    await page.goto('/referrals', { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForTimeout(1000);
     await page.screenshot({ path: `${SCREENSHOT_DIR}/light_mobile_7_referrals.png` });
 
     // 8. Edit Profile
-    await page.goto('/profile/edit');
+    await page.goto('/profile/edit', { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForTimeout(1000);
     await page.screenshot({ path: `${SCREENSHOT_DIR}/light_mobile_8_edit_profile.png` });
   });

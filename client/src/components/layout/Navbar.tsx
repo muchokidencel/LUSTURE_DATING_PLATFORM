@@ -17,6 +17,14 @@ import {
   useMarkNotificationRead,
 } from '../../hooks/useQueries';
 
+interface AppNotification {
+  id: number;
+  type: string;
+  content: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
 export default function Navbar() {
   const { user, isAuthenticated } = useAuth();
   const { theme, setTheme } = useTheme();
@@ -25,7 +33,7 @@ export default function Navbar() {
   const { mutate: markRead } = useMarkNotificationRead();
   const { mutate: markAllRead } = useMarkAllNotificationsRead();
 
-  const unreadCount = notificationsList ? notificationsList.filter((n: any) => !n.isRead).length : 0;
+  const unreadCount = notificationsList ? notificationsList.filter((n: AppNotification) => !n.isRead).length : 0;
 
   const getInitial = (name: string) => {
     return name ? name.charAt(0).toUpperCase() : 'U';
@@ -171,7 +179,7 @@ export default function Navbar() {
                       <span className="text-[10px] uppercase tracking-wider font-bold">Synchronizing...</span>
                     </div>
                   ) : notificationsList && notificationsList.length > 0 ? (
-                    notificationsList.map((n: any) => (
+                    notificationsList.map((n: AppNotification) => (
                       <DropdownMenuItem 
                         key={n.id} 
                         className={cn(

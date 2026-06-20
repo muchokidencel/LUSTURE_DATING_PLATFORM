@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface SectionLabelProps {
-  icon?: React.ComponentType<any>;
+  icon?: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
   children: React.ReactNode;
 }
 

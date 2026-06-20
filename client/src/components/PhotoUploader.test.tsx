@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import PhotoUploader from './PhotoUploader';
 import { useUploadPhoto, useDeletePhoto } from '../hooks/useQueries';
@@ -15,10 +16,10 @@ vi.mock('../utils/imageCompressor', () => ({
 
 // Mock Dialog as it might use Radix UI which can be tricky in jsdom without proper setup
 vi.mock('./ui/dialog', () => ({
-  Dialog: ({ children, open }: any) => open ? <div>{children}</div> : null,
-  DialogContent: ({ children }: any) => <div>{children}</div>,
-  DialogTitle: ({ children }: any) => <h2>{children}</h2>,
-  DialogDescription: ({ children }: any) => <p>{children}</p>,
+  Dialog: ({ children, open }: { children: ReactNode; open: boolean }) => open ? <div>{children}</div> : null,
+  DialogContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  DialogTitle: ({ children }: { children: ReactNode }) => <h2>{children}</h2>,
+  DialogDescription: ({ children }: { children: ReactNode }) => <p>{children}</p>,
 }));
 
 describe('PhotoUploader', () => {
@@ -29,8 +30,8 @@ describe('PhotoUploader', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useUploadPhoto as any).mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
-    (useDeletePhoto as any).mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
+    vi.mocked(useUploadPhoto).mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
+    vi.mocked(useDeletePhoto).mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
   });
 
   it('renders correctly with given photos', () => {
@@ -47,9 +48,9 @@ describe('PhotoUploader', () => {
 
   it('handles file upload correctly', async () => {
     const mutateAsync = vi.fn().mockResolvedValue({});
-    (useUploadPhoto as any).mockReturnValue({ mutateAsync, isPending: false });
+    vi.mocked(useUploadPhoto).mockReturnValue({ mutateAsync, isPending: false });
     const mockBlob = new Blob(['test'], { type: 'image/jpeg' });
-    (compressImage as any).mockResolvedValue(mockBlob);
+    vi.mocked(compressImage).mockResolvedValue(mockBlob);
 
     render(<PhotoUploader photos={mockPhotos} />);
     
@@ -64,7 +65,7 @@ describe('PhotoUploader', () => {
 
   it('handles compression error during upload', async () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    (compressImage as any).mockRejectedValue(new Error('Compression failed'));
+    vi.mocked(compressImage).mockRejectedValue(new Error('Compression failed'));
 
     render(<PhotoUploader photos={mockPhotos} />);
     
@@ -80,7 +81,7 @@ describe('PhotoUploader', () => {
 
   it('opens delete confirmation dialog and handles deletion', async () => {
     const deleteMutateAsync = vi.fn().mockResolvedValue({});
-    (useDeletePhoto as any).mockReturnValue({ mutateAsync: deleteMutateAsync, isPending: false });
+    vi.mocked(useDeletePhoto).mockReturnValue({ mutateAsync: deleteMutateAsync, isPending: false });
 
     render(<PhotoUploader photos={mockPhotos} />);
     

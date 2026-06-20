@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { getErrorMessage } from '../lib/errors';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -13,23 +14,23 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
-  const tokenClientRef = useRef<any>(null);
+  const tokenClientRef = useRef<ReturnType<NonNullable<Window['google']>['accounts']['oauth2']['initTokenClient']> | null>(null);
 
   useEffect(() => {
     const initClient = () => {
-      if ((window as any).google) {
-        tokenClientRef.current = (window as any).google.accounts.oauth2.initTokenClient({
+      if (window.google) {
+        tokenClientRef.current = window.google.accounts.oauth2.initTokenClient({
           client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '1013735072049-mockid.apps.googleusercontent.com',
           scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
-          callback: async (response: any) => {
+          callback: async (response) => {
             if (response.access_token) {
               setLoading(true);
               setError('');
               try {
                 await loginWithGoogle(response.access_token);
                 navigate('/discovery');
-              } catch (err: any) {
-                setError(err.response?.data?.message || 'Google Sign-In failed');
+              } catch (err: unknown) {
+                setError(getErrorMessage(err, 'Google Sign-In failed'));
               } finally {
                 setLoading(false);
               }
@@ -39,7 +40,7 @@ export default function Login() {
       }
     };
 
-    if ((window as any).google) {
+    if (window.google) {
       initClient();
     } else {
       const script = document.createElement('script');
@@ -66,7 +67,7 @@ export default function Login() {
     try {
       await login(email, password);
       navigate('/discovery');
-    } catch (err) {
+    } catch {
       setError('Invalid email or password');
     } finally {
       setLoading(false);

@@ -94,7 +94,7 @@ export const TourProvider = ({ children }: { children: ReactNode }) => {
   // Auto-start tour for new users who haven't completed it
   useEffect(() => {
     // Disable auto-start in automated testing environments
-    if (window.navigator.webdriver || (window as any).__E2E_TESTING__) {
+    if (window.navigator.webdriver || window.__E2E_TESTING__) {
       return;
     }
     if (user && !localStorage.getItem(`lustre_tour_completed_${user.id}`)) {
@@ -163,6 +163,7 @@ export const TourProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTour = () => {
   const context = useContext(TourContext);
   if (context === undefined) {

@@ -62,4 +62,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 )
 Button.displayName = "Button"
 
+// buttonVariants is exported so non-Button elements can apply the same cva
+// classes (the standard shadcn pattern) -- nothing in this codebase needs
+// that today, but it's kept for forward compatibility.
+// eslint-disable-next-line react-refresh/only-export-components
 export { Button, buttonVariants }

@@ -7,6 +7,8 @@ describe('cn utility', () => {
   });
 
   it('handles conditional classes', () => {
-    expect(cn('p-4', true && 'm-2', false && 'hidden')).toBe('p-4 m-2');
+    const isActive = true;
+    const isHidden = false;
+    expect(cn('p-4', isActive && 'm-2', isHidden && 'hidden')).toBe('p-4 m-2');
   });
 });

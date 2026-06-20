@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProfile, useUpdateProfile } from '../hooks/useQueries';
 import { Button } from '../components/ui/button';
@@ -10,63 +10,100 @@ import { Switch } from '../components/ui/switch';
 import { ArrowLeft, User, MessageCircle, AtSign, Loader2, Settings, ShieldCheck, Wallet, MapPin } from 'lucide-react';
 import { cn } from '../lib/utils';
 
+interface ProfileData {
+  fullName?: string;
+  bio?: string;
+  idealSunday?: string;
+  age?: number;
+  gender?: string;
+  location?: string;
+  city?: string;
+  whatsapp?: string;
+  instagram?: string;
+  ghostMode?: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
+  intent?: string;
+  preferences?: {
+    interestedInGenders?: string[];
+    minAge?: number;
+    maxAge?: number;
+    maxDistanceKm?: number;
+    intentPreference?: string;
+  };
+}
+
+function buildFormData(profile: ProfileData | undefined) {
+  if (!profile) {
+    return {
+      fullName: '',
+      bio: '',
+      idealSunday: '',
+      age: '',
+      gender: '',
+      city: '',
+      whatsapp: '',
+      instagram: '',
+      interestedIn: 'Everyone',
+      minAge: 18,
+      maxAge: 50,
+      distance: 50,
+      ghostMode: false,
+      latitude: null as number | null,
+      longitude: null as number | null,
+      intent: 'unspecified',
+      intentPreference: 'unspecified',
+    };
+  }
+
+  const prefGender = profile.preferences?.interestedInGenders?.[0] || 'everyone';
+  const genderLabelMap: Record<string, string> = {
+    'male': 'Men',
+    'female': 'Women',
+    'everyone': 'Everyone'
+  };
+
+  return {
+    fullName: profile.fullName || '',
+    bio: profile.bio || '',
+    idealSunday: profile.idealSunday || '',
+    age: profile.age?.toString() || '',
+    gender: profile.gender || '',
+    city: profile.location || profile.city || '',
+    whatsapp: profile.whatsapp || '',
+    instagram: profile.instagram || '',
+    interestedIn: genderLabelMap[prefGender] || 'Everyone',
+    minAge: profile.preferences?.minAge || 18,
+    maxAge: profile.preferences?.maxAge || 50,
+    distance: profile.preferences?.maxDistanceKm || 50,
+    ghostMode: profile.ghostMode || false,
+    latitude: profile.latitude ?? null,
+    longitude: profile.longitude ?? null,
+    intent: profile.intent || 'unspecified',
+    intentPreference: profile.preferences?.intentPreference || 'unspecified',
+  };
+}
+
 export default function EditProfile() {
   const navigate = useNavigate();
   const { data: profile, isLoading } = useProfile();
   const updateProfileMutation = useUpdateProfile();
-  
+
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState(false);
-  const [formData, setFormData] = useState({
-    fullName: '',
-    bio: '',
-    idealSunday: '',
-    age: '',
-    gender: '',
-    city: '',
-    whatsapp: '',
-    instagram: '',
-    interestedIn: 'Everyone',
-    minAge: 18,
-    maxAge: 50,
-    distance: 50,
-    ghostMode: false,
-    latitude: null as number | null,
-    longitude: null as number | null,
-    intent: 'unspecified',
-    intentPreference: 'unspecified',
-  });
+  const [formData, setFormData] = useState(() => buildFormData(profile));
 
-  useEffect(() => {
+  // Re-seed the editable form if the profile reference changes after mount
+  // (e.g. the query resolves asynchronously, or later refetches). Adjusting
+  // state during render, rather than in an effect, per React's guidance for
+  // "adjusting state when a prop/state value changes".
+  const [prevProfile, setPrevProfile] = useState(profile);
+  if (profile !== prevProfile) {
+    setPrevProfile(profile);
     if (profile) {
-      const prefGender = profile.preferences?.interestedInGenders?.[0] || 'everyone';
-      const genderLabelMap: any = {
-        'male': 'Men',
-        'female': 'Women',
-        'everyone': 'Everyone'
-      };
-
-      setFormData({
-        fullName: profile.fullName || '',
-        bio: profile.bio || '',
-        idealSunday: profile.idealSunday || '',
-        age: profile.age?.toString() || '',
-        gender: profile.gender || '',
-        city: profile.location || profile.city || '',
-        whatsapp: profile.whatsapp || '',
-        instagram: profile.instagram || '',
-        interestedIn: genderLabelMap[prefGender] || 'Everyone',
-        minAge: profile.preferences?.minAge || 18,
-        maxAge: profile.preferences?.maxAge || 50,
-        distance: profile.preferences?.maxDistanceKm || 50,
-        ghostMode: profile.ghostMode || false,
-        latitude: profile.latitude ?? null,
-        longitude: profile.longitude ?? null,
-        intent: profile.intent || 'unspecified',
-        intentPreference: profile.preferences?.intentPreference || 'unspecified',
-      });
+      setFormData(buildFormData(profile));
     }
-  }, [profile]);
+  }
 
   const handleShareLocation = () => {
     if (!navigator.geolocation) {
@@ -109,13 +146,32 @@ export default function EditProfile() {
     try {
       console.log(`[INTEGRATION:PROFILE_UPDATE] Sending updates for user`);
       
-      const interestMap: any = {
+      const interestMap: Record<string, string> = {
         'Men': 'Male',
         'Women': 'Female',
         'Everyone': 'Any'
       };
 
-      const payload: any = {
+      const payload: {
+        displayName: string;
+        bio: string;
+        idealSunday: string;
+        city: string;
+        whatsapp: string;
+        instagram: string;
+        ghostMode: boolean;
+        latitude: number | null;
+        longitude: number | null;
+        intent: string;
+        matchPreferences: {
+          gender: string;
+          ageRange: { min: number; max: number };
+          maxDistanceKm: number;
+          intent: string;
+        };
+        age?: number;
+        gender?: string;
+      } = {
         displayName: formData.fullName,
         bio: formData.bio,
         idealSunday: formData.idealSunday,

@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react';
 import TourGuide from './TourGuide';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 
 // Mock AuthContext

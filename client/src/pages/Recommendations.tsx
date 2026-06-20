@@ -11,6 +11,17 @@ import { isAxiosError } from 'axios';
 import { AgeSlider } from '../components/ui/AgeSlider';
 import DiscoveryTabs from '../components/layout/DiscoveryTabs';
 
+interface RecommendedUser {
+  id: number;
+  displayName: string;
+  age: number | null;
+  gender?: string;
+  city: string;
+  photos: { url: string; public_id?: string }[];
+  bio: string;
+  isPremium: boolean;
+  compatibilityScore?: number;
+}
 
 export default function Recommendations() {
   const { data: recs, isLoading, isError, error, refetch } = useRecommendations();
@@ -19,29 +30,29 @@ export default function Recommendations() {
   const shouldReduceMotion = useReducedMotion();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showMatchModal, setShowMatchModal] = useState(false);
-  const [lastMatch, setLastMatch] = useState<any>(null);
-  const [isGated, setIsGated] = useState(false);
+  const [lastMatch, setLastMatch] = useState<RecommendedUser | null>(null);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [ageRange, setAgeRange] = useState<[number, number]>([18, 50]);
   const navigate = useNavigate();
 
-  useEffect(() => {
+  // Reset the deck position whenever the age filter changes. Adjusting state
+  // during render (rather than in an effect) per React's guidance for
+  // "adjusting state when a prop/state value changes".
+  const [prevAgeRange, setPrevAgeRange] = useState(ageRange);
+  if (ageRange !== prevAgeRange) {
+    setPrevAgeRange(ageRange);
     setCurrentIndex(0);
-  }, [ageRange]);
+  }
 
   useEffect(() => {
-    (window as any).setAgeRange = (min: number, max: number) => {
+    window.setAgeRange = (min: number, max: number) => {
       setAgeRange([min, max]);
     };
   }, []);
 
-  useEffect(() => {
-    if (isError && isAxiosError(error)) {
-      if (error.response?.status === 403) {
-        setIsGated(true);
-      }
-    }
-  }, [isError, error]);
+  // Derived directly from the query's error state -- no need for a separate
+  // isGated state synced via an effect.
+  const isGated = isError && isAxiosError(error) && error.response?.status === 403;
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -59,9 +70,9 @@ export default function Recommendations() {
         { enableHighAccuracy: false, timeout: 5000, maximumAge: 600000 }
       );
     }
-  }, []);
+  }, [refetch]);
 
-  const users = (recs || []).filter((u: any) => {
+  const users: RecommendedUser[] = (recs || []).filter((u: RecommendedUser) => {
     if (u.age == null) return true;
     return u.age >= ageRange[0] && u.age <= ageRange[1];
   });
@@ -78,7 +89,7 @@ export default function Recommendations() {
           setLastMatch(currentUser);
           setShowMatchModal(true);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('[INTEGRATION:MATCHING] Action failed:', error);
         if (isAxiosError(error) && error.response?.data?.message?.includes('limit')) {
           setShowLimitModal(true);
@@ -97,7 +108,7 @@ export default function Recommendations() {
     setCurrentIndex(prev => prev + 1);
   };
 
-  const getInitial = (name: string) => {
+  const getInitial = (name?: string | null) => {
     return name ? name.charAt(0).toUpperCase() : 'U';
   };
 

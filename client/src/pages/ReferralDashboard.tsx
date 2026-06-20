@@ -6,6 +6,13 @@ import { Badge } from '../components/ui/badge';
 import { Sparkles, Copy, Share2, History, Loader2, User, Wallet } from 'lucide-react';
 import { cn } from '../lib/utils';
 
+interface ActivityItem {
+  displayName?: string;
+  timeAgo: string;
+  amount?: number;
+  status: string;
+}
+
 // Activity events overload `status` with two vocabularies: affiliate-earning
 // status ('pending' | 'available') for signup/conversion events, and
 // withdrawal status ('requested' | 'completed' | 'rejected') for payouts.
@@ -215,7 +222,7 @@ export default function ReferralDashboard() {
                               </td>
                            </tr>
                         ) : (
-                           activityList.map((item: any, i: number) => (
+                           activityList.map((item: ActivityItem, i: number) => (
                               <tr key={i} className="hover:bg-hover/30 transition-all group">
                                  <td className="px-8 py-6">
                                     <div className="flex items-center gap-4">

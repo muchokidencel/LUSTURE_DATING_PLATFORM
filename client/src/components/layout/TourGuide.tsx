@@ -28,7 +28,9 @@ export default function TourGuide() {
   // Update target rect based on active step targetIds
   useEffect(() => {
     if (!isTourActive || !step) {
-      setTargetRect(null);
+      // No need to reset targetRect here: the component renders null in this
+      // case regardless, and the next time the tour reactivates this effect
+      // re-runs (isTourActive is a dependency) and re-measures correctly.
       return;
     }
 
@@ -85,7 +87,7 @@ export default function TourGuide() {
   const showBottomNav = isAuthenticated && !location.pathname.startsWith('/admin');
 
   // Determine dialog position relative to target
-  let dialogStyle: React.CSSProperties = {};
+  let dialogStyle: React.CSSProperties;
   if (isMobile) {
     if (highlightStyle) {
       const bottomSpacing = showBottomNav ? 96 : 16;

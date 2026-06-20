@@ -35,7 +35,7 @@ export default function Premium() {
       try {
         await api.get(`/payments/pay/paystack/verify/${reference}`);
         await refetchSub();
-      } catch (error: any) {
+      } catch (error) {
         console.error('Verification error:', error);
       } finally {
         setLoading(false);
@@ -52,7 +52,7 @@ export default function Premium() {
 
   // Polling for M-Pesa status
   useEffect(() => {
-    let interval: any;
+    let interval: ReturnType<typeof setInterval>;
     if (polling) {
       interval = setInterval(async () => {
         const { data } = await refetchSub();
@@ -85,7 +85,7 @@ export default function Premium() {
       });
       setLoading(false);
       setPolling(true);
-    } catch (error: any) {
+    } catch {
       setLoading(false);
     }
   };
@@ -99,7 +99,7 @@ export default function Premium() {
         callbackUrl: `${window.location.origin}/premium`,
       });
       window.location.href = data.data.authorization_url;
-    } catch (error: any) {
+    } catch {
       setLoading(false);
     }
   };

@@ -35,7 +35,7 @@ describe('Matches Page', () => {
     vi.mocked(hooks.useProfile).mockReturnValue({
       data: { premiumTier: 'premium' },
       isLoading: false,
-    } as any);
+    } as ReturnType<typeof hooks.useProfile>);
 
     vi.mocked(hooks.useMatches).mockReturnValue({
       data: [
@@ -52,7 +52,7 @@ describe('Matches Page', () => {
         },
       ],
       isLoading: false,
-    } as any);
+    } as ReturnType<typeof hooks.useMatches>);
 
     render(<Matches />, { wrapper });
     expect(screen.getByText('Match One')).toBeInTheDocument();
@@ -62,12 +62,12 @@ describe('Matches Page', () => {
     vi.mocked(hooks.useProfile).mockReturnValue({
       data: { premiumTier: 'free' },
       isLoading: false,
-    } as any);
+    } as ReturnType<typeof hooks.useProfile>);
 
     vi.mocked(hooks.useMatches).mockReturnValue({
       data: [],
       isLoading: false,
-    } as any);
+    } as ReturnType<typeof hooks.useMatches>);
 
     render(<Matches />, { wrapper });
     expect(screen.getByText(/Your Connections Await/i)).toBeInTheDocument();

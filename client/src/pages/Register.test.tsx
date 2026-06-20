@@ -203,6 +203,6 @@ describe('Register Page UI', () => {
     // Assuming there's a validation message or the button is disabled or it just doesn't submit.
     // If it uses required attribute, we might check that.
     const emailInput = screen.getByPlaceholderText('alexander@lustre.com');
-    expect(emailInput).toBeInvalid;
+    expect(emailInput).toBeInvalid();
   });
 });

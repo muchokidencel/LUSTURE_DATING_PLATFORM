@@ -191,7 +191,7 @@ export const useLike = () => {
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: any) => {
+    mutationFn: async (payload: Record<string, unknown>) => {
       const { data } = await api.put('/profile', payload);
       return data.data;
     },

@@ -158,7 +158,10 @@ export default function Discovery() {
         { enableHighAccuracy: false, timeout: 5000, maximumAge: 600000 }
       );
     } else {
-      fetchUsers(1);
+      // Deferred a tick to match the async-callback timing of the
+      // geolocation-available branch above (avoids calling the
+      // setState-bearing fetchUsers synchronously within the effect body).
+      Promise.resolve().then(() => fetchUsers(1));
     }
   }, []);
 

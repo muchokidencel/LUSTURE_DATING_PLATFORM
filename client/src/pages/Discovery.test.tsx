@@ -43,7 +43,7 @@ describe('Discovery Page', () => {
   });
 
   it('renders discovery users correctly', async () => {
-    (api.get as any).mockResolvedValue({
+    vi.mocked(api.get).mockResolvedValue({
       data: {
         data: [
           { id: 1, displayName: 'Alice', age: 25, city: 'Nairobi', photos: [{ url: 'alice.jpg' }], bio: 'Bio 1', isPremium: false },

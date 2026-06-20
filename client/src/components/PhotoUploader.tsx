@@ -36,7 +36,7 @@ const PhotoUploader: React.FC<PhotoUploaderProps> = ({ photos }) => {
     try {
       const compressedBlob = await compressImage(file);
       await uploadMutation.mutateAsync(compressedBlob);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Upload failed:', error);
     } finally {
       setLoadingSlot(null);
@@ -49,7 +49,7 @@ const PhotoUploader: React.FC<PhotoUploaderProps> = ({ photos }) => {
 
     try {
       await deleteMutation.mutateAsync(deletingId);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Delete failed:', error);
     } finally {
       setDeletingId(null);
