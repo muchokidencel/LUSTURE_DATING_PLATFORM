@@ -7,6 +7,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
 import { Card } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
+import { Progress } from '../components/ui/progress';
 import { Heart, LogOut, Zap, Eye, Crown, Share2, MessageCircle, Camera, Compass } from 'lucide-react';
 import { useTour } from '../context/TourContext';
 import { cn } from '../lib/utils';
@@ -76,7 +77,7 @@ export default function Profile() {
         <div className="flex flex-col items-center text-center space-y-6 mb-12">
           <div className="relative">
             <Avatar className={cn(
-              "w-36 h-36 border-4 border-void shadow-2xl transition-all",
+              "w-36 h-36 border-4 border-void shadow-[var(--shadow-card-hover)] transition-all",
               isPremium ? "ring-2 ring-lustre-gold" : "ring-1 ring-border"
             )}>
               <AvatarImage src={profile?.photos?.[0]?.url} className="object-cover" />
@@ -85,7 +86,7 @@ export default function Profile() {
               </AvatarFallback>
             </Avatar>
             {isPremium && (
-              <div className="absolute -bottom-1 -right-1 bg-gradient-gold p-1.5 rounded-full shadow-lg border-2 border-void">
+              <div className="absolute -bottom-1 -right-1 bg-gradient-gold p-1.5 rounded-full shadow-[var(--shadow-card)] border-2 border-void">
                 <Crown size={16} className="text-black"  strokeWidth={1.5} />
               </div>
             )}
@@ -104,7 +105,7 @@ export default function Profile() {
               {isPremium && (
                 <Badge variant="premium" className="px-4 py-1.5 rounded-full">
                   <Crown size={12} className="mr-2"  strokeWidth={1.5} />
-                  {profile?.premiumTier === 'gold' ? 'Gold Member' : 'Elite Member'}
+                  Elite Member
                 </Badge>
               )}
               {profile?.ghostMode && (
@@ -145,13 +146,13 @@ export default function Profile() {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3 mb-12">
-          <Button className="flex-1 bg-gradient-brand text-white rounded-lg h-12 font-sans font-semibold" asChild>
-            <Link to="/profile/edit" className="text-white">Edit Profile</Link>
+          <Button className="flex-1 rounded-lg h-12 font-sans font-semibold" asChild>
+            <Link to="/profile/edit">Edit Profile</Link>
           </Button>
-          <Button 
+          <Button
             onClick={startTour}
-            variant="outline" 
-            className="flex-1 border-border-strong bg-elevated text-white rounded-lg h-12 font-sans font-semibold hover:bg-hover transition-colors flex items-center justify-center gap-2"
+            variant="outline"
+            className="flex-1 border-border-strong bg-elevated text-lustre-text rounded-lg h-12 font-sans font-semibold hover:bg-hover transition-colors flex items-center justify-center gap-2"
           >
             <Compass size={16} strokeWidth={1.5} className="text-lustre-purple" />
             Platform Guide
@@ -176,12 +177,7 @@ export default function Profile() {
               </span>
             </div>
             
-            <div className="h-1.5 w-full bg-elevated rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-brand transition-all duration-1000 ease-out"
-                style={{ width: `${completionPct}%` }}
-              />
-            </div>
+            <Progress value={completionPct} className="h-1.5" />
             
             <p className="font-sans text-xs text-lustre-muted italic text-center">
               Complete your profile to unlock the "Verified" badge and increase visibility.
@@ -252,23 +248,23 @@ export default function Profile() {
 
       <Dialog open={isStatsModalOpen} onOpenChange={setIsStatsModalOpen}>
         <DialogContent className="max-w-md mx-auto p-10 bg-card-alt border-outline-variant/40 rounded-3xl text-center space-y-6">
-          <div className="w-20 h-20 bg-gradient-gold/10 rounded-full flex items-center justify-center mx-auto border border-lustre-gold/30 shadow-lg">
+          <div className="w-20 h-20 bg-lustre-gold/10 rounded-full flex items-center justify-center mx-auto border border-lustre-gold/30 shadow-[var(--shadow-card)]">
             <Crown size={32} className="text-lustre-gold fill-lustre-gold/20" strokeWidth={1.5} />
           </div>
           <div className="space-y-3">
-            <DialogTitle className="font-garamond text-3xl text-white italic">
+            <DialogTitle className="font-garamond text-3xl italic">
               {statsModalType === 'Likes' ? 'Reveal Your Admirers' : 'Unveil Mutual Spark'}
             </DialogTitle>
             <DialogDescription className="font-sans text-lustre-muted text-sm leading-relaxed px-4">
-              {statsModalType === 'Likes' 
+              {statsModalType === 'Likes'
                 ? 'Unlock the likes ledger to discover exactly who has expressed interest in your profile. Match back instantly with one tap!'
                 : 'See all your mutual connections in one unified space. Start engaging in high-intent conversations.'
               }
             </DialogDescription>
           </div>
           <div className="w-full space-y-3 pt-4">
-            <Button 
-              className="w-full h-14 rounded-full bg-gradient-brand text-white font-headline text-[10px] uppercase tracking-widest font-bold shadow-lg hover:scale-105 active:scale-95 transition-transform" 
+            <Button
+              className="w-full h-14 rounded-full font-headline text-[10px] uppercase tracking-widest font-bold shadow-[var(--shadow-card-hover)] hover:scale-105 active:scale-95 transition-transform"
               onClick={() => {
                 setIsStatsModalOpen(false);
                 navigate('/premium');

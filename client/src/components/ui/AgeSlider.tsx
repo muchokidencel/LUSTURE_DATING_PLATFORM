@@ -28,15 +28,15 @@ export const AgeSlider = React.forwardRef<
         minStepsBetweenThumbs={1}
         {...props}
       >
-        <SliderPrimitive.Track className="bg-border-subtle relative grow h-1.5 rounded-full bg-outline-variant/20">
-          <SliderPrimitive.Range className="absolute bg-gradient-brand h-full rounded-full bg-lustre-purple" />
+        <SliderPrimitive.Track className="relative grow h-1.5 rounded-full bg-outline-variant/20">
+          <SliderPrimitive.Range className="absolute bg-lustre-purple h-full rounded-full" />
         </SliderPrimitive.Track>
-        <SliderPrimitive.Thumb 
-          className="block w-5 h-5 bg-white border-2 border-lustre-purple rounded-full shadow-lg hover:scale-110 focus:outline-none focus:ring-2 focus:ring-lustre-purple transition-all cursor-grab active:cursor-grabbing" 
+        <SliderPrimitive.Thumb
+          className="block w-5 h-5 bg-white border-2 border-lustre-purple rounded-full shadow-[var(--shadow-card)] hover:scale-110 focus:outline-none focus:ring-2 focus:ring-lustre-purple transition-all cursor-grab active:cursor-grabbing"
           aria-label="Minimum Age"
         />
-        <SliderPrimitive.Thumb 
-          className="block w-5 h-5 bg-white border-2 border-lustre-purple rounded-full shadow-lg hover:scale-110 focus:outline-none focus:ring-2 focus:ring-lustre-purple transition-all cursor-grab active:cursor-grabbing" 
+        <SliderPrimitive.Thumb
+          className="block w-5 h-5 bg-white border-2 border-lustre-purple rounded-full shadow-[var(--shadow-card)] hover:scale-110 focus:outline-none focus:ring-2 focus:ring-lustre-purple transition-all cursor-grab active:cursor-grabbing"
           aria-label="Maximum Age"
         />
       </SliderPrimitive.Root>

@@ -6,6 +6,7 @@ import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Card } from '../components/ui/card';
 import PhotoUploader from '../components/PhotoUploader';
+import { Switch } from '../components/ui/switch';
 import { ArrowLeft, User, MessageCircle, AtSign, Loader2, Settings, ShieldCheck, Wallet, MapPin } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -172,10 +173,10 @@ export default function EditProfile() {
             <h1 className="font-garamond text-lg md:text-2xl font-medium">Edit Profile</h1>
           </div>
           
-          <Button 
+          <Button
             onClick={handleSubmit}
             disabled={updateProfileMutation.isPending}
-            className="bg-gradient-brand text-white rounded-full px-4 md:px-8 h-10 font-sans font-semibold text-xs md:text-sm"
+            className="rounded-full px-4 md:px-8 h-10 font-sans font-semibold text-xs md:text-sm"
           >
             {updateProfileMutation.isPending ? <Loader2 size={16} className="animate-spin"  strokeWidth={1.5} /> : "Save Changes"}
           </Button>
@@ -201,20 +202,12 @@ export default function EditProfile() {
                     <h3 className="font-sans text-[10px] font-bold uppercase tracking-[0.2em]">Basic Info</h3>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="font-sans text-[9px] uppercase tracking-widest text-lustre-faint font-bold">Ghost Mode</span>
-                    <button 
-                      type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, ghostMode: !prev.ghostMode }))}
-                      className={cn(
-                        "w-10 h-5 rounded-full transition-colors relative",
-                        formData.ghostMode ? "bg-lustre-purple" : "bg-elevated border border-border-subtle"
-                      )}
-                    >
-                      <div className={cn(
-                        "absolute top-1 w-3 h-3 rounded-full transition-all bg-white shadow-sm",
-                        formData.ghostMode ? "left-6" : "left-1"
-                      )} />
-                    </button>
+                    <label htmlFor="ghost-mode" className="font-sans text-[9px] uppercase tracking-widest text-lustre-faint font-bold">Ghost Mode</label>
+                    <Switch
+                      id="ghost-mode"
+                      checked={formData.ghostMode}
+                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, ghostMode: checked }))}
+                    />
                   </div>
                 </div>
                 
@@ -229,12 +222,12 @@ export default function EditProfile() {
                        <label className="font-sans text-[10px] uppercase tracking-widest text-lustre-faint font-bold">Bio</label>
                        <span className="text-[10px] text-lustre-faint/50 font-sans font-medium">{formData.bio.length}/300</span>
                     </div>
-                    <Textarea 
-                      name="bio" 
-                      value={formData.bio} 
-                      onChange={handleChange} 
-                      placeholder="Share your story..." 
-                      className="min-h-[100px] bg-white dark:bg-elevated border-border-subtle resize-none rounded-xl text-sm"
+                    <Textarea
+                      name="bio"
+                      value={formData.bio}
+                      onChange={handleChange}
+                      placeholder="Share your story..."
+                      className="min-h-[100px] rounded-xl text-sm"
                       maxLength={300}
                     />
                   </div>
@@ -278,13 +271,13 @@ export default function EditProfile() {
                       </div>
                       <Input name="city" value={formData.city} onChange={handleChange} placeholder="Nairobi" />
                        {formData.latitude != null ? (
-                        <p className="text-[9px] text-emerald-500 font-sans italic ml-1 flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <p className="text-[9px] text-[var(--success)] font-sans italic ml-1 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[var(--success)] animate-pulse" />
                           Live location active
                         </p>
                       ) : (
-                        <p className="text-[9px] text-amber-500/80 font-sans italic ml-1 flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                        <p className="text-[9px] text-[var(--warning)] font-sans italic ml-1 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[var(--warning)]" />
                           {locationError ? "Live location failed. Manual City fallback active." : "Manual City fallback active."}
                         </p>
                       )}
@@ -373,8 +366,8 @@ export default function EditProfile() {
                            type="button"
                            className={cn(
                              "flex-1 py-1.5 rounded-full font-sans text-[10px] font-bold uppercase tracking-widest transition-all",
-                             formData.interestedIn.toLowerCase() === opt.toLowerCase() 
-                               ? "bg-lustre-purple text-white shadow-lg" 
+                             formData.interestedIn.toLowerCase() === opt.toLowerCase()
+                               ? "bg-lustre-purple text-[var(--primary-foreground)] shadow-[var(--shadow-card)]"
                                : "text-lustre-faint hover:text-lustre-muted"
                            )}
                            onClick={() => setFormData(prev => ({ ...prev, interestedIn: opt }))}

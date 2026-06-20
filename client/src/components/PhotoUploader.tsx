@@ -66,7 +66,7 @@ const PhotoUploader: React.FC<PhotoUploaderProps> = ({ photos }) => {
         <div 
           key={photo.public_id}
           className={cn(
-            "relative aspect-square rounded-xl overflow-hidden group bg-elevated border border-border shadow-md",
+            "relative aspect-square rounded-xl overflow-hidden group bg-elevated border border-border shadow-[var(--shadow-card)]",
             isCover && "ring-2 ring-lustre-gold ring-offset-2 ring-offset-void"
           )}
           style={{ backgroundImage: `url(${photo.url})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
