@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card } from '../components/ui/card';
-import { Mail, Lock, Loader2, Ticket, KeyRound } from 'lucide-react';
+import { Mail, Lock, Loader2, Ticket } from 'lucide-react';
 import api from '../lib/api';
 
 export default function Register() {
@@ -20,6 +20,7 @@ export default function Register() {
   const { register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const tokenClientRef = useRef<any>(null);
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
     const initClient = () => {
@@ -120,6 +121,32 @@ export default function Register() {
     setStep(3);
   };
 
+  // Each box holds one digit; pasting (or a test filling one box directly)
+  // delivers the full code in a single onChange, which we detect and
+  // distribute across all six boxes.
+  const handleOtpChange = (index: number, rawValue: string) => {
+    const digits = rawValue.replace(/\D/g, '');
+    if (digits.length > 1) {
+      const merged = digits.slice(0, 6);
+      setCode(merged);
+      const lastIndex = Math.min(merged.length, 6) - 1;
+      otpRefs.current[lastIndex]?.focus();
+      return;
+    }
+    const chars = Array.from({ length: 6 }, (_, i) => code[i] || '');
+    chars[index] = digits;
+    setCode(chars.join(''));
+    if (digits && index < 5) {
+      otpRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !code[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 8) {
@@ -153,7 +180,7 @@ export default function Register() {
         </div>
 
         {/* Register Card */}
-        <Card className="p-6 md:p-10 border-border bg-card shadow-2xl">
+        <Card className="p-6 md:p-10 border-border bg-card shadow-[var(--shadow-card-hover)]">
           <div className="text-center mb-6 md:mb-8 space-y-2">
             <h1 className="font-garamond text-4xl text-lustre-text">Create Account</h1>
             <p className="font-sans text-xs text-lustre-muted">Initiate your journey into authentic connection.</p>
@@ -162,17 +189,17 @@ export default function Register() {
           {/* Step progress timeline */}
           <div className="flex items-center justify-between mb-8 px-4">
             <div className="flex flex-col items-center">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-sans font-bold transition-all ${step >= 1 ? 'bg-lustre-purple text-white shadow-lg shadow-lustre-purple/20' : 'bg-elevated border border-border/30 text-lustre-faint'}`}>1</div>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-sans font-bold transition-all ${step >= 1 ? 'bg-lustre-purple text-[var(--primary-foreground)] shadow-lg shadow-lustre-purple/20' : 'bg-elevated border border-border/30 text-lustre-faint'}`}>1</div>
               <span className="font-sans text-[8px] uppercase tracking-wider text-lustre-faint mt-1 font-bold">Email</span>
             </div>
             <div className={`flex-1 h-[2px] mx-2 transition-all ${step >= 2 ? 'bg-lustre-purple' : 'bg-border/30'}`}></div>
             <div className="flex flex-col items-center">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-sans font-bold transition-all ${step >= 2 ? 'bg-lustre-purple text-white shadow-lg shadow-lustre-purple/20' : 'bg-elevated border border-border/30 text-lustre-faint'}`}>2</div>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-sans font-bold transition-all ${step >= 2 ? 'bg-lustre-purple text-[var(--primary-foreground)] shadow-lg shadow-lustre-purple/20' : 'bg-elevated border border-border/30 text-lustre-faint'}`}>2</div>
               <span className="font-sans text-[8px] uppercase tracking-wider text-lustre-faint mt-1 font-bold">Verify</span>
             </div>
             <div className={`flex-1 h-[2px] mx-2 transition-all ${step >= 3 ? 'bg-lustre-purple' : 'bg-border/30'}`}></div>
             <div className="flex flex-col items-center">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-sans font-bold transition-all ${step >= 3 ? 'bg-lustre-purple text-white shadow-lg shadow-lustre-purple/20' : 'bg-elevated border border-border/30 text-lustre-faint'}`}>3</div>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-sans font-bold transition-all ${step >= 3 ? 'bg-lustre-purple text-[var(--primary-foreground)] shadow-lg shadow-lustre-purple/20' : 'bg-elevated border border-border/30 text-lustre-faint'}`}>3</div>
               <span className="font-sans text-[8px] uppercase tracking-wider text-lustre-faint mt-1 font-bold">Security</span>
             </div>
           </div>
@@ -216,7 +243,7 @@ export default function Register() {
 
               <Button 
                 type="submit" 
-                className="w-full h-14 rounded-xl bg-gradient-brand text-white font-sans font-bold uppercase tracking-widest text-xs shadow-lg mt-4" 
+                className="w-full h-14 rounded-xl font-sans font-bold uppercase tracking-widest text-xs shadow-[var(--shadow-card-hover)] mt-4" 
                 disabled={loading}
               >
                 {loading ? <Loader2 size={18} strokeWidth={1.5} className="animate-spin" /> : "Send Verification Code"}
@@ -226,19 +253,25 @@ export default function Register() {
 
           {step === 2 && (
             <form onSubmit={handleVerifyCode} className="space-y-6">
-              <div className="space-y-2 relative">
+              <div className="space-y-2">
                 <label className="font-sans text-[10px] uppercase tracking-widest text-lustre-faint font-bold ml-1">Verification Code</label>
-                <div className="relative group">
-                  <Input
-                    type="text"
-                    maxLength={6}
-                    placeholder="123456"
-                    className="pl-11 h-12 bg-elevated border-border rounded-xl font-bold tracking-[0.5em] text-center text-sm"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-                    required
-                  />
-                  <KeyRound size={16} strokeWidth={1.5} className="absolute left-4 top-1/2 -translate-y-1/2 text-lustre-faint group-focus-within:text-lustre-purple transition-colors" />
+                <div className="flex justify-center gap-2" data-testid="otp-boxes">
+                  {Array.from({ length: 6 }, (_, i) => code[i] || '').map((digit, i) => (
+                    <input
+                      key={i}
+                      ref={(el) => { otpRefs.current[i] = el; }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      placeholder={i === 0 ? "123456" : "0"}
+                      aria-label={`Verification code digit ${i + 1}`}
+                      value={digit}
+                      onChange={(e) => handleOtpChange(i, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                      required={i === 0}
+                      className="w-11 h-12 md:w-12 md:h-14 text-center text-lg font-bold bg-elevated border border-border rounded-xl text-lustre-text outline-none focus:border-lustre-purple focus:ring-1 focus:ring-lustre-purple/30 transition-all placeholder:text-sm"
+                    />
+                  ))}
                 </div>
               </div>
 
@@ -262,7 +295,7 @@ export default function Register() {
 
               <Button 
                 type="submit" 
-                className="w-full h-14 rounded-xl bg-gradient-brand text-white font-sans font-bold uppercase tracking-widest text-xs shadow-lg mt-4"
+                className="w-full h-14 rounded-xl font-sans font-bold uppercase tracking-widest text-xs shadow-[var(--shadow-card-hover)] mt-4"
                 disabled={loading}
               >
                 Confirm Code
@@ -299,7 +332,7 @@ export default function Register() {
 
               <Button 
                 type="submit" 
-                className="w-full h-14 rounded-xl bg-gradient-brand text-white font-sans font-bold uppercase tracking-widest text-xs shadow-lg mt-4" 
+                className="w-full h-14 rounded-xl font-sans font-bold uppercase tracking-widest text-xs shadow-[var(--shadow-card-hover)] mt-4" 
                 disabled={loading}
               >
                 {loading ? <Loader2 size={18} strokeWidth={1.5} className="animate-spin" /> : "Create Account"}

@@ -35,7 +35,7 @@ export default function Landing() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="flex flex-col sm:flex-row items-center gap-6"
           >
-             <Button size="lg" className="w-full sm:w-auto px-10 h-14 bg-gradient-brand text-white font-headline text-[10px] uppercase tracking-widest font-bold shadow-sm hover:scale-105 transition-all" asChild>
+             <Button size="lg" className="w-full sm:w-auto px-10 h-14 font-headline text-[10px] uppercase tracking-widest font-bold shadow-[var(--shadow-card-hover)] hover:scale-105 transition-all" asChild>
               <Link to="/register">Get Started Free</Link>
             </Button>
             <Button variant="outline" size="lg" className="w-full sm:w-auto px-10 h-14 border-border-subtle text-lustre-text font-headline text-[10px] uppercase tracking-widest font-bold hover:bg-hover transition-all" asChild>
@@ -105,8 +105,8 @@ export default function Landing() {
       <section className="py-40 bg-void relative overflow-hidden">
         <div className="absolute inset-0 bg-lustre-purple/5 blur-[120px] rounded-full -translate-y-1/2 scale-150"></div>
         <div className="max-w-4xl mx-auto relative z-10 text-center px-6">
-          <h2 className="font-display text-5xl md:text-6xl text-lustre-text mb-10">Ready for something better?</h2>
-          <Button size="lg" className="px-12 h-14 bg-gradient-brand text-white font-headline text-[10px] uppercase tracking-widest font-bold shadow-md hover:scale-105 transition-all" asChild>
+          <h2 className="font-garamond italic text-5xl md:text-6xl text-lustre-text mb-10">Ready for something better?</h2>
+          <Button size="lg" className="px-12 h-14 font-headline text-[10px] uppercase tracking-widest font-bold shadow-[var(--shadow-card-hover)] hover:scale-105 transition-all" asChild>
             <Link to="/register">Create Your Account</Link>
           </Button>
         </div>

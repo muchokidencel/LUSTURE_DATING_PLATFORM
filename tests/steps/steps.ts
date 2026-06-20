@@ -76,11 +76,11 @@ When('I click the send verification code button', async ({ page }) => {
 });
 
 Then('I should see the verification code input field', async ({ page }) => {
-  await expect(page.locator('input[placeholder="123456"]')).toBeVisible();
+  await expect(page.locator('[data-testid="otp-boxes"]')).toBeVisible();
 });
 
 When('I enter verification code {string} and click verify', async ({ page }, code) => {
-  await page.fill('input[placeholder="123456"]', code);
+  await page.locator('[data-testid="otp-boxes"] input').first().fill(code);
   await page.click('button:has-text("Confirm Code")');
 });
 
@@ -861,16 +861,16 @@ When('I enter a duplicate email {string} and click send verification code', asyn
 });
 
 Then('I should see the verification code input', async ({ page }) => {
-  await expect(page.locator('input[placeholder="123456"]')).toBeVisible({ timeout: 10000 });
+  await expect(page.locator('[data-testid="otp-boxes"]')).toBeVisible({ timeout: 10000 });
 });
 
 When('I enter verification code {string} and click confirm', async ({ page }, code) => {
-  await page.fill('input[placeholder="123456"]', code);
+  await page.locator('[data-testid="otp-boxes"] input').first().fill(code);
   await page.click('button:has-text("Confirm Code")');
 });
 
 When('I enter an invalid short code {string}', async ({ page }, code) => {
-  await page.fill('input[placeholder="123456"]', code);
+  await page.locator('[data-testid="otp-boxes"] input').first().fill(code);
   await page.click('button:has-text("Confirm Code")');
 });
 

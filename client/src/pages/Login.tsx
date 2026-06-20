@@ -88,7 +88,7 @@ export default function Login() {
         </div>
 
         {/* Login Card */}
-        <Card className="p-6 md:p-10 border-border bg-card shadow-2xl">
+        <Card className="p-6 md:p-10 border-border bg-card shadow-[var(--shadow-card-hover)]">
           <div className="text-center mb-6 md:mb-10 space-y-2">
             <h1 className="font-garamond text-4xl text-lustre-text">Welcome Back</h1>
             <p className="font-sans text-xs text-lustre-muted">Enter your credentials to access Lustre.</p>
@@ -134,9 +134,9 @@ export default function Login() {
               </div>
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full h-14 rounded-xl bg-gradient-brand text-white font-sans font-bold uppercase tracking-widest text-xs shadow-lg" 
+            <Button
+              type="submit"
+              className="w-full h-14 rounded-xl font-sans font-bold uppercase tracking-widest text-xs shadow-[var(--shadow-card-hover)]"
               disabled={loading}
             >
               {loading ? <Loader2 size={18} strokeWidth={1.5} className="animate-spin" /> : "Sign In"}

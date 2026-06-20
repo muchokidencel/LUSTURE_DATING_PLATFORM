@@ -31,11 +31,13 @@ const ShaderBackground: React.FC<ShaderBackgroundProps> = ({ className = "fixed 
 
       void main() {
         vec2 uv = v_texCoord;
-        
-        // Slow moving ambient gradient orbs
-        vec3 color1 = vec3(0.031, 0.031, 0.059); // #08080f
-        vec3 color2 = vec3(0.486, 0.361, 0.749); // #7c5cbf
-        vec3 color3 = vec3(0.627, 0.267, 0.431); // #a0446e
+
+        // Slow moving ambient gradient orbs.
+        // GLSL can't read CSS custom properties, so these are the dark-theme
+        // --bg-void / --purple (gold) / --rose tokens converted oklch -> sRGB.
+        vec3 color1 = vec3(0.048, 0.037, 0.027); // --bg-void
+        vec3 color2 = vec3(0.909, 0.736, 0.372); // --purple (champagne gold)
+        vec3 color3 = vec3(0.986, 0.776, 0.531); // --rose (warm gold secondary)
         
         float orb1 = smoothstep(0.5, 0.0, length(uv - vec2(0.3 + 0.1 * sin(u_time * 0.2), 0.3 + 0.1 * cos(u_time * 0.3))));
         float orb2 = smoothstep(0.6, 0.0, length(uv - vec2(0.7 + 0.1 * cos(u_time * 0.25), 0.6 + 0.1 * sin(u_time * 0.35))));
