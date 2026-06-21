@@ -83,10 +83,38 @@ describe('Profile Routes', () => {
         .put('/api/profile')
         .set('Authorization', 'Bearer mock_token')
         .send({ age: 30 });
-      
+
       expect(res.status).toBe(200);
       // Verify that db.insert was called (for the upsert)
       expect(db.insert).toHaveBeenCalled();
+    });
+
+    it('should accept WhatsApp numbers formatted with dashes/parentheses', async () => {
+      const res = await request(app)
+        .put('/api/profile')
+        .set('Authorization', 'Bearer mock_token')
+        .send({ whatsapp: '0712-345-678' });
+
+      expect(res.status).toBe(200);
+    });
+
+    it('should accept WhatsApp numbers formatted with a country-code prefix and parens', async () => {
+      const res = await request(app)
+        .put('/api/profile')
+        .set('Authorization', 'Bearer mock_token')
+        .send({ whatsapp: '+254 (712) 345-678' });
+
+      expect(res.status).toBe(200);
+    });
+
+    it('should still reject a WhatsApp value with non-numeric characters', async () => {
+      const res = await request(app)
+        .put('/api/profile')
+        .set('Authorization', 'Bearer mock_token')
+        .send({ whatsapp: 'not-a-number' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe('Invalid WhatsApp number format');
     });
   });
 

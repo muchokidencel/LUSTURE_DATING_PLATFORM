@@ -10,6 +10,7 @@ const mockFreeUser = {
   id: 1,
   email: 'freeuser@example.com',
   displayName: 'Free User',
+  fullName: 'Free User',
   premiumTier: 'free',
   referralCode: 'FREE-VIP',
 };
@@ -18,6 +19,7 @@ const mockPremiumUser = {
   id: 2,
   email: 'golduser@example.com',
   displayName: 'Gold User',
+  fullName: 'Gold User',
   premiumTier: 'gold',
   referralCode: 'GOLD-VIP',
 };

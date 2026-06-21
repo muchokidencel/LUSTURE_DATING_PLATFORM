@@ -209,7 +209,11 @@ router.put('/', authenticate, validate(profileUpdateSchema), async (req: AuthReq
     const profileUpdate: any = {};
 
     if (whatsapp !== undefined) {
-      const cleanWhatsapp = whatsapp.replace(/\s+/g, '');
+      // Strip common phone-number formatting (spaces, dashes, dots, parens)
+      // before validating -- users type/paste numbers in all sorts of ways
+      // ("0712-345-678", "(071) 234 5678"), and only the digits/leading "+"
+      // actually matter once stored.
+      const cleanWhatsapp = whatsapp.replace(/[\s\-().]+/g, '');
       if (cleanWhatsapp && !/^\+?\d{7,15}$/.test(cleanWhatsapp)) {
         return res.status(400).json({ message: 'Invalid WhatsApp number format' });
       }
