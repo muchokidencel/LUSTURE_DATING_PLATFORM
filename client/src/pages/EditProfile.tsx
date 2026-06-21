@@ -9,6 +9,7 @@ import PhotoUploader from '../components/PhotoUploader';
 import { Switch } from '../components/ui/switch';
 import { ArrowLeft, User, MessageCircle, AtSign, Loader2, Settings, ShieldCheck, Wallet, MapPin } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { getErrorMessage } from '../lib/errors';
 
 interface ProfileData {
   fullName?: string;
@@ -91,6 +92,7 @@ export default function EditProfile() {
 
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState(() => buildFormData(profile));
 
   // Re-seed the editable form if the profile reference changes after mount
@@ -143,9 +145,20 @@ export default function EditProfile() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+
+    if (!formData.fullName.trim()) {
+      setError('Display name is required.');
+      return;
+    }
+    if (formData.age && (parseInt(formData.age) < 18 || parseInt(formData.age) > 99)) {
+      setError('Age must be between 18 and 99.');
+      return;
+    }
+
     try {
       console.log(`[INTEGRATION:PROFILE_UPDATE] Sending updates for user`);
-      
+
       const interestMap: Record<string, string> = {
         'Men': 'Male',
         'Women': 'Female',
@@ -206,8 +219,9 @@ export default function EditProfile() {
 
       await updateProfileMutation.mutateAsync(payload);
       navigate('/profile');
-    } catch (error) {
-      console.error('[INTEGRATION:PROFILE_UPDATE] Failed to update profile:', error);
+    } catch (err) {
+      console.error('[INTEGRATION:PROFILE_UPDATE] Failed to update profile:', err);
+      setError(getErrorMessage(err, 'Failed to save changes. Please try again.'));
     }
   };
 
@@ -240,6 +254,11 @@ export default function EditProfile() {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-12 animate-fade-up">
+        {error && (
+          <div className="mb-8 p-4 bg-lustre-rose/10 border border-lustre-rose/20 text-lustre-rose text-xs font-sans font-bold uppercase tracking-widest rounded-lg text-center">
+            {error}
+          </div>
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           {/* Left Column: Photos */}
           <div className="lg:col-span-5 space-y-8">

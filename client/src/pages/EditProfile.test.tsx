@@ -139,4 +139,43 @@ describe('EditProfile Page', () => {
       expect(submittedPayload.age).toBeUndefined();
     }, { timeout: 10000 });
   }, 15000);
+
+  it('blocks saving with an empty display name and shows an error instead of silently failing', async () => {
+    render(
+      <BrowserRouter>
+        <EditProfile />
+      </BrowserRouter>
+    );
+
+    const nameInput = screen.getByDisplayValue('Denzel Washington');
+    fireEvent.change(nameInput, { target: { value: '' } });
+
+    const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
+    fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText('Display name is required.')).toBeInTheDocument();
+    });
+    expect(mockMutateAsync).not.toHaveBeenCalled();
+  }, 15000);
+
+  it('shows the server validation message when the save request fails', async () => {
+    mockMutateAsync.mockRejectedValueOnce({
+      response: { data: { status: 'error', errors: [{ path: 'displayName', message: 'Display name is required' }] } },
+    });
+
+    render(
+      <BrowserRouter>
+        <EditProfile />
+      </BrowserRouter>
+    );
+
+    const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
+    fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText('Display name is required')).toBeInTheDocument();
+    });
+    expect(mockNavigate).not.toHaveBeenCalled();
+  }, 15000);
 });
