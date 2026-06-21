@@ -42,14 +42,15 @@ router.get('/users', authenticate, async (req: AuthRequest, res) => {
     const myLng = myProfile?.longitude;
     const maxDistance = myPrefs?.maxDistanceKm ?? 50;
 
-    // Query users with profiles
+    // Query all non-excluded candidates (no LIMIT/OFFSET here -- distance/city
+    // filtering below can drop rows, so pagination has to happen *after*
+    // filtering or the reported total/page count would be wrong and pages
+    // could come back smaller than pageSize).
     const allUsers = await db.query.users.findMany({
       where: and(
         notInArray(users.id, excludedIds),
         eq(users.ghostMode, false)
       ),
-      limit: pageSize,
-      offset: offset,
       with: {
         profile: true,
       },
@@ -62,14 +63,8 @@ router.get('/users', authenticate, async (req: AuthRequest, res) => {
       return arr.map(p => typeof p === 'string' ? JSON.parse(p) : p);
     };
 
-    const totalCountResult = await db.execute(sql`
-      SELECT count(*) as total FROM ${users} 
-      WHERE ${users.id} NOT IN (${sql.join(excludedIds, sql`, `)})
-    `);
-    const totalCount = parseInt(totalCountResult.rows[0].total as string);
-
     let usersWithPhotos = 0;
-    const formattedUsers = allUsers.map(u => {
+    const filteredUsers = allUsers.map(u => {
       const p = u.profile;
       const age = p?.birthDate ? Math.floor((new Date().getTime() - new Date(p.birthDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : null;
       
@@ -108,9 +103,14 @@ router.get('/users', authenticate, async (req: AuthRequest, res) => {
       };
     }).filter((u): u is NonNullable<typeof u> => u !== null);
 
+    // Paginate the *filtered* list, so the page returned and the reported
+    // total both reflect the same set of eligible candidates.
+    const totalCount = filteredUsers.length;
+    const formattedUsers = filteredUsers.slice(offset, offset + pageSize);
+
     console.log(`[PHOTO:SERVE:DISCOVERY] totalReturned=${formattedUsers.length}, usersWithPhotos=${usersWithPhotos}`);
     console.log(`[DISCOVERY:RESULT] totalCount=${totalCount}, returned=${formattedUsers.length}, page=${page}`);
-    
+
     res.json({
       status: 'success',
       data: formattedUsers,

@@ -5,6 +5,7 @@ import { Button } from '../ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
 import { Bell, Crown, Sun, Moon, Heart, Loader2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { cloudinaryThumb } from '../../lib/cloudinary';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -225,7 +226,7 @@ export default function Navbar() {
                 "w-9 h-9 cursor-pointer transition-all border",
                 user?.role === 'admin' ? "ring-2 ring-lustre-purple" : "border-outline-variant hover:border-lustre-purple/50"
               )}>
-                <AvatarImage src={user?.photos?.[0]?.url} className="object-cover" />
+                <AvatarImage src={cloudinaryThumb(user?.photos?.[0]?.url, 72)} className="object-cover" />
                 <AvatarFallback className="bg-elevated text-lustre-text">
                   {user?.profile?.full_name ? getInitial(user.profile.full_name) : 'U'}
                 </AvatarFallback>

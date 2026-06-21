@@ -6,9 +6,9 @@ import request from 'supertest';
 vi.mock('../../db/index.js', () => ({
   db: {
     query: {
-      users: { findFirst: vi.fn() },
+      users: { findFirst: vi.fn(), findMany: vi.fn() },
       matches: { findFirst: vi.fn(), findMany: vi.fn() },
-      profiles: { findFirst: vi.fn() },
+      profiles: { findFirst: vi.fn(), findMany: vi.fn() },
       subscriptions: { findFirst: vi.fn().mockResolvedValue(null) },
       affiliateEarnings: { findMany: vi.fn().mockResolvedValue([]) },
     },
@@ -52,17 +52,18 @@ describe('Match Routes', () => {
       const { db } = await import('../../db/index.js');
 
       // Mock current user
-      vi.mocked(db.query.users.findFirst)
-        .mockResolvedValueOnce({ id: 1, premiumTier: 'basic' } as any) // Current user
-        .mockResolvedValueOnce({ id: 2, whatsapp: '+254700111222', instagram: '@jane', photos: [], premiumTier: 'basic' } as any); // Other user
+      vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: 1, premiumTier: 'basic' } as any);
 
       // Mock matches - both sides have already consented to reveal
       vi.mocked(db.query.matches.findMany).mockResolvedValue([
         { id: 100, userOneId: 1, userTwoId: 2, userOneRevealConsent: true, userTwoRevealConsent: true, createdAt: new Date() },
       ] as any);
 
-      // Mock other user's profile
-      vi.mocked(db.query.profiles.findFirst).mockResolvedValue({
+      // Other user + profile are now batch-fetched via findMany
+      vi.mocked(db.query.users.findMany).mockResolvedValue([
+        { id: 2, whatsapp: '+254700111222', instagram: '@jane', photos: [], premiumTier: 'basic' },
+      ] as any);
+      vi.mocked(db.query.profiles.findMany).mockResolvedValue([{
         userId: 2,
         fullName: 'Jane Doe',
         gender: 'female',
@@ -70,7 +71,7 @@ describe('Match Routes', () => {
         location: 'Nairobi',
         birthDate: new Date('1998-01-01'),
         isVerified: true,
-      } as any);
+      }] as any);
 
       const res = await request(app)
         .get('/api/matches')
@@ -88,16 +89,17 @@ describe('Match Routes', () => {
     it('should hide contact details when reveal consent is not yet mutual', async () => {
       const { db } = await import('../../db/index.js');
 
-      vi.mocked(db.query.users.findFirst)
-        .mockResolvedValueOnce({ id: 1, premiumTier: 'basic' } as any) // Current user
-        .mockResolvedValueOnce({ id: 2, whatsapp: '+254700111222', instagram: '@jane', photos: [], premiumTier: 'basic' } as any); // Other user
+      vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: 1, premiumTier: 'basic' } as any);
 
       // Current user (userOneId: 1) has consented; the other side has not.
       vi.mocked(db.query.matches.findMany).mockResolvedValue([
         { id: 100, userOneId: 1, userTwoId: 2, userOneRevealConsent: true, userTwoRevealConsent: false, createdAt: new Date() },
       ] as any);
 
-      vi.mocked(db.query.profiles.findFirst).mockResolvedValue({
+      vi.mocked(db.query.users.findMany).mockResolvedValue([
+        { id: 2, whatsapp: '+254700111222', instagram: '@jane', photos: [], premiumTier: 'basic' },
+      ] as any);
+      vi.mocked(db.query.profiles.findMany).mockResolvedValue([{
         userId: 2,
         fullName: 'Jane Doe',
         gender: 'female',
@@ -105,7 +107,7 @@ describe('Match Routes', () => {
         location: 'Nairobi',
         birthDate: new Date('1998-01-01'),
         isVerified: true,
-      } as any);
+      }] as any);
 
       const res = await request(app)
         .get('/api/matches')
@@ -117,6 +119,38 @@ describe('Match Routes', () => {
       expect(res.body.data[0].consentedByOther).toBe(false);
       expect(res.body.data[0].otherUser.whatsapp).toBeNull();
       expect(res.body.data[0].otherUser.instagram).toBeNull();
+    });
+
+    it('batches the other-user/profile lookups into one query each, regardless of match count', async () => {
+      const { db } = await import('../../db/index.js');
+
+      vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: 1, premiumTier: 'basic' } as any);
+      vi.mocked(db.query.matches.findMany).mockResolvedValue([
+        { id: 100, userOneId: 1, userTwoId: 2, userOneRevealConsent: true, userTwoRevealConsent: true, createdAt: new Date() },
+        { id: 101, userOneId: 1, userTwoId: 3, userOneRevealConsent: true, userTwoRevealConsent: true, createdAt: new Date() },
+        { id: 102, userOneId: 1, userTwoId: 4, userOneRevealConsent: true, userTwoRevealConsent: true, createdAt: new Date() },
+      ] as any);
+      vi.mocked(db.query.users.findMany).mockResolvedValue([
+        { id: 2, whatsapp: null, instagram: null, photos: [], premiumTier: 'basic' },
+        { id: 3, whatsapp: null, instagram: null, photos: [], premiumTier: 'basic' },
+        { id: 4, whatsapp: null, instagram: null, photos: [], premiumTier: 'basic' },
+      ] as any);
+      vi.mocked(db.query.profiles.findMany).mockResolvedValue([
+        { userId: 2, fullName: 'User Two', gender: 'female', bio: '', location: 'Nairobi', birthDate: null, isVerified: false },
+        { userId: 3, fullName: 'User Three', gender: 'female', bio: '', location: 'Nairobi', birthDate: null, isVerified: false },
+        { userId: 4, fullName: 'User Four', gender: 'female', bio: '', location: 'Nairobi', birthDate: null, isVerified: false },
+      ] as any);
+
+      const res = await request(app)
+        .get('/api/matches')
+        .set('Authorization', 'Bearer mock_token');
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toHaveLength(3);
+      // One findMany call for all 3 matches' other-users, not one per match.
+      expect(db.query.users.findMany).toHaveBeenCalledTimes(1);
+      expect(db.query.profiles.findMany).toHaveBeenCalledTimes(1);
+      expect(db.query.users.findFirst).toHaveBeenCalledTimes(1);
     });
 
     it('should return empty array when no matches exist', async () => {

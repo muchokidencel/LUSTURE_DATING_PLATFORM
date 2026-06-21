@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { db } from '../../db/index.js';
 import { matches, profiles, users } from '../../db/schema.js';
-import { eq, or } from 'drizzle-orm';
+import { eq, or, inArray } from 'drizzle-orm';
 import { authenticate, AuthRequest } from '../../middleware/auth.js';
 
 const router = Router();
@@ -28,23 +28,32 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
 
     console.log(`[MATCH:READ] Found ${userMatches.length} matches for User: ${userId}`);
 
-    const matchData = await Promise.all(userMatches.map(async (m) => {
+    const otherUserIds = userMatches.map(m => m.userOneId === userId ? m.userTwoId : m.userOneId);
+
+    // Batch both lookups instead of firing 2 queries per match (was 2N round-trips).
+    const [otherUsersList, otherProfilesList] = otherUserIds.length > 0
+      ? await Promise.all([
+          db.query.users.findMany({ where: inArray(users.id, otherUserIds) }),
+          db.query.profiles.findMany({ where: inArray(profiles.userId, otherUserIds) }),
+        ])
+      : [[], []];
+
+    const usersById = new Map(otherUsersList.map(u => [u.id, u]));
+    const profilesByUserId = new Map(otherProfilesList.map(p => [p.userId, p]));
+
+    const normalizePhotos = (photos: any) => {
+      if (!photos) return [];
+      const arr = Array.isArray(photos) ? photos : [photos];
+      return arr.map(p => typeof p === 'string' ? JSON.parse(p) : p);
+    };
+
+    const matchData = userMatches.map((m) => {
       try {
         const otherUserId = m.userOneId === userId ? m.userTwoId : m.userOneId;
-        const otherUser = await db.query.users.findFirst({
-          where: eq(users.id, otherUserId),
-        });
-        const otherProfile = await db.query.profiles.findFirst({
-          where: eq(profiles.userId, otherUserId),
-        });
+        const otherUser = usersById.get(otherUserId);
+        const otherProfile = profilesByUserId.get(otherUserId);
 
         if (!otherProfile || !otherUser) return null;
-
-        const normalizePhotos = (photos: any) => {
-          if (!photos) return [];
-          const arr = Array.isArray(photos) ? photos : [photos];
-          return arr.map(p => typeof p === 'string' ? JSON.parse(p) : p);
-        };
 
         const age = otherProfile.birthDate ? Math.floor((new Date().getTime() - new Date(otherProfile.birthDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : null;
 
@@ -80,7 +89,7 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
         console.error(`[MATCH:CONTACT:ERROR] Error revealing contact for match ${m.id}: ${err.message}`);
         return null;
       }
-    }));
+    });
 
     res.json({ status: 'success', data: matchData.filter(m => m !== null) });
   } catch (error) {

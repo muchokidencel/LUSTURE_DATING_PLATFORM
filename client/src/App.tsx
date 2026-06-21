@@ -1,27 +1,40 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { cn } from './lib/utils';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Discovery from './pages/Discovery';
-import Recommendations from './pages/Recommendations';
-import Profile from './pages/Profile';
-import UserProfile from './pages/UserProfile';
-import EditProfile from './pages/EditProfile';
-import Matches from './pages/Matches';
-import Premium from './pages/Premium';
-import AdminDashboard from './pages/AdminDashboard';
-import ReferralDashboard from './pages/ReferralDashboard';
-import Landing from './pages/Landing';
 import Navbar from './components/layout/Navbar';
 import BottomNav from './components/layout/BottomNav';
 import TourGuide from './components/layout/TourGuide';
 import { TourProvider } from './context/TourContext';
 import { Loader2 } from 'lucide-react';
+
+// Route-level pages are code-split: each ships in its own chunk instead of
+// one ~790KB bundle every visitor downloads regardless of which page they
+// land on.
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const Discovery = lazy(() => import('./pages/Discovery'));
+const Recommendations = lazy(() => import('./pages/Recommendations'));
+const Profile = lazy(() => import('./pages/Profile'));
+const UserProfile = lazy(() => import('./pages/UserProfile'));
+const EditProfile = lazy(() => import('./pages/EditProfile'));
+const Matches = lazy(() => import('./pages/Matches'));
+const Premium = lazy(() => import('./pages/Premium'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const ReferralDashboard = lazy(() => import('./pages/ReferralDashboard'));
+const Landing = lazy(() => import('./pages/Landing'));
+
+const RouteLoader = () => (
+  <div className="flex items-center justify-center h-screen bg-void">
+    <div className="flex flex-col items-center gap-4">
+      <Loader2 size={40} strokeWidth={1.5} className="text-lustre-purple animate-spin" />
+      <span className="font-garamond italic text-2xl text-gradient-brand">Lustre</span>
+    </div>
+  </div>
+);
 
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
@@ -77,6 +90,7 @@ function AnimatedRoutes() {
       {!isAdminPath && <Navbar />}
       {!isAdminPath && isAuthenticated && <TourGuide />}
       <div className={cn(isAdminPath ? "pt-0 pb-0" : "pt-16 pb-24 md:pb-0")}>
+        <Suspense fallback={<RouteLoader />}>
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<PageWrapper><Landing /></PageWrapper>} />
@@ -129,6 +143,7 @@ function AnimatedRoutes() {
             } />
           </Routes>
         </AnimatePresence>
+        </Suspense>
       </div>
       {!isAdminPath && isAuthenticated && <BottomNav />}
     </div>
@@ -136,7 +151,18 @@ function AnimatedRoutes() {
 }
 
 function App() {
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        // Default was staleTime: 0, so every remount/window-focus refetched
+        // everything. 30s keeps data feeling current without refetching on
+        // every navigation; explicit refetch()/invalidateQueries() calls
+        // (withdrawals, M-Pesa polling, etc.) bypass staleTime regardless.
+        staleTime: 30 * 1000,
+        gcTime: 5 * 60 * 1000,
+      },
+    },
+  }));
 
   return (
     <QueryClientProvider client={queryClient}>

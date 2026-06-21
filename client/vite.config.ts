@@ -14,4 +14,18 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id: string) {
+          if (!id.includes('node_modules')) return undefined;
+          if (id.includes('framer-motion')) return 'vendor-motion';
+          if (id.includes('@radix-ui')) return 'vendor-radix';
+          if (id.includes('react-router-dom') || id.includes('/react-dom/') || id.includes('/react/')) return 'vendor-react';
+          if (id.includes('@tanstack')) return 'vendor-query';
+          return undefined;
+        },
+      },
+    },
+  },
 })

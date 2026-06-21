@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "../compon
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
 import { Heart, HeartHandshake, ArrowLeft, Loader2, Share2, MoreHorizontal, Sparkles, Crown, CheckCircle2, Lock } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { cloudinaryThumb } from '../lib/cloudinary';
 
 export default function UserProfile() {
   const { id } = useParams<{ id: string }>();
@@ -237,7 +238,7 @@ export default function UserProfile() {
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-brand blur-2xl rounded-full opacity-35" />
               <Avatar className="w-28 h-28 border-2 border-lustre-purple/30 shadow-2xl relative z-10">
-                <AvatarImage src={mainPhoto} className="object-cover" />
+                <AvatarImage src={cloudinaryThumb(mainPhoto, 224)} className="object-cover" />
                 <AvatarFallback className="text-4xl bg-gradient-brand text-white italic">
                   {getInitial(user.displayName)}
                 </AvatarFallback>

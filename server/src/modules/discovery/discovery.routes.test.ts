@@ -55,8 +55,46 @@ describe('Discovery Routes', () => {
       const res = await request(app)
         .get('/api/discovery/users')
         .set('Authorization', 'Bearer mock_token');
-      
+
       expect(res.status).toBe(500);
+    });
+
+    it('reports pagination.total/totalPages based on the post-distance-filter set, not the raw query', async () => {
+      // 1 user's own coords; profile/preferences findFirst is called for both
+      // "my profile" and "my prefs" -- mock by call order (profile, then prefs).
+      vi.mocked(db.query.profiles.findFirst).mockResolvedValue({
+        userId: 1, latitude: 0, longitude: 0, location: 'Nairobi',
+      } as any);
+      vi.mocked(db.query.userPreferences.findFirst).mockResolvedValue({
+        userId: 1, maxDistanceKm: 100,
+      } as any);
+
+      // 3 candidates within range, 2 far outside maxDistanceKm.
+      const near = (id: number) => ({
+        id, premiumTier: 'free', lastActiveAt: new Date(), photos: [],
+        profile: { fullName: `Near ${id}`, latitude: 0.01, longitude: 0.01, location: 'Nairobi' },
+      });
+      const far = (id: number) => ({
+        id, premiumTier: 'free', lastActiveAt: new Date(), photos: [],
+        profile: { fullName: `Far ${id}`, latitude: 50, longitude: 50, location: 'Mombasa' },
+      });
+      vi.mocked(db.query.users.findMany).mockResolvedValue([
+        near(2), near(3), far(4), far(5), near(6),
+      ] as any);
+
+      const res = await request(app)
+        .get('/api/discovery/users')
+        .set('Authorization', 'Bearer mock_token');
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toHaveLength(3);
+      expect(res.body.pagination.total).toBe(3);
+      expect(res.body.pagination.totalPages).toBe(1);
+
+      // The DB query itself must not paginate -- filtering happens after fetch.
+      const findManyArgs = vi.mocked(db.query.users.findMany).mock.calls[0][0] as any;
+      expect(findManyArgs.limit).toBeUndefined();
+      expect(findManyArgs.offset).toBeUndefined();
     });
   });
 });

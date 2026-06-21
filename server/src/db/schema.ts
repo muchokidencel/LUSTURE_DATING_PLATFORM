@@ -1,4 +1,4 @@
-import { pgTable, serial, text, varchar, timestamp, integer, boolean, pgEnum, AnyPgColumn, primaryKey, jsonb, doublePrecision } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, varchar, timestamp, integer, boolean, pgEnum, AnyPgColumn, primaryKey, jsonb, doublePrecision, index } from "drizzle-orm/pg-core";
 import { relations } from 'drizzle-orm';
 
 export const genderEnum = pgEnum("gender", ["male", "female", "non_binary", "other"]);
@@ -32,7 +32,9 @@ export const users = pgTable("users", {
   photos: jsonb("photos").array(),
   createdAt: timestamp("created_at").defaultNow(),
   lastActiveAt: timestamp("last_active_at").defaultNow(),
-});
+}, (t) => ({
+  referredByIdx: index("users_referred_by_idx").on(t.referredBy),
+}));
 
 export const usersRelations = relations(users, ({ one, many }) => ({
   profile: one(profiles, {
@@ -87,7 +89,9 @@ export const photos = pgTable("photos", {
   url: text("url").notNull(),
   isMain: boolean("is_main").default(false),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => ({
+  userIdIdx: index("photos_user_id_idx").on(t.userId),
+}));
 
 export const photosRelations = relations(photos, ({ one }) => ({
   user: one(users, {
@@ -113,7 +117,10 @@ export const likes = pgTable("likes", {
   createdAt: timestamp("created_at").defaultNow(),
   expiresAt: timestamp("expires_at").notNull(),
   isSeen: boolean("is_seen").default(false),
-});
+}, (t) => ({
+  fromUserIdIdx: index("likes_from_user_id_idx").on(t.fromUserId),
+  toUserIdIdx: index("likes_to_user_id_idx").on(t.toUserId),
+}));
 
 export const likesRelations = relations(likes, ({ one }) => ({
   fromUser: one(users, {
@@ -135,7 +142,10 @@ export const passes = pgTable("passes", {
   createdAt: timestamp("created_at").defaultNow(),
   reSurfaceAt: timestamp("re_surface_at"),
   isExplicitDislike: boolean("is_explicit_dislike").default(false),
-});
+}, (t) => ({
+  userIdIdx: index("passes_user_id_idx").on(t.userId),
+  passedUserIdIdx: index("passes_passed_user_id_idx").on(t.passedUserId),
+}));
 
 export const matches = pgTable("matches", {
   id: serial("id").primaryKey(),
@@ -146,7 +156,10 @@ export const matches = pgTable("matches", {
   userTwoRevealConsent: boolean("user_two_reveal_consent").default(false),
   lastInteractionAt: timestamp("last_interaction_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => ({
+  userOneIdIdx: index("matches_user_one_id_idx").on(t.userOneId),
+  userTwoIdIdx: index("matches_user_two_id_idx").on(t.userTwoId),
+}));
 
 export const subscriptions = pgTable("subscriptions", {
   id: serial("id").primaryKey(),
@@ -155,7 +168,9 @@ export const subscriptions = pgTable("subscriptions", {
   startDate: timestamp("start_date").defaultNow(),
   endDate: timestamp("end_date").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => ({
+  userIdIdx: index("subscriptions_user_id_idx").on(t.userId),
+}));
 
 export const payments = pgTable("payments", {
   id: serial("id").primaryKey(),
@@ -166,14 +181,18 @@ export const payments = pgTable("payments", {
   status: paymentStatusEnum("status").default("pending"),
   idempotencyKey: varchar("idempotency_key", { length: 255 }).unique(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => ({
+  userIdIdx: index("payments_user_id_idx").on(t.userId),
+}));
 
 export const referralCodes = pgTable("referral_codes", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id).notNull(),
   code: varchar("code", { length: 8 }).notNull().unique(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => ({
+  userIdIdx: index("referral_codes_user_id_idx").on(t.userId),
+}));
 
 export const referrals = pgTable("referrals", {
   id: serial("id").primaryKey(),
@@ -185,7 +204,9 @@ export const referrals = pgTable("referrals", {
   coolingEndsAt: timestamp("cooling_ends_at"),
   paidAt: timestamp("paid_at"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => ({
+  referrerIdIdx: index("referrals_referrer_id_idx").on(t.referrerId),
+}));
 
 export const affiliateEarnings = pgTable("affiliate_earnings", {
   id: serial("id").primaryKey(),
@@ -196,7 +217,10 @@ export const affiliateEarnings = pgTable("affiliate_earnings", {
   status: earningsStatusEnum("status").default("pending"),
   availableAt: timestamp("available_at"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => ({
+  userIdIdx: index("affiliate_earnings_user_id_idx").on(t.userId),
+  referralIdIdx: index("affiliate_earnings_referral_id_idx").on(t.referralId),
+}));
 
 export const withdrawals = pgTable("withdrawals", {
   id: serial("id").primaryKey(),
@@ -211,7 +235,9 @@ export const withdrawals = pgTable("withdrawals", {
   paymentMethod: varchar("payment_method", { length: 50 }).default("MPESA"),
   paymentReference: varchar("payment_reference", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => ({
+  userIdIdx: index("withdrawals_user_id_idx").on(t.userId),
+}));
 
 
 export const reports = pgTable("reports", {
@@ -221,14 +247,20 @@ export const reports = pgTable("reports", {
   reason: text("reason").notNull(),
   status: varchar("status", { length: 50 }).default("pending"), // pending, resolved, dismissed
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => ({
+  reporterIdIdx: index("reports_reporter_id_idx").on(t.reporterId),
+  reportedIdIdx: index("reports_reported_id_idx").on(t.reportedId),
+}));
 
 export const blocks = pgTable("blocks", {
   id: serial("id").primaryKey(),
   blockerId: integer("blocker_id").references(() => users.id).notNull(),
   blockedId: integer("blocked_id").references(() => users.id).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => ({
+  blockerIdIdx: index("blocks_blocker_id_idx").on(t.blockerId),
+  blockedIdIdx: index("blocks_blocked_id_idx").on(t.blockedId),
+}));
 
 export const notifications = pgTable("notifications", {
   id: serial("id").primaryKey(),
@@ -237,14 +269,19 @@ export const notifications = pgTable("notifications", {
   content: text("content"),
   isRead: boolean("is_read").default(false),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => ({
+  userIdIdx: index("notifications_user_id_idx").on(t.userId),
+}));
 
 export const profileViews = pgTable("profile_views", {
   id: serial("id").primaryKey(),
   viewerId: integer("viewer_id").references(() => users.id).notNull(),
   profileId: integer("profile_id").references(() => users.id).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => ({
+  viewerIdIdx: index("profile_views_viewer_id_idx").on(t.viewerId),
+  profileIdIdx: index("profile_views_profile_id_idx").on(t.profileId),
+}));
 
 export const verificationRequests = pgTable("verification_requests", {
   id: serial("id").primaryKey(),
@@ -252,7 +289,9 @@ export const verificationRequests = pgTable("verification_requests", {
   status: varchar("status", { length: 50 }).default("pending"),
   photoUrl: text("photo_url").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => ({
+  userIdIdx: index("verification_requests_user_id_idx").on(t.userId),
+}));
 
 export const interests = pgTable("interests", {
   id: serial("id").primaryKey(),
@@ -282,5 +321,7 @@ export const emailVerificationCodes = pgTable("email_verification_codes", {
   code: varchar("code", { length: 6 }).notNull(),
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => ({
+  emailIdx: index("email_verification_codes_email_idx").on(t.email),
+}));
 

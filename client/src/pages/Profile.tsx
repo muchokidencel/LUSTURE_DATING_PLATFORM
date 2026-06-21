@@ -11,6 +11,7 @@ import { Progress } from '../components/ui/progress';
 import { Heart, LogOut, Zap, Eye, Crown, Share2, MessageCircle, Camera, Compass } from 'lucide-react';
 import { useTour } from '../context/TourContext';
 import { cn } from '../lib/utils';
+import { cloudinaryThumb } from '../lib/cloudinary';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../components/ui/dialog';
 
 export default function Profile() {
@@ -80,7 +81,7 @@ export default function Profile() {
               "w-36 h-36 border-4 border-void shadow-[var(--shadow-card-hover)] transition-all",
               isPremium ? "ring-2 ring-lustre-gold" : "ring-1 ring-border"
             )}>
-              <AvatarImage src={profile?.photos?.[0]?.url} className="object-cover" />
+              <AvatarImage src={cloudinaryThumb(profile?.photos?.[0]?.url, 300)} className="object-cover" />
               <AvatarFallback className="text-5xl font-garamond italic">
                 {getInitial(profile?.fullName || '')}
               </AvatarFallback>
@@ -219,7 +220,7 @@ export default function Profile() {
                   return (
                     <div key={i} className="aspect-square bg-elevated rounded-lg overflow-hidden relative">
                       {photo ? (
-                        <img src={photo.url} alt="Profile" className="w-full h-full object-cover" />
+                        <img src={cloudinaryThumb(photo.url, 240)} alt="Profile" className="w-full h-full object-cover" />
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center">
                           <Camera size={16} className="text-lustre-muted/20" strokeWidth={1.5} />

@@ -10,6 +10,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
 import { isAxiosError } from 'axios';
 import { AgeSlider } from '../components/ui/AgeSlider';
 import DiscoveryTabs from '../components/layout/DiscoveryTabs';
+import { cloudinaryThumb } from '../lib/cloudinary';
 
 interface RecommendedUser {
   id: number;
@@ -301,13 +302,13 @@ export default function Recommendations() {
             <div className="relative flex items-center justify-center -space-x-7 py-2">
               <div className="absolute inset-0 bg-gradient-brand blur-3xl rounded-full opacity-30 animate-pulse" />
               <Avatar className="w-24 h-24 border-4 border-void relative z-10 shadow-[var(--shadow-card-hover)]">
-                <AvatarImage src={myProfile?.photos?.[0]?.url} className="object-cover" />
+                <AvatarImage src={cloudinaryThumb(myProfile?.photos?.[0]?.url, 192)} className="object-cover" />
                 <AvatarFallback className="text-3xl font-garamond italic">
                   {getInitial(myProfile?.fullName)}
                 </AvatarFallback>
               </Avatar>
               <Avatar className="w-24 h-24 border-4 border-void relative z-10 shadow-[var(--shadow-card-hover)]">
-                <AvatarImage src={lastMatch?.photos?.[0]?.url} className="object-cover" />
+                <AvatarImage src={cloudinaryThumb(lastMatch?.photos?.[0]?.url, 192)} className="object-cover" />
                 <AvatarFallback className="text-3xl font-garamond italic">
                   {getInitial(lastMatch?.displayName)}
                 </AvatarFallback>

@@ -9,6 +9,7 @@ import { Card } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Heart, MapPin, MessageCircle, ChevronRight, Search, Crown, Lock, Clock, Link2, Loader2 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { cloudinaryThumb } from '../lib/cloudinary';
 
 interface Match {
   id: number;
@@ -136,7 +137,7 @@ export default function Matches() {
                         "w-16 h-16 md:w-20 md:h-20 transition-all",
                         isOtherPremium ? "ring-2 ring-lustre-gold/40" : "ring-1 ring-border-subtle group-hover:ring-lustre-purple/50"
                       )}>
-                        <AvatarImage src={match.otherUser.photos?.[0]?.url} className="object-cover animate-fade-in" />
+                        <AvatarImage src={cloudinaryThumb(match.otherUser.photos?.[0]?.url, 160)} className="object-cover animate-fade-in" />
                         <AvatarFallback className="text-2xl font-garamond italic bg-elevated">
                           {getInitial(match.otherUser.displayName)}
                         </AvatarFallback>
