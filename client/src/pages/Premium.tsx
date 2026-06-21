@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Badge } from '../components/ui/badge';
 import { useSubscription } from '../hooks/useQueries';
 import { Crown, Zap, ShieldCheck, Globe, History, Send, Smartphone, CreditCard, Loader2, CircleCheck } from 'lucide-react';
+import { Alert, AlertTitle, AlertDescription } from '../components/ui/alert';
 
 export default function Premium() {
   const { user } = useAuth();
@@ -20,6 +21,7 @@ export default function Premium() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [polling, setPolling] = useState(false);
   const [paymentSucceeded, setPaymentSucceeded] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
   const verifiedRef = useRef<string | null>(null);
 
   const closeAndReset = () => {
@@ -27,6 +29,7 @@ export default function Premium() {
     setPaymentMethod(null);
     setPaymentSucceeded(false);
     setPhoneNumber('');
+    setPaymentError(null);
   };
 
   useEffect(() => {
@@ -78,6 +81,7 @@ export default function Premium() {
   const handleMpesaPay = async (amount: number) => {
     if (!phoneNumber) return;
     setLoading(true);
+    setPaymentError(null);
     try {
       await api.post('/payments/pay/mpesa', {
         amount,
@@ -85,13 +89,16 @@ export default function Premium() {
       });
       setLoading(false);
       setPolling(true);
-    } catch {
+    } catch (error: any) {
       setLoading(false);
+      const errMsg = error.response?.data?.message || 'Error initiating M-Pesa payment. Please verify your phone number and try again.';
+      setPaymentError(errMsg);
     }
   };
 
   const handlePaystackPay = async (amount: number) => {
     setLoading(true);
+    setPaymentError(null);
     try {
       const { data } = await api.post('/payments/pay/paystack/initialize', {
         amount,
@@ -99,8 +106,10 @@ export default function Premium() {
         callbackUrl: `${window.location.origin}/premium`,
       });
       window.location.href = data.data.authorization_url;
-    } catch {
+    } catch (error: any) {
       setLoading(false);
+      const errMsg = error.response?.data?.message || 'Error initializing Paystack payment.';
+      setPaymentError(errMsg);
     }
   };
 
@@ -269,9 +278,18 @@ export default function Premium() {
             </div>
           ) : !paymentMethod ? (
             <div className="space-y-4">
+              {paymentError && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertTitle>Payment Failed</AlertTitle>
+                  <AlertDescription>{paymentError}</AlertDescription>
+                </Alert>
+              )}
               <button
                 className="w-full flex items-center gap-4 p-6 bg-base rounded-xl border border-border-subtle hover:bg-hover transition-all text-left"
-                onClick={() => setPaymentMethod('mpesa')}
+                onClick={() => {
+                  setPaymentMethod('mpesa');
+                  setPaymentError(null);
+                }}
               >
                 <div className="p-3 rounded-full bg-green-500/10 text-green-500">
                   <Smartphone size={24} strokeWidth={1.5} />
@@ -297,6 +315,12 @@ export default function Premium() {
             </div>
           ) : (
             <div className="space-y-8 animate-fade-up">
+              {paymentError && (
+                <Alert variant="destructive">
+                  <AlertTitle>Payment Failed</AlertTitle>
+                  <AlertDescription>{paymentError}</AlertDescription>
+                </Alert>
+              )}
               <div className="space-y-4">
                  <p className="font-sans text-[10px] uppercase tracking-widest text-lustre-faint font-bold ml-1">M-Pesa Number</p>
                  <Input
@@ -307,7 +331,7 @@ export default function Premium() {
                  />
               </div>
               <div className="flex gap-4">
-                 <Button variant="outline" className="flex-1 h-12 rounded-full font-sans font-bold text-[10px] uppercase tracking-widest" onClick={() => setPaymentMethod(null)}>
+                 <Button variant="outline" className="flex-1 h-12 rounded-full font-sans font-bold text-[10px] uppercase tracking-widest" onClick={() => { setPaymentMethod(null); setPaymentError(null); }}>
                     Return
                  </Button>
                  <Button variant="gold" className="flex-[2] h-12 rounded-full font-sans font-bold text-[10px] uppercase tracking-widest" onClick={() => handleMpesaPay(500)} disabled={loading}>

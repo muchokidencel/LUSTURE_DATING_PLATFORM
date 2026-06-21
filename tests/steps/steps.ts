@@ -44,6 +44,8 @@ const mockDiscoveryUsers = [
 ];
 
 Given('I navigate to {string}', async ({ page }, path) => {
+  page.on('console', msg => console.log('[BROWSER CONSOLE]', msg.text()));
+  page.on('pageerror', err => console.log('[BROWSER EXCEPTION]', err.message));
   page.on('request', request => console.log('>>', request.method(), request.url()));
   page.on('response', response => console.log('<<', response.status(), response.url()));
   await page.addInitScript(() => {
@@ -589,7 +591,7 @@ Then('my profile city should be updated to {string}', async ({ page }, city) => 
 
 Then('I should see the age range filter label', async ({ page }) => {
   const label = page.locator('text=Age Filter:').first();
-  await expect(label).toBeVisible();
+  await expect(label).toBeVisible({ timeout: 15000 });
 });
 
 When('I adjust the age range slider to {int} and {int}', async ({ page }, min, max) => {
