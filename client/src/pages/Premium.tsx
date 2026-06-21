@@ -200,15 +200,27 @@ export default function Premium() {
         <div className="mt-40 p-16 text-center space-y-10 bg-card rounded-2xl relative overflow-hidden animate-fade-up shadow-[var(--shadow-card)]">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-brand" />
           <div className="space-y-4">
-            <h2 className="font-garamond text-5xl text-lustre-text italic">Secure Your Access</h2>
+            <h2 className="font-garamond text-5xl text-lustre-text italic">
+              {isPremium ? "Elite Access Active" : "Secure Your Access"}
+            </h2>
             <p className="font-sans text-lustre-muted max-w-lg mx-auto leading-relaxed">
-              Join the most exclusive community of high-intent individuals and begin your journey toward a truly refined connection.
+              {isPremium 
+                ? "You are currently enjoying the most exclusive membership tier. Thank you for being a valued member of the Lustre community."
+                : "Join the most exclusive community of high-intent individuals and begin your journey toward a truly refined connection."
+              }
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <Button variant="gold" className="w-full sm:w-auto px-12 h-14 rounded-full font-headline text-[10px] uppercase tracking-widest font-bold shadow-[var(--shadow-card-hover)] hover:scale-105 active:scale-95 transition-all" onClick={() => setShowPaymentModal(true)}>
-              Upgrade Now
-            </Button>
+            {!isPremium ? (
+              <Button variant="gold" className="w-full sm:w-auto px-12 h-14 rounded-full font-headline text-[10px] uppercase tracking-widest font-bold shadow-[var(--shadow-card-hover)] hover:scale-105 active:scale-95 transition-all" onClick={() => setShowPaymentModal(true)}>
+                Upgrade Now
+              </Button>
+            ) : (
+              <div className="flex items-center gap-2 px-6 py-3 bg-gradient-gold/15 text-lustre-gold border border-lustre-gold/30 rounded-full font-headline text-[10px] uppercase tracking-widest font-bold">
+                <Crown size={14} className="fill-lustre-gold/10" />
+                Active Premium Subscriber
+              </div>
+            )}
             <Button variant="outline" className="w-full sm:w-auto px-12 h-14 rounded-full border-border-subtle text-lustre-muted font-headline text-[10px] uppercase tracking-widest font-bold hover:bg-hover transition-all bg-transparent">
               View FAQs
             </Button>

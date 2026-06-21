@@ -208,10 +208,17 @@ describe('Auth Routes', () => {
       } as any);
 
       // Valid referrer code exists
-      vi.mocked(db.query.referralCodes.findFirst).mockResolvedValue({
-        userId: 1,
-        code: 'VALID-REF',
-      } as any);
+      let referralCodesCallCount = 0;
+      vi.mocked(db.query.referralCodes.findFirst).mockImplementation(async () => {
+        referralCodesCallCount++;
+        if (referralCodesCallCount === 1) {
+          return {
+            userId: 1,
+            code: 'VALID-REF',
+          } as any;
+        }
+        return null;
+      });
 
       const returningMock = vi.mocked(db.returning);
       returningMock.mockResolvedValue([{ 
@@ -253,10 +260,17 @@ describe('Auth Routes', () => {
       // If the code belongs to User 1, and the new user is somehow also User 1 (impossible in reality but check logic).
       // Wait, let's look at the implementation of registration to see how it blocks self-referral.
       
-      vi.mocked(db.query.referralCodes.findFirst).mockResolvedValue({
-        userId: 1, // Referrer is user 1
-        code: 'MY-OWN-CODE',
-      } as any);
+      let referralCodesCallCount = 0;
+      vi.mocked(db.query.referralCodes.findFirst).mockImplementation(async () => {
+        referralCodesCallCount++;
+        if (referralCodesCallCount === 1) {
+          return {
+            userId: 1, // Referrer is user 1
+            code: 'MY-OWN-CODE',
+          } as any;
+        }
+        return null;
+      });
 
       const returningMock = vi.mocked(db.returning);
       returningMock.mockResolvedValue([{ 

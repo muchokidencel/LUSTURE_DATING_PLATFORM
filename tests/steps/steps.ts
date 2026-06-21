@@ -44,6 +44,8 @@ const mockDiscoveryUsers = [
 ];
 
 Given('I navigate to {string}', async ({ page }, path) => {
+  page.on('request', request => console.log('>>', request.method(), request.url()));
+  page.on('response', response => console.log('<<', response.status(), response.url()));
   await page.addInitScript(() => {
     (window as any).__E2E_TESTING__ = true;
   });
@@ -1096,16 +1098,42 @@ When('I upload a new profile photo', async ({ page }) => {
       await route.continue();
     }
   });
+
+  // Mock profile/me to return the newly uploaded photo when query refetches
+  await page.unroute(`${API_BASE}/profile/me`);
+  await page.route(`${API_BASE}/profile/me`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'success',
+        data: {
+          ...mockPremiumUser,
+          photos: [{ url: 'https://res.cloudinary.com/test/image/upload/v1/photo.jpg', public_id: 'test-photo-123' }],
+        },
+      }),
+    });
+  });
+
+  // Perform file selection
+  const fileInput = page.locator('input[type="file"]');
+  await fileInput.setInputFiles({
+    name: 'photo.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64'),
+  });
 });
 
 Then('the photo should appear in the profile photo grid', async ({ page }) => {
-  // Verify that the image element is present after upload
-  await expect(page.locator('img[src*="cloudinary"], img[src*="photo"]').first()).toBeVisible({ timeout: 10000 });
+  // Verify that the image element or background image slot is present after upload
+  await expect(page.locator('div[style*="cloudinary"], div[style*="photo"], img[src*="cloudinary"], img[src*="photo"]').first()).toBeVisible({ timeout: 10000 });
 });
 
 Given('the user has existing photos in their profile', async ({ page }) => {
   // This is handled by the profile/me mock which returns photos array
+  await page.unroute(`${API_BASE}/profile/me`);
   await page.route(`${API_BASE}/profile/me`, async (route) => {
+    console.log('>>> [MOCK profile/me] returning 1 photo (existing)');
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -1133,11 +1161,37 @@ When('I delete a profile photo', async ({ page }) => {
       await route.continue();
     }
   });
+
+  // Hover over the photo slot to reveal the delete button, then click it
+  const trashBtn = page.locator('button:has(svg.lucide-trash-2), button:has(svg.lucide-trash2)').first();
+  await trashBtn.click({ force: true });
+
+  // Mock profile/me to be empty after deletion
+  await page.unroute(`${API_BASE}/profile/me`);
+  await page.route(`${API_BASE}/profile/me`, async (route) => {
+    console.log('>>> [MOCK profile/me] returning empty photos array');
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'success',
+        data: {
+          ...mockPremiumUser,
+          photos: [],
+        },
+      }),
+    });
+  });
+
+  // Wait for the delete confirm dialog and click the confirm button
+  const confirmBtn = page.locator('div[role="dialog"] button:has-text("Delete")').first();
+  await confirmBtn.click();
 });
 
 Then('the photo should be removed from the grid', async ({ page }) => {
   // After deletion, the photo grid should show upload placeholder or fewer photos
   await page.waitForTimeout(1000);
+  await expect(page.locator('div[style*="existing.jpg"], img[src*="existing.jpg"]')).not.toBeVisible({ timeout: 5000 });
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
