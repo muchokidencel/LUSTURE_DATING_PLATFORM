@@ -96,7 +96,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const updateUserProfile = (profileData: Partial<NonNullable<User['profile']>>) => {
     setUser(prev => {
       if (!prev) return null;
-      const updatedProfile = prev.profile ? { ...prev.profile, ...profileData } : { ...profileData };
+      const defaultProfile = {
+        full_name: null,
+        bio: null,
+        age: null,
+        gender: null,
+        location: null,
+        is_verified: false,
+        latitude: null,
+        longitude: null,
+        location_updated_at: null,
+      };
+      const updatedProfile = {
+        ...defaultProfile,
+        ...(prev.profile || {}),
+        ...profileData,
+      };
       const updatedUser = { ...prev, profile: updatedProfile };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       return updatedUser;
