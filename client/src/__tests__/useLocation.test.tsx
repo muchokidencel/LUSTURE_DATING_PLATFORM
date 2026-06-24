@@ -139,7 +139,7 @@ describe('useLocation Hook', () => {
     });
   });
 
-  it('sets error state to TIMEOUT on timeout', async () => {
+  it('sets error state to TIMEOUT on timeout when IP fallback fails', async () => {
     // Mock geolocation timeout (code 3)
     mockGetCurrentPosition.mockImplementationOnce((_success, error) =>
       error({
@@ -148,11 +148,59 @@ describe('useLocation Hook', () => {
       })
     );
 
+    // Mock FreeIPAPI failure
+    vi.mocked(fetch).mockRejectedValueOnce(new Error('Network error'));
+
     const { result } = renderHook(() => useLocation());
 
     await waitFor(() => {
       expect(result.current.error).toBe('TIMEOUT');
       expect(result.current.loading).toBe(false);
+    });
+  });
+
+  it('falls back to IP-based geolocation when getCurrentPosition times out', async () => {
+    // Mock geolocation timeout (code 3)
+    mockGetCurrentPosition.mockImplementationOnce((_success, error) =>
+      error({
+        code: 3,
+        message: 'Timeout',
+      })
+    );
+
+    // Mock FreeIPAPI success
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        latitude: -1.26,
+        longitude: 36.8,
+        cityName: 'Nairobi',
+      }),
+    } as any);
+
+    // Mock backend patch success
+    vi.mocked(api.patch).mockResolvedValueOnce({
+      status: 200,
+      data: { success: true },
+    });
+
+    const { result } = renderHook(() => useLocation());
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith('https://api.freeipapi.com/api/json');
+      expect(api.patch).toHaveBeenCalledWith('/profile/location', {
+        latitude: -1.26,
+        longitude: 36.8,
+        city: 'Nairobi',
+      });
+      expect(mockUpdateUserProfile).toHaveBeenCalledWith({
+        latitude: -1.26,
+        longitude: 36.8,
+        location: 'Nairobi',
+        location_updated_at: expect.any(String),
+      });
+      expect(result.current.loading).toBe(false);
+      expect(result.current.error).toBeNull();
     });
   });
 

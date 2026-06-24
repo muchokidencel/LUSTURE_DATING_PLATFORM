@@ -75,11 +75,45 @@ export const useLocation = () => {
           setLoading(false);
         }
       },
-      (geoError) => {
+      async (geoError) => {
         console.error('[useLocation] Geolocation error:', geoError);
         if (geoError.code === 1) {
           setError('PERMISSION_DENIED');
-        } else if (geoError.code === 3) {
+          setLoading(false);
+          return;
+        }
+
+        // Try IP-based location fallback
+        console.log('[useLocation] HTML5 Geolocation failed. Falling back to IP-based detection...');
+        try {
+          const ipRes = await fetch('https://api.freeipapi.com/api/json');
+          if (ipRes.ok) {
+            const ipData = await ipRes.json();
+            const { latitude, longitude, cityName } = ipData;
+
+            if (latitude !== undefined && longitude !== undefined && latitude !== null && longitude !== null) {
+              await api.patch('/profile/location', {
+                latitude,
+                longitude,
+                city: cityName || null,
+              });
+
+              updateUserProfile({
+                latitude,
+                longitude,
+                location: cityName || null,
+                location_updated_at: new Date().toISOString(),
+              });
+              setError(null);
+              setLoading(false);
+              return;
+            }
+          }
+        } catch (fallbackErr) {
+          console.error('[useLocation] IP geolocation fallback failed:', fallbackErr);
+        }
+
+        if (geoError.code === 3) {
           setError('TIMEOUT');
         } else {
           setError('UNAVAILABLE');

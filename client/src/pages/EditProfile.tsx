@@ -147,8 +147,43 @@ export default function EditProfile() {
         }));
         setLocating(false);
       },
-      (error) => {
+      async (error) => {
         console.error("Error fetching geolocation:", error);
+        if (error.code === 1) {
+          setLocationError(true);
+          setFormData(prev => ({
+            ...prev,
+            latitude: null,
+            longitude: null,
+          }));
+          alert("Failed to access your location. Please check browser permissions and enter your City manually.");
+          setLocating(false);
+          return;
+        }
+
+        // Try IP-based location fallback
+        console.log('[EditProfile] HTML5 Geolocation failed. Falling back to IP-based detection...');
+        try {
+          const ipRes = await fetch('https://api.freeipapi.com/api/json');
+          if (ipRes.ok) {
+            const ipData = await ipRes.json();
+            const { latitude, longitude, cityName } = ipData;
+
+            if (latitude !== undefined && longitude !== undefined && latitude !== null && longitude !== null) {
+              setFormData(prev => ({
+                ...prev,
+                latitude,
+                longitude,
+                city: cityName || prev.city || '',
+              }));
+              setLocating(false);
+              return;
+            }
+          }
+        } catch (fallbackErr) {
+          console.error('[EditProfile] IP geolocation fallback failed:', fallbackErr);
+        }
+
         setLocationError(true);
         setFormData(prev => ({
           ...prev,
