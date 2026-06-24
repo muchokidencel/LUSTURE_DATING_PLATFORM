@@ -341,7 +341,7 @@ router.patch('/location', authenticate, async (req: AuthRequest, res) => {
     return res.status(422).json({
       status: 'error',
       message: 'Validation failed',
-      errors: validation.error.errors,
+      errors: validation.error.issues,
     });
   }
 
