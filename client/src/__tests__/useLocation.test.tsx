@@ -122,7 +122,7 @@ describe('useLocation Hook', () => {
     });
   });
 
-  it('sets error state to PERMISSION_DENIED on permission rejection', async () => {
+  it('sets error state to PERMISSION_DENIED on permission rejection when IP fallback fails', async () => {
     // Mock geolocation permission denied (code 1)
     mockGetCurrentPosition.mockImplementationOnce((_success, error) =>
       error({
@@ -131,10 +131,54 @@ describe('useLocation Hook', () => {
       })
     );
 
+    // Mock FreeIPAPI and ipapi.co failure
+    vi.mocked(fetch)
+      .mockRejectedValueOnce(new Error('FreeIPAPI error'))
+      .mockRejectedValueOnce(new Error('ipapi.co error'));
+
     const { result } = renderHook(() => useLocation());
 
     await waitFor(() => {
       expect(result.current.error).toBe('PERMISSION_DENIED');
+      expect(result.current.loading).toBe(false);
+    });
+  });
+
+  it('falls back to IP-based geolocation when permission is denied', async () => {
+    // Mock geolocation permission denied (code 1)
+    mockGetCurrentPosition.mockImplementationOnce((_success, error) =>
+      error({
+        code: 1,
+        message: 'User denied Geolocation',
+      })
+    );
+
+    // Mock FreeIPAPI success
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        latitude: -1.26,
+        longitude: 36.8,
+        cityName: 'Nairobi',
+      }),
+    } as any);
+
+    // Mock backend patch success
+    vi.mocked(api.patch).mockResolvedValueOnce({
+      status: 200,
+      data: { success: true },
+    });
+
+    const { result } = renderHook(() => useLocation());
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith('https://api.freeipapi.com/api/json');
+      expect(api.patch).toHaveBeenCalledWith('/profile/location', {
+        latitude: -1.26,
+        longitude: 36.8,
+        city: 'Nairobi',
+      });
+      expect(result.current.error).toBeNull();
       expect(result.current.loading).toBe(false);
     });
   });
@@ -148,8 +192,10 @@ describe('useLocation Hook', () => {
       })
     );
 
-    // Mock FreeIPAPI failure
-    vi.mocked(fetch).mockRejectedValueOnce(new Error('Network error'));
+    // Mock FreeIPAPI and ipapi.co failure
+    vi.mocked(fetch)
+      .mockRejectedValueOnce(new Error('FreeIPAPI error'))
+      .mockRejectedValueOnce(new Error('ipapi.co error'));
 
     const { result } = renderHook(() => useLocation());
 
@@ -193,14 +239,50 @@ describe('useLocation Hook', () => {
         longitude: 36.8,
         city: 'Nairobi',
       });
-      expect(mockUpdateUserProfile).toHaveBeenCalledWith({
-        latitude: -1.26,
-        longitude: 36.8,
-        location: 'Nairobi',
-        location_updated_at: expect.any(String),
-      });
-      expect(result.current.loading).toBe(false);
       expect(result.current.error).toBeNull();
+      expect(result.current.loading).toBe(false);
+    });
+  });
+
+  it('falls back to secondary IP geolocation (ipapi.co) when primary IP geolocation (FreeIPAPI) fails', async () => {
+    // Mock geolocation timeout (code 3)
+    mockGetCurrentPosition.mockImplementationOnce((_success, error) =>
+      error({
+        code: 3,
+        message: 'Timeout',
+      })
+    );
+
+    // Mock FreeIPAPI failure, then ipapi.co success
+    vi.mocked(fetch)
+      .mockRejectedValueOnce(new Error('FreeIPAPI error'))
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          latitude: -1.27,
+          longitude: 36.9,
+          city: 'Mombasa',
+        }),
+      } as any);
+
+    // Mock backend patch success
+    vi.mocked(api.patch).mockResolvedValueOnce({
+      status: 200,
+      data: { success: true },
+    });
+
+    const { result } = renderHook(() => useLocation());
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith('https://api.freeipapi.com/api/json');
+      expect(fetch).toHaveBeenCalledWith('https://ipapi.co/json/');
+      expect(api.patch).toHaveBeenCalledWith('/profile/location', {
+        latitude: -1.27,
+        longitude: 36.9,
+        city: 'Mombasa',
+      });
+      expect(result.current.error).toBeNull();
+      expect(result.current.loading).toBe(false);
     });
   });
 

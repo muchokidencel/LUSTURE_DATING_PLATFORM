@@ -34,6 +34,42 @@ interface ProfileData {
   };
 }
 
+const fetchIpLocation = async (): Promise<{ latitude: number; longitude: number; city: string | null } | null> => {
+  try {
+    const res = await fetch('https://api.freeipapi.com/api/json');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.latitude != null && data.longitude != null) {
+        return {
+          latitude: data.latitude,
+          longitude: data.longitude,
+          city: data.cityName || null,
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('[EditProfile] FreeIPAPI failed, trying backup...', err);
+  }
+
+  try {
+    const res = await fetch('https://ipapi.co/json/');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.latitude != null && data.longitude != null) {
+        return {
+          latitude: data.latitude,
+          longitude: data.longitude,
+          city: data.city || null,
+        };
+      }
+    }
+  } catch (err) {
+    console.error('[EditProfile] All IP location fallbacks failed:', err);
+  }
+
+  return null;
+};
+
 function buildFormData(profile: ProfileData | undefined) {
   if (!profile) {
     return {
@@ -149,39 +185,19 @@ export default function EditProfile() {
       },
       async (error) => {
         console.error("Error fetching geolocation:", error);
-        if (error.code === 1) {
-          setLocationError(true);
+
+        // Try IP-based location fallback for all errors, including PERMISSION_DENIED
+        console.log('[EditProfile] HTML5 Geolocation failed/denied. Falling back to IP-based detection...');
+        const ipLoc = await fetchIpLocation();
+        if (ipLoc) {
           setFormData(prev => ({
             ...prev,
-            latitude: null,
-            longitude: null,
+            latitude: ipLoc.latitude,
+            longitude: ipLoc.longitude,
+            city: ipLoc.city || prev.city || '',
           }));
-          alert("Failed to access your location. Please check browser permissions and enter your City manually.");
           setLocating(false);
           return;
-        }
-
-        // Try IP-based location fallback
-        console.log('[EditProfile] HTML5 Geolocation failed. Falling back to IP-based detection...');
-        try {
-          const ipRes = await fetch('https://api.freeipapi.com/api/json');
-          if (ipRes.ok) {
-            const ipData = await ipRes.json();
-            const { latitude, longitude, cityName } = ipData;
-
-            if (latitude !== undefined && longitude !== undefined && latitude !== null && longitude !== null) {
-              setFormData(prev => ({
-                ...prev,
-                latitude,
-                longitude,
-                city: cityName || prev.city || '',
-              }));
-              setLocating(false);
-              return;
-            }
-          }
-        } catch (fallbackErr) {
-          console.error('[EditProfile] IP geolocation fallback failed:', fallbackErr);
         }
 
         setLocationError(true);

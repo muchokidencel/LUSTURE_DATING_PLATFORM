@@ -2,6 +2,44 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../lib/api';
 
+const fetchIpLocation = async (): Promise<{ latitude: number; longitude: number; city: string | null } | null> => {
+  // Try FreeIPAPI first
+  try {
+    const res = await fetch('https://api.freeipapi.com/api/json');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.latitude != null && data.longitude != null) {
+        return {
+          latitude: data.latitude,
+          longitude: data.longitude,
+          city: data.cityName || null,
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('[useLocation] FreeIPAPI failed, trying backup...', err);
+  }
+
+  // Try ipapi.co as secondary backup
+  try {
+    const res = await fetch('https://ipapi.co/json/');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.latitude != null && data.longitude != null) {
+        return {
+          latitude: data.latitude,
+          longitude: data.longitude,
+          city: data.city || null,
+        };
+      }
+    }
+  } catch (err) {
+    console.error('[useLocation] All IP location fallbacks failed:', err);
+  }
+
+  return null;
+};
+
 export const useLocation = () => {
   const { user, updateUserProfile } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -77,43 +115,35 @@ export const useLocation = () => {
       },
       async (geoError) => {
         console.error('[useLocation] Geolocation error:', geoError);
+
+        // Try IP-based location fallback for all errors, including PERMISSION_DENIED
+        console.log('[useLocation] HTML5 Geolocation failed/denied. Falling back to IP-based detection...');
+        const ipLoc = await fetchIpLocation();
+        if (ipLoc) {
+          try {
+            await api.patch('/profile/location', {
+              latitude: ipLoc.latitude,
+              longitude: ipLoc.longitude,
+              city: ipLoc.city,
+            });
+
+            updateUserProfile({
+              latitude: ipLoc.latitude,
+              longitude: ipLoc.longitude,
+              location: ipLoc.city,
+              location_updated_at: new Date().toISOString(),
+            });
+            setError(null);
+            setLoading(false);
+            return;
+          } catch (err) {
+            console.error('[useLocation] Backend location update failed after IP fallback:', err);
+          }
+        }
+
         if (geoError.code === 1) {
           setError('PERMISSION_DENIED');
-          setLoading(false);
-          return;
-        }
-
-        // Try IP-based location fallback
-        console.log('[useLocation] HTML5 Geolocation failed. Falling back to IP-based detection...');
-        try {
-          const ipRes = await fetch('https://api.freeipapi.com/api/json');
-          if (ipRes.ok) {
-            const ipData = await ipRes.json();
-            const { latitude, longitude, cityName } = ipData;
-
-            if (latitude !== undefined && longitude !== undefined && latitude !== null && longitude !== null) {
-              await api.patch('/profile/location', {
-                latitude,
-                longitude,
-                city: cityName || null,
-              });
-
-              updateUserProfile({
-                latitude,
-                longitude,
-                location: cityName || null,
-                location_updated_at: new Date().toISOString(),
-              });
-              setError(null);
-              setLoading(false);
-              return;
-            }
-          }
-        } catch (fallbackErr) {
-          console.error('[useLocation] IP geolocation fallback failed:', fallbackErr);
-        }
-
-        if (geoError.code === 3) {
+        } else if (geoError.code === 3) {
           setError('TIMEOUT');
         } else {
           setError('UNAVAILABLE');
