@@ -80,7 +80,8 @@ describe('EditProfile Page', () => {
     expect(screen.getByDisplayValue('Relaxing and reading.')).toBeInTheDocument();
     expect(screen.getByDisplayValue('65')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Los Angeles')).toBeInTheDocument();
-    expect(screen.getAllByDisplayValue('+254712345678')).toHaveLength(2);
+    expect(screen.getByDisplayValue('+254712345678')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('712345678')).toBeInTheDocument();
     expect(screen.getByDisplayValue('denzel_w')).toBeInTheDocument();
   }, 10000);
 
@@ -178,4 +179,94 @@ describe('EditProfile Page', () => {
     });
     expect(mockNavigate).not.toHaveBeenCalled();
   }, 15000);
+
+  it('does not render duplicate Looking For / Relationship Intent dropdown under Matchmaking', () => {
+    render(
+      <BrowserRouter>
+        <EditProfile />
+      </BrowserRouter>
+    );
+
+    expect(screen.queryByLabelText(/Looking For \(Relationship Intent\)/i)).not.toBeInTheDocument();
+  });
+
+  it('submits form with intent and intentPreference synchronized to the selected relationship preference', async () => {
+    render(
+      <BrowserRouter>
+        <EditProfile />
+      </BrowserRouter>
+    );
+
+    const intentSelect = screen.getByLabelText(/Relationship Preference/i);
+    fireEvent.change(intentSelect, { target: { value: 'casual' } });
+
+    const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
+    fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(mockMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          intent: 'casual',
+          matchPreferences: expect.objectContaining({
+            intent: 'casual',
+          }),
+        })
+      );
+    });
+  });
+
+  it('displays M-Pesa phone number without the +254 country code', () => {
+    render(
+      <BrowserRouter>
+        <EditProfile />
+      </BrowserRouter>
+    );
+    // Profile data has whatsapp: '+254712345678'
+    const mpesaInput = screen.getByPlaceholderText('712 345 678');
+    expect(mpesaInput).toHaveValue('712345678');
+  });
+
+  it('updates whatsapp state with prefix +254 when M-Pesa input is edited', async () => {
+    render(
+      <BrowserRouter>
+        <EditProfile />
+      </BrowserRouter>
+    );
+
+    const mpesaInput = screen.getByPlaceholderText('712 345 678');
+    fireEvent.change(mpesaInput, { target: { value: '722222222' } });
+
+    const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
+    fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(mockMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          whatsapp: '+254722222222',
+        })
+      );
+    });
+  });
+
+  it('sanitizes leading 0, 254, or +254 in M-Pesa input', async () => {
+    render(
+      <BrowserRouter>
+        <EditProfile />
+      </BrowserRouter>
+    );
+
+    const mpesaInput = screen.getByPlaceholderText('712 345 678');
+    
+    // Type "0722222222"
+    fireEvent.change(mpesaInput, { target: { value: '0722222222' } });
+    expect(mpesaInput).toHaveValue('722222222');
+
+    // Type "+254722222222"
+    fireEvent.change(mpesaInput, { target: { value: '+254722222222' } });
+    expect(mpesaInput).toHaveValue('722222222');
+
+    // Type "254722222222"
+    fireEvent.change(mpesaInput, { target: { value: '254722222222' } });
+    expect(mpesaInput).toHaveValue('722222222');
+  });
 });

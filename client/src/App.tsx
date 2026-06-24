@@ -83,13 +83,20 @@ const PageWrapper = ({ children }: { children: React.ReactNode }) => {
 function AnimatedRoutes() {
   const location = useLocation();
   const isAdminPath = location.pathname.startsWith('/admin');
+  const isEditProfilePath = location.pathname === '/profile/edit';
   const { isAuthenticated } = useAuth();
+  
+  const showNavbar = !isAdminPath && !isEditProfilePath;
   
   return (
     <div className="min-h-screen bg-void text-lustre-text transition-colors duration-300 lustre-orbs">
-      {!isAdminPath && <Navbar />}
+      {showNavbar && <Navbar />}
       {!isAdminPath && isAuthenticated && <TourGuide />}
-      <div className={cn(isAdminPath ? "pt-0 pb-0" : "pt-16 pb-24 md:pb-0")}>
+      <div className={cn(
+        isAdminPath ? "pt-0 pb-0" : "",
+        showNavbar ? "pt-16 pb-24 md:pb-0" : "",
+        isEditProfilePath ? "pt-0 pb-24 md:pb-0" : ""
+      )}>
         <Suspense fallback={<RouteLoader />}>
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>

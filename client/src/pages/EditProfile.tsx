@@ -143,6 +143,33 @@ export default function EditProfile() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const getDisplayMpesaNumber = (number: string) => {
+    if (number.startsWith('+254')) {
+      return number.slice(4);
+    }
+    if (number.startsWith('254')) {
+      return number.slice(3);
+    }
+    return number;
+  };
+
+  const handleMpesaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value.trim();
+    if (val.startsWith('+254')) {
+      val = val.slice(4);
+    } else if (val.startsWith('254')) {
+      val = val.slice(3);
+    } else if (val.startsWith('0')) {
+      val = val.slice(1);
+    }
+    // Strip non-digits
+    const digits = val.replace(/\D/g, '');
+    setFormData(prev => ({
+      ...prev,
+      whatsapp: digits ? `+254${digits}` : ''
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -199,7 +226,7 @@ export default function EditProfile() {
           gender: interestMap[formData.interestedIn] || 'Any',
           ageRange: { min: formData.minAge, max: formData.maxAge },
           maxDistanceKm: formData.distance,
-          intent: formData.intentPreference
+          intent: formData.intent
         }
       };
 
@@ -360,8 +387,9 @@ export default function EditProfile() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="font-sans text-[10px] uppercase tracking-widest text-lustre-faint font-bold ml-1">Relationship Preference</label>
+                    <label htmlFor="relationship-intent" className="font-sans text-[10px] uppercase tracking-widest text-lustre-faint font-bold ml-1">Relationship Preference</label>
                     <select
+                      id="relationship-intent"
                       name="intent"
                       value={formData.intent}
                       onChange={(e) => setFormData(prev => ({ ...prev, intent: e.target.value }))}
@@ -453,22 +481,7 @@ export default function EditProfile() {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="font-sans text-[10px] uppercase tracking-widest text-lustre-faint font-bold ml-1">Looking For (Relationship Intent)</label>
-                    <select
-                      name="intentPreference"
-                      value={formData.intentPreference}
-                      onChange={(e) => setFormData(prev => ({ ...prev, intentPreference: e.target.value }))}
-                      className="w-full bg-white dark:bg-elevated border border-border-subtle text-lustre-text rounded-xl px-3 py-2.5 text-sm font-sans outline-none focus:border-lustre-purple/50 cursor-pointer"
-                    >
-                      <option value="unspecified">Unspecified / Any</option>
-                      <option value="relationship">Long-term Relationship</option>
-                      <option value="dating">Dating</option>
-                      <option value="casual">Casual Dating</option>
-                      <option value="friendship">Friendship</option>
-                      <option value="one_night">One-night Stand</option>
-                    </select>
-                  </div>
+
 
                   <div className="space-y-4">
                     <div className="flex justify-between items-center ml-1">
@@ -497,12 +510,12 @@ export default function EditProfile() {
                 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <label className="font-sans text-[10px] uppercase tracking-widest text-lustre-faint font-bold ml-1">WhatsApp Number</label>
+                    <label htmlFor="whatsapp-number" className="font-sans text-[10px] uppercase tracking-widest text-lustre-faint font-bold ml-1">WhatsApp Number</label>
                     <div className="relative">
                       <div className="absolute left-3 top-1/2 -translate-y-1/2 text-lustre-faint">
                         <MessageCircle size={14}  strokeWidth={1.5} />
                       </div>
-                      <Input name="whatsapp" value={formData.whatsapp} onChange={handleChange} className="pl-10" placeholder="+254 712 345678" />
+                      <Input id="whatsapp-number" name="whatsapp" value={formData.whatsapp} onChange={handleChange} className="pl-10" placeholder="+254 712 345678" />
                     </div>
                   </div>
                   
@@ -531,15 +544,16 @@ export default function EditProfile() {
                   </p>
                   
                   <div className="space-y-2">
-                    <label className="font-sans text-[10px] uppercase tracking-widest text-lustre-faint font-bold ml-1">M-Pesa Number</label>
+                    <label htmlFor="mpesa-number" className="font-sans text-[10px] uppercase tracking-widest text-lustre-faint font-bold ml-1">M-Pesa Number</label>
                     <div className="flex gap-2">
                       <div className="w-16 h-12 bg-base border border-border-subtle rounded-lg flex items-center justify-center font-sans text-xs font-bold text-lustre-muted">
                         +254
                       </div>
                       <Input 
-                        name="whatsapp" 
-                        value={formData.whatsapp} 
-                        onChange={handleChange} 
+                        id="mpesa-number"
+                        name="mpesaNumber" 
+                        value={getDisplayMpesaNumber(formData.whatsapp)} 
+                        onChange={handleMpesaChange} 
                         placeholder="712 345 678" 
                         className="flex-1" 
                       />
