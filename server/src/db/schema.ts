@@ -74,6 +74,7 @@ export const profiles = pgTable("profiles", {
   responseRate: integer("response_rate").default(0), // Percentage 0-100
   profileCompletionScore: integer("profile_completion_score").default(0),
   idealSunday: text("ideal_sunday"),
+  locationUpdatedAt: timestamp("location_updated_at"),
 });
 
 export const profilesRelations = relations(profiles, ({ one }) => ({

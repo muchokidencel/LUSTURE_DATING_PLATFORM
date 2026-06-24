@@ -14,6 +14,9 @@ interface User {
     gender: string | null;
     location: string | null;
     is_verified: boolean;
+    latitude?: number | null;
+    longitude?: number | null;
+    location_updated_at?: string | null;
   };
 }
 
@@ -25,6 +28,7 @@ interface AuthContextType {
   logout: () => void;
   loading: boolean;
   isAuthenticated: boolean;
+  updateUserProfile: (profileData: Partial<NonNullable<User['profile']>>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -89,6 +93,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
   };
 
+  const updateUserProfile = (profileData: Partial<NonNullable<User['profile']>>) => {
+    setUser(prev => {
+      if (!prev) return null;
+      const updatedProfile = prev.profile ? { ...prev.profile, ...profileData } : { ...profileData };
+      const updatedUser = { ...prev, profile: updatedProfile };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      return updatedUser;
+    });
+  };
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -97,7 +111,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       loginWithGoogle,
       logout, 
       loading,
-      isAuthenticated: !!user 
+      isAuthenticated: !!user,
+      updateUserProfile
     }}>
       {children}
     </AuthContext.Provider>

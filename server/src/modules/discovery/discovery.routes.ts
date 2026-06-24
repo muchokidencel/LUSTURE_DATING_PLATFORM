@@ -4,7 +4,7 @@ import { users, profiles, likes, matches, notifications, blocks, photos, userPre
 import { eq, and, or, notInArray, ne, sql, inArray } from 'drizzle-orm';
 import { authenticate, AuthRequest } from '../../middleware/auth.js';
 import { syncUserPremiumStatus } from '../../middleware/sync-premium.js';
-import { getDistanceKm } from '../../shared/utils.js';
+import { getDistanceKm } from '../../utils/distance.js';
 
 const router = Router();
 
@@ -73,9 +73,9 @@ router.get('/users', authenticate, async (req: AuthRequest, res) => {
 
       const cLat = p?.latitude;
       const cLng = p?.longitude;
-      let distanceKm: number | null = null;
-      if (myLat != null && myLng != null && cLat != null && cLng != null) {
-        distanceKm = getDistanceKm(myLat, myLng, cLat, cLng);
+      const distanceKm = getDistanceKm(myLat, myLng, cLat, cLng);
+
+      if (distanceKm !== Infinity) {
         if (distanceKm > maxDistance) {
           return null; // Exclude user beyond maximum preferred distance
         }
@@ -99,7 +99,7 @@ router.get('/users', authenticate, async (req: AuthRequest, res) => {
         isOnline: p?.onlineStatus || false,
         lastActive: u.lastActiveAt,
         isPremium: u.premiumTier !== 'free',
-        distanceKm: distanceKm != null ? Math.round(distanceKm * 10) / 10 : null
+        distanceKm: distanceKm !== Infinity ? Math.round(distanceKm * 10) / 10 : null
       };
     }).filter((u): u is NonNullable<typeof u> => u !== null);
 

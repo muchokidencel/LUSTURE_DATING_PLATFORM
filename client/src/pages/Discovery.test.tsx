@@ -14,6 +14,30 @@ vi.mock('../hooks/useQueries', () => ({
   }),
 }));
 
+// Mock useAuth context hook
+vi.mock('../context/AuthContext', () => ({
+  useAuth: () => ({
+    user: {
+      id: 1,
+      email: 'test@example.com',
+      profile: {
+        latitude: -1.2921,
+        longitude: 36.8219,
+      },
+    },
+    updateUserProfile: vi.fn(),
+  }),
+}));
+
+// Mock useLocation hook
+vi.mock('../hooks/useLocation', () => ({
+  useLocation: () => ({
+    loading: false,
+    error: null,
+    triggerLocationUpdate: vi.fn(),
+  }),
+}));
+
 // Mock api
 vi.mock('../lib/api', () => ({
   default: {

@@ -7,6 +7,8 @@ import { MapPin, Sparkles, Loader2, Crown, Lock } from 'lucide-react';
 import { isAxiosError } from 'axios';
 import DiscoveryTabs from '../components/layout/DiscoveryTabs';
 import { useProfile } from '../hooks/useQueries';
+import { useLocation } from '../hooks/useLocation';
+import { useAuth } from '../context/AuthContext';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../components/ui/dialog';
 
 interface User {
@@ -97,6 +99,8 @@ function UserCard({
 
 export default function Discovery() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { loading: locationLoading, error: locationError, triggerLocationUpdate } = useLocation();
   const { data: profile } = useProfile();
   const isCurrentUserPremium = profile?.premiumTier !== 'free';
   const [users, setUsers] = useState<User[]>([]);
@@ -139,31 +143,8 @@ export default function Discovery() {
   };
 
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          try {
-            await api.put('/profile', { latitude, longitude });
-          } catch (err) {
-            console.error("Silent location sync failed:", err);
-          } finally {
-            fetchUsers(1);
-          }
-        },
-        (err) => {
-          console.log("Silent location access declined or failed", err);
-          fetchUsers(1);
-        },
-        { enableHighAccuracy: false, timeout: 5000, maximumAge: 600000 }
-      );
-    } else {
-      // Deferred a tick to match the async-callback timing of the
-      // geolocation-available branch above (avoids calling the
-      // setState-bearing fetchUsers synchronously within the effect body).
-      Promise.resolve().then(() => fetchUsers(1));
-    }
-  }, []);
+    fetchUsers(1);
+  }, [user?.profile?.latitude, user?.profile?.longitude]);
 
   const loadMore = () => {
     const nextPage = page + 1;
@@ -231,6 +212,45 @@ export default function Discovery() {
              </div>
           </div>
         </div>
+
+        {/* Location Alerts / Nudges */}
+        {(!user?.profile?.latitude && locationError !== 'PERMISSION_DENIED') && (
+          <div className="mb-8 p-4 bg-gradient-to-r from-lustre-purple/10 to-lustre-gold/10 border border-lustre-purple/20 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 animate-fade-in shadow-[var(--shadow-card)]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-lustre-purple/10 flex items-center justify-center border border-lustre-purple/20 shrink-0">
+                <MapPin size={18} className="text-lustre-purple" />
+              </div>
+              <div className="text-left">
+                <p className="font-headline text-[10px] uppercase tracking-widest text-lustre-text font-bold">Refine Your Connections</p>
+                <p className="font-sans text-xs text-lustre-muted">Enable location to find matches closest to you.</p>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => triggerLocationUpdate()}
+              disabled={locationLoading}
+              className="w-full sm:w-auto h-10 px-6 rounded-xl border-lustre-purple/35 text-lustre-purple hover:bg-lustre-purple/10 font-sans font-bold uppercase tracking-widest text-[9px]"
+            >
+              {locationLoading ? (
+                <Loader2 size={12} className="animate-spin mr-2" />
+              ) : null}
+              Enable Location
+            </Button>
+          </div>
+        )}
+
+        {locationError === 'PERMISSION_DENIED' && (
+          <div className="mb-8 p-4 bg-void border border-border-subtle rounded-2xl flex items-center gap-3 animate-fade-in">
+            <div className="w-10 h-10 rounded-full bg-neutral-950 flex items-center justify-center border border-border-subtle shrink-0">
+              <MapPin size={18} className="text-neutral-500" />
+            </div>
+            <div className="text-left">
+              <p className="font-headline text-[10px] uppercase tracking-widest text-neutral-400 font-bold">Location Access Denied</p>
+              <p className="font-sans text-xs text-neutral-500">Please add your city in settings for better matches.</p>
+            </div>
+          </div>
+        )}
 
 
         {loading && users.length === 0 ? (

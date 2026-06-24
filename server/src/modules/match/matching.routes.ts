@@ -4,7 +4,7 @@ import { users, profiles, userPreferences, likes, matches, blocks, photos } from
 import { eq, and, or, notInArray, ne, sql, inArray } from 'drizzle-orm';
 import { authenticate, AuthRequest } from '../../middleware/auth.js';
 import { syncUserPremiumStatus } from '../../middleware/sync-premium.js';
-import { getDistanceKm } from '../../shared/utils.js';
+import { getDistanceKm } from '../../utils/distance.js';
 
 const router = Router();
 
@@ -117,22 +117,20 @@ router.get('/recommendations', authenticate, async (req: AuthRequest, res) => {
         const cLng = p?.longitude;
         const maxDistance = myPrefs?.maxDistanceKm ?? 50;
 
-        let distanceKm: number | null = null;
+        const distanceKm = getDistanceKm(myLat, myLng, cLat, cLng);
 
         // Geolocation-based distance matching
-        if (myLat != null && myLng != null && cLat != null && cLng != null) {
-          distanceKm = getDistanceKm(myLat, myLng, cLat, cLng);
-          
+        if (distanceKm !== Infinity) {
           // Filter out candidates beyond preferred distance
           if (distanceKm > maxDistance) {
             return null;
           }
 
-          // Distance Scoring (40 pts max)
-          if (distanceKm <= 5) score += 40;
-          else if (distanceKm <= 15) score += 30;
-          else if (distanceKm <= 30) score += 20;
+          // Distance Scoring: <5km=20pts, 5-20km=15pts, 20-50km=10pts, 50-100km=5pts, >100km=0pts
+          if (distanceKm < 5) score += 20;
+          else if (distanceKm <= 20) score += 15;
           else if (distanceKm <= 50) score += 10;
+          else if (distanceKm <= 100) score += 5;
         } else {
           // Fallback to City Match (40 pts)
           const cCity = p?.location?.toLowerCase() || null;
@@ -157,7 +155,7 @@ router.get('/recommendations', authenticate, async (req: AuthRequest, res) => {
         return {
           ...c,
           totalScore: score,
-          distanceKm
+          distanceKm: distanceKm !== Infinity ? distanceKm : null
         };
       })
       .filter((c): c is NonNullable<typeof c> => c !== null);

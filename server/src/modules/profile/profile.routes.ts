@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { db } from '../../db/index.js';
 import { profiles, photos, users, userPreferences } from '../../db/schema.js';
+import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import { authenticate, AuthRequest } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
@@ -327,6 +328,57 @@ router.put('/', authenticate, validate(profileUpdateSchema), async (req: AuthReq
   }
 });
 
+
+router.patch('/location', authenticate, async (req: AuthRequest, res) => {
+  const locationSchema = z.object({
+    latitude: z.number().min(-90).max(90),
+    longitude: z.number().min(-180).max(180),
+    city: z.string().optional().nullable(),
+  });
+
+  const validation = locationSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(422).json({
+      status: 'error',
+      message: 'Validation failed',
+      errors: validation.error.errors,
+    });
+  }
+
+  const { latitude, longitude, city } = validation.data;
+  const userId = req.user!.id;
+
+  try {
+    const updatePayload = {
+      latitude,
+      longitude,
+      location: city || null,
+      locationUpdatedAt: new Date(),
+    };
+
+    await db.insert(profiles)
+      .values({
+        userId,
+        ...updatePayload,
+      })
+      .onConflictDoUpdate({
+        target: profiles.userId,
+        set: updatePayload,
+      });
+
+    res.json({
+      success: true,
+      location: {
+        latitude,
+        longitude,
+        city: city || null,
+      },
+    });
+  } catch (error: any) {
+    console.error(`[PROFILE:LOCATION:UPDATE:ERROR] userId=${userId}, error=${error.message}`);
+    res.status(500).json({ message: 'Error updating location', error: error.message });
+  }
+});
 
 router.patch('/me', authenticate, validate(profileUpdateSchema), async (req: AuthRequest, res) => {
   return res.status(405).json({ message: 'Method not allowed. Use PUT /api/profile' });
