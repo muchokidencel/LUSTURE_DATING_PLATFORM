@@ -115,12 +115,35 @@ export default function EditProfile() {
     setLocating(true);
     setLocationError(false);
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const { latitude, longitude } = position.coords;
+        let city = formData.city;
+        
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+            {
+              headers: {
+                'User-Agent': 'Lusture Dating App (contact@lustre.app)',
+              },
+            }
+          );
+          if (res.ok) {
+            const data = await res.json();
+            const extractedCity = data.address?.city || data.address?.town || data.address?.county || null;
+            if (extractedCity) {
+              city = extractedCity;
+            }
+          }
+        } catch (err) {
+          console.error("Nominatim reverse geocoding failed on EditProfile:", err);
+        }
+
         setFormData(prev => ({
           ...prev,
           latitude,
           longitude,
+          city,
         }));
         setLocating(false);
       },
@@ -135,7 +158,7 @@ export default function EditProfile() {
         alert("Failed to access your location. Please check browser permissions and enter your City manually.");
         setLocating(false);
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
     );
   };
 
