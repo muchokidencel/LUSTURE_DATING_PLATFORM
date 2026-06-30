@@ -189,6 +189,7 @@ export default function Register() {
         {/* Register Card */}
         <Card className="p-6 md:p-10 border-border bg-card shadow-[var(--shadow-card-hover)]">
           <div className="text-center mb-6 md:mb-8 space-y-2">
+            <img src="/lustre-mark.svg" alt="Lustre" className="h-10 w-auto mx-auto mb-4" />
             <h1 className="font-garamond text-4xl text-lustre-text">Create Account</h1>
             <p className="font-sans text-xs text-lustre-muted">Initiate your journey into authentic connection.</p>
           </div>

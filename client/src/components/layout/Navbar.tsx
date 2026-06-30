@@ -75,8 +75,8 @@ export default function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 h-16 bg-surface-dim/80 backdrop-blur-xl border-b border-outline-variant/20 shadow-sm flex items-center justify-between px-margin-desktop py-4 max-w-container-max mx-auto">
       <div className="flex items-center gap-12">
-        <Link to="/" className="font-garamond italic text-3xl text-lustre-purple tracking-tighter">
-          Lustre
+        <Link to="/">
+          <img src="/lustre-lockup.svg" alt="Lustre" className="h-8 w-auto" />
         </Link>
         
         {isAuthenticated && (

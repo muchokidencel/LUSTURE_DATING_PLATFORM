@@ -5,7 +5,7 @@
       <stop offset="100%" stop-color="#C9882F"></stop>
     </linearGradient>
   </defs>
-  <text x="118" y="150" text-anchor="middle" dominant-baseline="alphabetic" font-family="Newsreader, Georgia, 'Times New Roman', serif" font-weight="500" font-size="190" fill="url(#gold)">L</text>
+  <text x="118" y="150" text-anchor="middle" dominant-baseline="alphabetic" font-family="Newsreader, Georgia, &#39;Times New Roman&#39;, serif" font-weight="500" font-size="190" fill="url(#gold)">L</text>
   <g transform="translate(150,28) scale(2.2)" fill="url(#gold)">
     <path d="M12 1.6c.62 5.7 1.18 6.7 6.9 7.4-5.72.7-6.28 1.7-6.9 7.4-.62-5.7-1.18-6.7-6.9-7.4 5.72-.7 6.28-1.7 6.9-7.4Z"></path>
   </g>
